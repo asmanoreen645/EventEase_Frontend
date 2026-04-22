@@ -1,0 +1,153 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f9f9f9;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-card {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+/* Logo & Headers */
+.logo-box {
+  background-color: #a3e4f1; /* Light blue from image */
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 15px;
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 40px;
+}
+
+.logo-section h1 {
+  margin: 10px 0 5px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #000;
+}
+
+.subtitle {
+  color: #666;
+  margin-bottom: 30px;
+}
+
+/* Form Styles */
+.input-group {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  color: #4b5563;
+  margin-bottom: 8px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: #f3f4f6;
+  box-sizing: border-box;
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.forgot-password {
+  text-align: right;
+  margin-top: -10px;
+  margin-bottom: 25px;
+}
+
+.forgot-password a {
+  color: #00bcd4;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Buttons */
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  background-color: #00bcd4; /* Main cyan color */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.login-btn:hover {
+  background-color: #0097a7;
+}
+
+.divider {
+  margin: 25px 0;
+  position: relative;
+  font-size: 12px;
+  color: #9ca3af;
+  letter-spacing: 1px;
+}
+
+.google-btn {
+  width: 100%;
+  padding: 12px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.google-btn img {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  display: inline-block;
+
+}
+
+.footer-text {
+  margin-top: 25px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.footer-text a {
+  color: #00bcd4;
+  text-decoration: none;
+  font-weight: bold;
+}
