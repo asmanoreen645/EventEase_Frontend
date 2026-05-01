@@ -50,7 +50,7 @@ function App() {
 
 export default App;*/
 import React from "react";
-import Vendors from "./Pages/Vendors";
+import Vendors from "../../Pages/Vendors";
 
 function App() {
   return(
