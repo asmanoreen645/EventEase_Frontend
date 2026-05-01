@@ -37,7 +37,7 @@ function App() {
 
 export default App;*/
 // App.jsx
-import React from 'react';
+/*import React from 'react';
 import Home from "./pages/Home";
 
 function App() {
@@ -48,8 +48,8 @@ function App() {
   );
 }
 
-export default App;
-/*import React from "react";
+export default App;*/
+import React from "react";
 import Vendors from "./Pages/Vendors";
 
 function App() {
@@ -60,4 +60,4 @@ function App() {
   );
   
 }
-export default App;*/
+export default App;
