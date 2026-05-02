@@ -1,4 +1,3 @@
-import React from "react";
 import "./Admindashboard.css";
 
 const navSections = [

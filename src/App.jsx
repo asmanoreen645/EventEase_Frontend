@@ -24,8 +24,8 @@ function App() {
 }
 export default App;
 */
-/*import React from 'react';
-import Dashboard from './Admindashboard'; // Ensure path is correct based on your folder structure
+
+/*import Dashboard from './Admindashboard'; // Ensure path is correct based on your folder structure
 
 function App() {
   return (
@@ -36,9 +36,9 @@ function App() {
 }
 
 export default App;*/
-// App.jsx
-/*import React from 'react';
-import Home from "./pages/Home";
+
+
+import Home from "./Home";
 
 function App() {
   return (
@@ -48,9 +48,9 @@ function App() {
   );
 }
 
-export default App;*/
-import React from "react";
-import Vendors from "../../Pages/Vendors";
+export default App;
+/*import React from "react";
+import Vendors from "./Pages/Vendors";
 
 function App() {
   return(
@@ -60,4 +60,4 @@ function App() {
   );
   
 }
-export default App;
+export default App;*/
