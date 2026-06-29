@@ -5,8 +5,8 @@ import "./BookingDetails.css";
 import "./Payment.css";
 import API from './api/axiosConfig';
 
-const PLATFORM_FEE = 600; // fixed platform fee
-const ADVANCE_PERCENT = 0.3; // 30% advance payment
+const PLATFORM_FEE = 600;
+const ADVANCE_PERCENT = 0.3;
 
 function Payment() {
   const navigate = useNavigate();
@@ -19,7 +19,6 @@ function Payment() {
   const [billingAddress, setBillingAddress] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Agar pehle steps complete nahi hue, wapas bhej do
   if (!vendor || !bookingDetails || !selectedPackage) {
     return (
       <div className="booking-page">
@@ -39,20 +38,36 @@ function Payment() {
   const handlePay = async (e) => {
     e.preventDefault();
 
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      alert("Pehle login karo!");
+      navigate("/login");
+      return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // aaj ka din start se compare karo
+    const selectedDate = new Date(bookingDetails.eventDate);
+    if (selectedDate < today) {
+      alert("Past date pe booking nahi ho sakti! Aage ki date select karo.");
+      return;
+    }
+
+    // Pehle se tha - card fields validation
     if (!cardName || !cardNumber || !expiry || !cvc || !billingAddress) {
       alert("Card details aur billing address bharo.");
       return;
     }
+
     try {
       setLoading(true);
-      const userId = localStorage.getItem("userId");
 
       const bookingData = {
-         userId: userId,
-        serviceId: vendor.id,             
-        vendorId: vendor.id,               
-        eventDate: bookingDetails.eventDate, 
-        totalAmount: totalPrice,           
+        userId: userId,        
+        serviceId: vendor.id,
+        vendorId: vendor.id,
+        eventDate: bookingDetails.eventDate,
+        totalAmount: totalPrice,
       };
 
       const response = await API.post('/api/bookings/book', bookingData);
@@ -60,19 +75,19 @@ function Payment() {
       if (response.data.success) {
         const userEmail = localStorage.getItem('userEmail');
         await API.post('/api/notifications/send-email', {
-           to: userEmail,
-             subject: "EventEase - Booking Confirmed!",
-              text: `Assalam o Alaikum! Aapki booking ${vendor.name} ke sath confirm ho gayi. Event date: ${bookingDetails.eventDate}. Total amount: PKR ${totalPrice}`
-                });
-                alert("Booking confirmed! Email sent");
-               navigate("/");
-              }
+          to: userEmail,
+          subject: "EventEase - Booking Confirmed!",
+          text: `Assalam o Alaikum! Aapki booking ${vendor.name} ke sath confirm ho gayi. Event date: ${bookingDetails.eventDate}. Total amount: PKR ${totalPrice}`
+        });
+        alert("Booking confirmed! Email sent");
+        navigate("/");
+      }
 
     } catch (err) {
       console.error("Booking error:", err);
       alert(err.response?.data?.message || "Booking failed! Please try again.");
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -80,7 +95,6 @@ function Payment() {
     <div className="booking-page">
       <div className="booking-card">
 
-        {/* Step indicator */}
         <div className="booking-steps">
           <div className="step">
             <span className="step__circle">1</span>
@@ -98,14 +112,12 @@ function Payment() {
           </div>
         </div>
 
-        {/* Header */}
         <div className="checkout-header">
           <h2 className="checkout-title">Secure checkout</h2>
           <span className="checkout-badge">{ADVANCE_PERCENT * 100}% advance</span>
         </div>
         <div className="checkout-divider"></div>
 
-        {/* Package summary */}
         <div className="summary-box">
           <div>
             <p className="summary-box__name">
@@ -120,7 +132,6 @@ function Payment() {
         </div>
 
         <form onSubmit={handlePay}>
-          {/* Cardholder name */}
           <div className="form-group form-group--full">
             <label>Cardholder name</label>
             <input
@@ -131,7 +142,6 @@ function Payment() {
             />
           </div>
 
-          {/* Card information */}
           <div className="form-group form-group--full">
             <label>Card information</label>
             <div className="card-info-box">
@@ -163,7 +173,6 @@ function Payment() {
             </div>
           </div>
 
-          {/* Billing address */}
           <div className="form-group form-group--full">
             <label>Billing address</label>
             <input
@@ -174,7 +183,6 @@ function Payment() {
             />
           </div>
 
-          {/* Breakdown */}
           <div className="breakdown-box">
             <div className="breakdown-row">
               <span>Advance ({ADVANCE_PERCENT * 100}%)</span>
@@ -191,12 +199,11 @@ function Payment() {
             </div>
           </div>
 
-          {/* Pay button */}
           <button type="submit" className="btn-pay" disabled={loading}>
             {loading ? "Processing..." : `Confirm & Pay PKR ${totalDueToday.toLocaleString()}`}
           </button>
 
-          <p className="secure-note"> Secured checkout · 256-bit SSL</p>
+          <p className="secure-note">Secured checkout · 256-bit SSL</p>
 
           <div className="booking-actions">
             <button type="button" className="btn-back" onClick={() => navigate(-1)}>
