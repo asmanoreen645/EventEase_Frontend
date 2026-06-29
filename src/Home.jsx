@@ -106,8 +106,15 @@ useEffect(() => {
   </div>
   <div className="ee-hero-overlay" />
   <div className="ee-hero-content">
+     {/* Trust Badge */}
+<div className="trust-badge">
+  <span className="badge-dot"></span>
+  Pakistan's #1 Event Platform
+  <span className="badge-new">NEW</span>
+</div>
     <h1>Your Dream Event,<br /><em>Just A Click Away</em></h1>
     <p className="ee-hero-subtitle">Discover top vendors, venues & services for your perfect event</p>
+   
     <div className="ee-search-bar">
       <svg className="ee-field-icon" viewBox="0 0 24 24" fill="none" stroke="#b4945a" strokeWidth="2">
   <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
