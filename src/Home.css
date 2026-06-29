@@ -53,11 +53,17 @@ body { font-family: 'Jost', sans-serif; background: #f9f7f4; color: #1a1209;marg
 
 .ee-search-bar {
   margin-top: 40px;
-  display: flex; gap: 0; border-radius: 50px; overflow: hidden;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  border-radius: 50px;
+  overflow: hidden;
   background: rgba(255,255,255,0.97);
   box-shadow: 0 20px 60px rgba(0,0,0,0.35), 0 0 0 1px rgba(180,148,90,0.3);
   animation: fadeUp 0.9s 0.15s ease both;
-  width: 100%; max-width: 680px;
+  width: 100%;
+  max-width: 680px;
+ padding: 4px;
 }
 .ee-search-select {
   flex: 1; padding: 18px 20px;
@@ -71,11 +77,24 @@ body { font-family: 'Jost', sans-serif; background: #f9f7f4; color: #1a1209;marg
 .ee-search-select:disabled { color: #aaa; }
 .ee-search-divider { width: 1px; background: rgba(180,148,90,0.25); margin: 10px 0; }
 .ee-search-btn {
-  padding: 0 28px; background: #b4945a; border: none; cursor: pointer;
-  font-family: 'Jost', sans-serif; font-size: 15px; font-weight: 600;
-  color: #fff; letter-spacing: 0.5px; transition: background 0.2s;
-  display: flex; align-items: center; gap: 8px;
-  border-radius: 0 50px 50px 0;
+ padding: 16px 32px;
+  background: #b4945a;
+  border: none;
+  cursor: pointer;
+  font-family: 'Jost', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.5px;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+ border-radius: 0 50px 50px 0;
+  margin-left: auto;
+padding: 18px 28px;
+  white-space: nowrap;
+  align-self: stretch;
 }
 .ee-search-btn:hover { background: #c9a96e; }
 .ee-search-btn svg { width: 18px; height: 18px; }
@@ -277,4 +296,15 @@ body { font-family: 'Jost', sans-serif; background: #f9f7f4; color: #1a1209;marg
   flex-shrink: 0;
   align-self: center;
   margin-left: 16px;
+}
+.ee-field-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ee-field-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #888;
+  letter-spacing: 0.8px;
 }
