@@ -23,7 +23,7 @@ function Payment() {
     return (
       <div className="booking-page">
         <div className="booking-card">
-          <p>Pehle booking aur package selection complete karo.</p>
+          <p>Firstly select booking and package.</p>
           <button className="btn-next" onClick={() => navigate("/details")}>
             Back to Booking Details
           </button>
@@ -49,13 +49,13 @@ function Payment() {
     today.setHours(0, 0, 0, 0); // aaj ka din start se compare karo
     const selectedDate = new Date(bookingDetails.eventDate);
     if (selectedDate < today) {
-      alert("Past date pe booking nahi ho sakti! Aage ki date select karo.");
+      alert("Booking is not possible on a past date");
       return;
     }
 
     // Pehle se tha - card fields validation
     if (!cardName || !cardNumber || !expiry || !cvc || !billingAddress) {
-      alert("Card details aur billing address bharo.");
+      alert(" Fill Card details and billing address.");
       return;
     }
 
