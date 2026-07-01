@@ -12,7 +12,7 @@ const heroImages = [
 ];
 const countries = ["Pakistan", "United Kingdom", "United States", "UAE", "Saudi Arabia", "India", "Canada", "Australia"];
 const citiesByCountry = {
-  Pakistan: ["Lahore", "Karachi", "Islamabad", "Faisalabad", "Rawalpindi", "Multan"],
+  Pakistan: ["Lahore", "Karachi", "Islamabad","MandiBahuaddin", "Faisalabad", "Rawalpindi", "Multan"],
   "United Kingdom": ["London", "Manchester", "Birmingham", "Edinburgh", "Glasgow"],
   "United States": ["New York", "Los Angeles", "Chicago", "Houston", "Miami"],
   UAE: ["Dubai", "Abu Dhabi", "Sharjah", "Ajman"],
@@ -77,6 +77,14 @@ useEffect(() => {
   return () => clearInterval(timer);
 }, []);
   const cities = country ? citiesByCountry[country] || [] : [];
+  
+  const handleSearch = () => {
+    if (!country || !city) {
+      alert("Please select both country and city");
+      return;
+    }
+    navigate(`/vendors?country=${encodeURIComponent(country)}&city=${encodeURIComponent(city)}`);
+  };
 
   return (
     <div className="ee-main-wrapper">
@@ -148,7 +156,7 @@ useEffect(() => {
         {cities.map(c => <option key={c} value={c}>{c}</option>)}
       </select>
       </div>
-      <button className="ee-search-btn">
+      <button className="ee-search-btn" onClick={handleSearch}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
         </svg>
