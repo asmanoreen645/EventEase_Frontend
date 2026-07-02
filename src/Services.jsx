@@ -1,6 +1,6 @@
-import  { useState } from "react";
-import { Link, useNavigate } from 'react-router-dom';
-import "./Vendors.css";
+import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
+import "./Services.css";
 
 // ===== SVG ICONS =====
 const VenueIcon = () => (
@@ -42,11 +42,12 @@ const SearchIcon = () => (
 
 // ===== DATA =====
 const events = [
-  { id: 1, label: "Birthdays", bg: "linear-gradient(135deg, #e74c3c, #c0392b)", },
-  { id: 2, label: "Weddings",  bg: "linear-gradient(135deg, #27ae60, #1e8449)", },
-  { id: 3, label: "Parties",   bg: "linear-gradient(135deg, #8e44ad, #6c3483)", },
-  { id: 4, label: "Corporate", bg: "linear-gradient(135deg, #2980b9, #1a6090)", },
+  { id: 1, label: "Birthdays", img: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80" },
+  { id: 2, label: "Weddings",  img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80" },
+  { id: 3, label: "Parties",   img: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&q=80" },
+  { id: 4, label: "Corporate", img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80" },
 ];
+
 
 const categories = [
   { label: "Venues & Halls", Icon: VenueIcon, path: "/vendors" },
@@ -62,6 +63,13 @@ export default function Vendors() {
   const [search, setSearch] = useState("");
 
   const visible = [0, 1, 2].map((i) => events[(activeSlide + i) % events.length]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveSlide(prev => (prev + 1) % events.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <div className="vendors-page">
@@ -89,10 +97,13 @@ export default function Vendors() {
       {/* EVENTS */}
       <section className="events-section">
         <h2>Our Events</h2>
-        <div className="events-carousel">
-          {visible.map((ev) => (
-            <div className="event-card" key={ev.id} style={{ background: ev.bg }}>
-              <div className="event-emoji">{ev.emoji}</div>
+        <div className="fade-carousel">
+          {events.map((ev, i) => (
+            <div
+              key={ev.id}
+              className={`fade-slide ${i === activeSlide ? "active" : ""}`}
+              style={{ backgroundImage: `url(${ev.img})` }}
+            >
               <span className="event-label">{ev.label}</span>
             </div>
           ))}

@@ -4,7 +4,7 @@ import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
 import { NotificationProvider } from "./Components/NotificationContext";
 import Home from './Home';
-import Vendors from './Vendors';
+import Services from './Services';
 import Venuepage from './Venuepage';
 import Decorators from './Decorators';
 import Photographer from './Photographer';
@@ -31,7 +31,7 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/services" element={<Vendors />} />
+        <Route path="/services" element={<Services />} />
         <Route path="/vendors" element={<Venuepage />} />
         <Route path="/decorators" element={<Decorators />} />
         <Route path="/photographer" element={<Photographer />} />
