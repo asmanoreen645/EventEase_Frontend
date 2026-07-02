@@ -139,7 +139,7 @@ padding: 18px 28px;
 .ee-service-emoji {
   position: absolute; inset: 0; display: flex; align-items: center;
   justify-content: center; font-size: 36px;
-  background: linear-gradient(135deg, rgba(30,20,10,0.85), rgba(50,35,15,0.75));
+  background: transparent;
 }
 .ee-service-label { font-size: 13px; font-weight: 500; color: #444; text-align: center; }
 
