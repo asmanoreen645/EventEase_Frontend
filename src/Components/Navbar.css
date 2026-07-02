@@ -9,16 +9,15 @@
   justify-content: space-between;
   padding: 0 2.5rem;
   height: 64px;
-  background: rgba(10, 10, 10, 0.85);
   background-color: #fff;
   webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .ee-logo {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #fff;
+  color: #1a1a2e;
   letter-spacing: -0.5px;
 }
 
@@ -32,7 +31,7 @@
 }
 
 .ee-nav-links a {
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(0, 0, 0, 0.7);
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 500;
@@ -52,8 +51,8 @@
 
 .ee-btn-ghost {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: #1a1a2e;
   padding: 0.45rem 1.1rem;
   border-radius: 6px;
   font-size: 0.875rem;
@@ -82,14 +81,54 @@
   background: #e0bc60;
 }
 
+.ee-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.ee-hamburger span {
+  width: 24px;
+  height: 2px;
+  background-color: #1a1a2e;
+  border-radius: 2px;
+}
+
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
   .ee-nav {
     padding: 0 1.2rem;
   }
 
+  .ee-hamburger {
+    display: flex;
+  }
+
   .ee-nav-links {
     display: none;
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    flex-direction: column;
+    gap: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .ee-nav-links.open {
+    display: flex;
+  }
+
+  .ee-nav-links a {
+    padding: 14px 1.2rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    color: #1a1a2e;
   }
 
   .ee-nav-actions {
