@@ -179,12 +179,13 @@ padding: 18px 28px;
 .ee-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
 .ee-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.8px; color: #666; background: #f0ebe0; padding: 4px 10px; border-radius: 4px; }
 .ee-book-btn {
-  width: 100%; padding: 12px; border: 1.5px solid #1a3052; border-radius: 8px;
+  width: 100%; padding: 12px; border: 1.5px solid #b4945a; border-radius: 8px;
   background: transparent; font-family: 'Jost', sans-serif; font-size: 14px;
-  font-weight: 600; color: #1a3052; cursor: pointer; letter-spacing: 0.3px;
+  font-weight: 600; color: #b4945a; cursor: pointer; letter-spacing: 0.3px;
   transition: all 0.2s;
 }
-.ee-book-btn:hover { background: #1a3052; color: #fff; }
+.ee-book-btn:hover { background: #b4945a; color: #fff; }
+
 
 .ee-footer { background: #12100c; color: #aaa; padding: 64px 48px 32px; }
 .ee-footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; max-width: 1100px; margin: 0 auto 48px; }
