@@ -129,6 +129,7 @@ padding: 18px 28px;
   width: 100%; height: 160px; border-radius: 14px;
   overflow: hidden; position: relative;
   box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+  border: 2px solid rgba(180, 148, 90, 0.4);
 }
 .ee-service-img-inner {
   position: absolute; inset: 0;
@@ -142,6 +143,9 @@ padding: 18px 28px;
   z-index: 1;
 }
 .ee-service-card:hover .ee-service-img-inner { transform: scale(1.07); }
+.ee-service-card:hover .ee-service-img {
+   border-color: #b4945a;
+}
 .ee-service-emoji {
   position: absolute; inset: 0; display: flex; align-items: center;
   justify-content: center; font-size: 36px;
