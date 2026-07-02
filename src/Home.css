@@ -129,17 +129,27 @@ padding: 18px 28px;
   width: 100%; height: 160px; border-radius: 14px;
   overflow: hidden; position: relative;
   box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+  border: 2px solid rgba(180, 148, 90, 0.4);
 }
 .ee-service-img-inner {
+  position: absolute; inset: 0;
   width: 100%; height: 100%;
   background-size: cover; background-position: center;
-  transition: transform 0.4s;
+  opacity: 0;
+  transition: opacity 1s ease-in-out, transform 0.4s;
+}
+.ee-service-img-inner.active {
+  opacity: 1;
+  z-index: 1;
 }
 .ee-service-card:hover .ee-service-img-inner { transform: scale(1.07); }
+.ee-service-card:hover .ee-service-img {
+   border-color: #b4945a;
+}
 .ee-service-emoji {
   position: absolute; inset: 0; display: flex; align-items: center;
   justify-content: center; font-size: 36px;
-  background: linear-gradient(135deg, rgba(30,20,10,0.85), rgba(50,35,15,0.75));
+  background: transparent;
 }
 .ee-service-label { font-size: 13px; font-weight: 500; color: #444; text-align: center; }
 

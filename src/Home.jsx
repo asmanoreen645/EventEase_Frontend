@@ -56,12 +56,36 @@ const vendors = [
 ];
 
 const serviceImages = [
-  "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=300&q=80",
-  "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=300&q=80",
-  "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=300&q=80",
-  "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=300&q=80",
-  "https://images.unsplash.com/photo-1559329007-40df8a9345d8?w=300&q=80",
-  "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=300&q=80",
+  [
+    "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=300&q=80",
+    "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=300&q=80",
+    "https://images.unsplash.com/photo-1519741497674-611481863552?w=300&q=80",
+  ],
+  [
+    "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=300&q=80",
+    "https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=300&q=80",
+    "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=300&q=80",
+  ],
+  [
+    "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=300&q=80",
+    "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=300&q=80",
+    "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&q=80",
+  ],
+  [
+    "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=300&q=80",
+    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=300&q=80",
+    "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=300&q=80",
+  ],
+  [
+    "https://images.unsplash.com/photo-1559329007-40df8a9345d8?w=300&q=80",
+    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=300&q=80",
+    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=300&q=80",
+  ],
+  [
+    "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=300&q=80",
+    "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=300&q=80",
+    "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=300&q=80",
+  ],
 ];
 
 export default function Home() {
@@ -76,6 +100,14 @@ useEffect(() => {
   }, 4000);
   return () => clearInterval(timer);
 }, []);
+const [serviceSlide, setServiceSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setServiceSlide(prev => prev + 1);
+    }, 2000);
+    return () => clearInterval(timer);
+  }, []);
   const cities = country ? citiesByCountry[country] || [] : [];
   
   const handleSearch = () => {
@@ -181,17 +213,20 @@ useEffect(() => {
         <div className="ee-section-rule" />
         <div className="ee-services-grid" style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
+          gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '16px',
           width: '100%'
         }}>
           {services.map((s, i) => (
             <div className="ee-service-card" key={s.label} style={{ width: '100%' }}>
               <div className="ee-service-img">
-                <div
-                  className="ee-service-img-inner"
-                  style={{ backgroundImage: `url(${serviceImages[i]})` }}
-                />
+                {serviceImages[i].map((imgUrl, imgIdx) => (
+        <div
+          key={imgIdx}
+          className={`ee-service-img-inner ${imgIdx === serviceSlide % serviceImages[i].length ? "active" : ""}`}
+          style={{ backgroundImage: `url(${imgUrl})` }}
+        />
+      ))}
                 <div className="ee-service-emoji">{s.emoji}</div>
               </div>
               <span className="ee-service-label">{s.label}</span>
