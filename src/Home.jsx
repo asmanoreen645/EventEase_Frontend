@@ -181,7 +181,7 @@ useEffect(() => {
         <div className="ee-section-rule" />
         <div className="ee-services-grid" style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
+          gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '16px',
           width: '100%'
         }}>
