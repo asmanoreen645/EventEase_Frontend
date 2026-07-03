@@ -38,6 +38,7 @@ const vendors = [
     rating: 4.9,
     tags: ["LONDON", "DECORATION"],
     img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80",
+    link: "/Vendorslist",
   },
   {
     name: "Moments Captured",
@@ -45,6 +46,7 @@ const vendors = [
     rating: 5.0,
     tags: ["REMOTE", "MEDIA"],
     img: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&q=80",
+   link: "/Vendorslist",
   },
   {
     name: "Grand Marque Venues",
@@ -52,6 +54,7 @@ const vendors = [
     rating: 4.8,
     tags: ["COUNTRYWIDE", "VENUES"],
     img: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600&q=80",
+   link: "/Vendorslist",
   },
 ];
 
@@ -257,7 +260,7 @@ const [serviceSlide, setServiceSlide] = useState(0);
                 <div className="ee-tags">
                   {v.tags.map(t => <span className="ee-tag" key={t}>{t}</span>)}
                 </div>
-                <button className="ee-book-btn"> View Details </button>
+                <button className="ee-book-btn" onClick={() => navigate('/vendors')}> View Details </button>
               </div>
             </div>
           ))}
