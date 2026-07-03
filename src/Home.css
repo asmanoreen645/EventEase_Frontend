@@ -172,6 +172,8 @@ padding: 18px 28px;
   position: absolute; top: 14px; right: 14px;
   background: #b4945a; color: #fff; font-size: 12px; font-weight: 700;
   padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 4px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+  z-index: 2;
 }
 .ee-vendor-img-wrap { position: relative; overflow: hidden; border-radius: 16px 16px 0 0; }
 .ee-vendor-card:hover .ee-vendor-img { transform: scale(1.06); }
