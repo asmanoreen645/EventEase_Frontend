@@ -180,7 +180,8 @@ padding: 18px 28px;
 .ee-vendor-name { font-family: 'Playfair Display', serif; font-size: 18px; color: #1a1209; margin-bottom: 4px; }
 .ee-vendor-sub { font-size: 13px; color: #888; margin-bottom: 14px; }
 .ee-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
-.ee-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.8px; color: #666; background: #f0ebe0; padding: 4px 10px; border-radius: 4px; }
+.ee-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.8px; color: #666; background: #f0ebe0; padding: 4px 10px; border-radius: 4px; transition: background 0.2s, color 0.2s; }
+.ee-tag:hover { background: #b4945a; color: #fff; }
 .ee-book-btn {
   width: 100%; padding: 12px; border: 1.5px solid #b4945a; border-radius: 8px;
   background: transparent; font-family: 'Jost', sans-serif; font-size: 14px;
