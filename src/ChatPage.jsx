@@ -78,7 +78,7 @@ export default function ChatPage() {
       setLoading(true);
       try {
         // Backend route: GET /api/chat/:room (chatController.getChatHistory)
-        const response = await API.get(`/api/chat/${room}`);
+        const response = await API.get(`/api/chat/room/${room}`);
         if (response.data.success) {
           setMessages(response.data.messages);
         }
