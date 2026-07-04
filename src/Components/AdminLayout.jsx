@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import "../styles/Admindashboard.css"; // Jo CSS file aapne banayi hai
+import "../Admindashboard.css";
 
 const navSections = [
   {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import API from "./api/axiosConfig";
+import API from "../api/axiosConfig";
 
 export default function VendorApproval() {
   const [vendors, setVendors] = useState([]);
