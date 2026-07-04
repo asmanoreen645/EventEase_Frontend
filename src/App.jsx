@@ -18,17 +18,23 @@ import ChatPage from "./ChatPage";
 import BookingDetails from "./BookingDetails";
 import PackageSelection from "./PackageSelection";
 import Payment from "./Payment";
-import AdminDashboard from "./Admindashboard"
-import VendorsList from "./VendorsList"
+import VendorsList from "./VendorsList";
 
+// 👑 ADMIN IMPORTS
+// 👑 ADMIN IMPORTS (Corrected Paths & Names)
+import AdminLayout from "./Components/AdminLayout";
+import AdminDashboard from "./Admindashboard";
+import VendorApproval from "./Components/VendorApproval";
+import AllBookings from "./Components/AllBookings";
+import Payouts from "./Components/Payouts";
+import UserManagement from "./Components/UserManagement"; // 's' hata diya kyunki file singular hai
+import ChatLogs from "./Components/ChatLogs";
 
-function App() {
+// 📦 Aise Wrapper Component jo Main Website ke page par Navbar/Footer dikhaye
+function UserLayout() {
   return (
-    <HashRouter>
-      <BookingProvider>
-        <NotificationProvider>
+    <>
       <Navbar />
-
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/services" element={<Services />} />
@@ -45,15 +51,36 @@ function App() {
         <Route path="/details" element={<BookingDetails />} />
         <Route path="/package" element={<PackageSelection />} />
         <Route path="/payment" element={<Payment />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/Vendorslist" element={<VendorsList />} />
-        
       </Routes>
-
       <Footer />
-      </NotificationProvider>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <HashRouter>
+      <BookingProvider>
+        <NotificationProvider>
+          <Routes>
+            {/* 🌐 MAIN CUSTOMER/VENDOR ROUTES (With Default Navbar & Footer) */}
+            <Route path="/*" element={<UserLayout />} />
+
+            {/* 🔐 NESTED ADMIN MODULE ROUTES (Clean Layout - No Default Navbar/Footer) */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="vendors" element={<VendorApproval />} />
+              <Route path="bookings" element={<AllBookings />} />
+              <Route path="payouts" element={<Payouts />} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="chats" element={<ChatLogs />} />
+            </Route>
+          </Routes>
+        </NotificationProvider>
       </BookingProvider>
     </HashRouter>
   );
 }
+
 export default App;
