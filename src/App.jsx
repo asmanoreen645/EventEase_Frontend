@@ -45,41 +45,13 @@ function UserLayout() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/vendor-register" element={<VendorRegister />} />
-        <Route path="/vendor-dashboard" element={<VendorDashboard />} />
+        <Route path="/vendor-dashboard" element={<ProtectedRoute> <VendorDashboard /> </ProtectedRoute> }/>
         <Route path="/about" element={<About />} />
         <Route path="/vendors/:id" element={<VendorProfile />} />
-        <Route
-          path="/chat/:vendorId"
-            element={
-               <ProtectedRoute>
-                <ChatPage />
-                 </ProtectedRoute>
-                     }
-                     />
-                     <Route
-                     path="/details"
-                      element={
-                       <ProtectedRoute>
-                        <BookingDetails />
-                       </ProtectedRoute>
-                          }
-                          />
-                            <Route
-                    path="/package"
-                  element={
-                 <ProtectedRoute>
-                    <PackageSelection />
-                    </ProtectedRoute>
-                      }
-           />
-                        <Route
-                 path="/payment"
-  element={
-    <ProtectedRoute>
-      <Payment />
-    </ProtectedRoute>
-  }
-/>
+        <Route path="/chat/:vendorId" element={<ProtectedRoute> <ChatPage /> </ProtectedRoute> }/>
+        <Route path="/details" element={<ProtectedRoute> <BookingDetails /> </ProtectedRoute> }/> 
+        <Route path="/package" element={<ProtectedRoute> <PackageSelection /> </ProtectedRoute>} />
+       <Route path="/payment" element={<ProtectedRoute> <Payment /> </ProtectedRoute>}/>
         <Route path="/Vendorslist" element={<VendorsList />} />
       </Routes>
       <Footer />
