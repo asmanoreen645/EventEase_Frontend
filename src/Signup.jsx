@@ -40,9 +40,12 @@ const Signup = () => {
       localStorage.setItem('userId', user.id);
       localStorage.setItem('role', user.role);
 
-      // Signup ke baad login page par navigate karna
-      navigate('/login'); 
-
+   if (user.role === 'vendor') {
+  navigate('/vendor-register');   // Vendor → seedha registration form
+} else {
+  navigate('/login');             // Customer → login page
+}
+      
     } catch (err) {
       console.log("FULL ERROR:", err);
       console.log("ERROR RESPONSE:", err.response);
