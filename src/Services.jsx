@@ -47,6 +47,12 @@ const heroImages = [
   "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1600&q=80",
   "https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=1600&q=80",
 ];
+const featuredEvents = [
+  { id: 1, type: "Wedding", city: "Lahore", img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=300&q=80" },
+  { id: 2, type: "Corporate", city: "Karachi", img: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=300&q=80" },
+  { id: 3, type: "Party", city: "Islamabad", img: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=300&q=80" },
+  { id: 4, type: "Gala", city: "Lahore", img: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=300&q=80" },
+];
 const events = [
   { id: 1, label: "Birthdays", img: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80" },
   { id: 2, label: "Weddings",  img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80" },
@@ -144,6 +150,19 @@ export default function Vendors() {
       <h3>Book and celebrate</h3>
       <p>Pay securely and enjoy your event</p>
     </div>
+  </div>
+</section>
+{/* FEATURED THIS WEEK */}
+<section className="featured-section">
+  <h2>Featured This Week</h2>
+  <p className="featured-subtitle">Recent events hosted through EventEase</p>
+  <div className="featured-grid">
+    {featuredEvents.map((ev) => (
+      <div className="featured-card" key={ev.id}>
+        <img src={ev.img} alt={ev.type} />
+        <div className="featured-caption">{ev.type} &middot; {ev.city}</div>
+      </div>
+    ))}
   </div>
 </section>
     </div>
