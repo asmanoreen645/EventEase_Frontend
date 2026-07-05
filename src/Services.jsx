@@ -111,31 +111,6 @@ export default function Vendors() {
   </div>
 </section>
 
-      {/* EVENTS */}
-      <section className="events-section">
-        <h2>Our Events</h2>
-        <div className="fade-carousel">
-          {events.map((ev, i) => (
-            <div
-              key={ev.id}
-              className={`fade-slide ${i === activeSlide ? "active" : ""}`}
-              style={{ backgroundImage: `url(${ev.img})` }}
-            >
-              <span className="event-label">{ev.label}</span>
-            </div>
-          ))}
-        </div>
-        <div className="carousel-dots">
-          {events.map((_, i) => (
-            <button
-              key={i}
-              className={"dot" + (activeSlide === i ? " dot-active" : "")}
-              onClick={() => setActiveSlide(i)}
-            />
-          ))}
-        </div>
-      </section>
-
       {/* CATEGORIES */}
       <section className="categories-section">
         <h2>Find Services by Category</h2>
