@@ -8,7 +8,7 @@ const Signup = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('customer');
+  const [role, setRole] = useState('customer'); // Default role 'customer' rahega
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -17,6 +17,12 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    
+    // Basic Form Validation
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      return setError('Please fill in all fields.');
+    }
+
     setLoading(true);
 
     try {
@@ -29,22 +35,23 @@ const Signup = () => {
 
       const { token, user } = response.data;
 
+      // LocalStorage me user data save karna
       localStorage.setItem('token', token);
       localStorage.setItem('userId', user.id);
       localStorage.setItem('role', user.role);
 
-      if (user.role === 'vendor') {
-        navigate('/login'); 
-      } else {
-        navigate('/login'); 
-      }
-
+   if (user.role === 'vendor') {
+  navigate('/vendor-register');   // Vendor → seedha registration form
+} else {
+  navigate('/login');             // Customer → login page
+}
+      
     } catch (err) {
       console.log("FULL ERROR:", err);
       console.log("ERROR RESPONSE:", err.response);
-      setError(err.response?.data?.message || 'Signup failed');
+      setError(err.response?.data?.message || 'Signup failed. Please try again.');
     } finally {
-      setLoading(false);
+      loading && setLoading(false);
     }
   };
 
@@ -54,16 +61,17 @@ const Signup = () => {
         <h1>Create Account</h1>
         <p className="subtitle">Join EventEase to start managing your events.</p>
 
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <p className="error-message" style={{ color: 'red', marginBottom: '15px', fontWeight: 'bold' }}>{error}</p>}
 
         <form className="signup-form" onSubmit={handleSubmit}>
           <div className="input-group">
             <label>NAME</label>
             <input
               type="text"
-              placeholder="Asma Noreen"
+              placeholder="Enter your full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              required
             />
           </div>
 
@@ -74,6 +82,7 @@ const Signup = () => {
               placeholder="example@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
 
@@ -85,10 +94,12 @@ const Signup = () => {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
               />
               <span
                 className="eye-icon"
                 onClick={() => setShowPassword(!showPassword)}
+                style={{ cursor: 'pointer' }}
               >
                 {showPassword ? "👁️‍🗨️" : "👁️"}
               </span>
@@ -104,7 +115,7 @@ const Signup = () => {
             >
               <option value="customer">Customer</option>
               <option value="vendor">Vendor</option>
-              <option value="Admin">Admin</option>
+              {/* 🔒 Security Fix: Admin option permanently removed from public registration */}
             </select>
           </div>
 

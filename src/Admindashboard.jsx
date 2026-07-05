@@ -1,42 +1,7 @@
 import { useState, useEffect } from "react";
-import "./Admindashboard.css";
 import API from "./api/axiosConfig";
 
-const navSections = [
-  {
-    label: "Overview",
-    items: [
-      { label: "Dashboard", active: true },
-      { label: "Analytics" },
-    ],
-  },
-  {
-    label: "Management",
-    items: [
-      { label: "Vendor Approval", badge: "3", badgeType: "amber" },
-      { label: "All Bookings", badge: "2", badgeType: "red" },
-      { label: "Payouts" },
-      { label: "Users" },
-    ],
-  },
-  {
-    label: "Monitoring",
-    items: [
-      { label: "Chat Logs", badge: "2", badgeType: "red" },
-      { label: "Disputes" },
-      { label: "Alerts" },
-    ],
-  },
-  {
-    label: "Config",
-    items: [
-      { label: "Commission" },
-      { label: "Settings" },
-    ],
-  },
-];
-
-
+// Aapka purana static data jo aapne panels mein use kiya tha
 const vendors = [
   { initials: "ZE", name: "Zara Events", type: "Catering — docs uploaded", status: "pending", colorClass: "va-a" },
   { initials: "MK", name: "MK Photography", type: "Photography — docs uploaded", status: "pending", colorClass: "va-b" },
@@ -85,293 +50,170 @@ const vendorBars = [
 ];
 
 export default function Admindashboard() {
-  const [activeNav, setActiveNav] = useState("Dashboard");
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
-  const fetchStats = async () => {
-    try {
-      const response = await API.get('/api/admin/summary');
-      setStats(response.data.stats);
-    } catch (err) {
-      console.error("Stats error:", err);
-    }
-  };
-  fetchStats();
-}, []);
+    const fetchStats = async () => {
+      try {
+        const response = await API.get('/api/admin/summary');
+        setStats(response.data.stats);
+      } catch (err) {
+        console.error("Stats error:", err);
+      }
+    };
+    fetchStats();
+  }, []);
   
   const statCards = [
-  { color: "gold", label: "Total Users", value: stats ? stats.totalUsers : "...", trend: "↑ Live", trendLabel: "from database", trendUp: true },
-  { color: "green", label: "Total Vendors", value: stats ? stats.totalVendors : "...", trend: "↑ Live", trendLabel: "from database", trendUp: true },
-  { color: "blue", label: "Total Customers", value: stats ? stats.totalCustomers : "...", trend: "↑ Live", trendLabel: "from database", trendUp: true },
-  { color: "red", label: "Verified Vendors", value: stats ? stats.verifiedVendors : "...", trend: "↑ Live", trendLabel: "from database", trendUp: true },
-];
+    { color: "gold", label: "Total Users", value: stats ? stats.totalUsers : "...", trend: "↑ Live", trendLabel: "from database", trendUp: true },
+    { color: "green", label: "Total Vendors", value: stats ? stats.totalVendors : "...", trend: "↑ Live", trendLabel: "from database", trendUp: true },
+    { color: "blue", label: "Total Customers", value: stats ? stats.totalCustomers : "...", trend: "↑ Live", trendLabel: "from database", trendUp: true },
+    { color: "red", label: "Verified Vendors", value: stats ? stats.verifiedVendors : "...", trend: "↑ Live", trendLabel: "from database", trendUp: true },
+  ];
+
   return (
-    <div className="shell">
-      {/* Decorative blobs */}
-      <div className="blob blob1" />
-      <div className="blob blob2" />
-
-      {/* SIDEBAR */}
-      <aside className="sidebar">
-        <div className="brand">
-          <div className="brand-mark">EE</div>
-          <div>
-            <div className="brand-name">EventEase</div>
-            <div className="brand-sub">Admin Panel</div>
+    <>
+      {/* STAT CARDS (Aapki file se liya gaya core content) */}
+      <div className="stats-grid">
+        {statCards.map((card, i) => (
+          <div key={i} className={`stat-card ${card.color}`} style={{ animationDelay: `${i * 0.07}s` }}>
+            <div className="stat-label">{card.label}</div>
+            <div className={`stat-val ${card.color}`}>{card.value}</div>
+            <div className="stat-trend">
+              <span className={card.trendUp ? "up" : "dn"}>{card.trend}</span> {card.trendLabel}
+            </div>
           </div>
-        </div>
+        ))}
+      </div>
 
-        {navSections.map((section) => (
-          <div key={section.label} className="nav-section">
-            <div className="nav-label">{section.label}</div>
-            {section.items.map((item) => (
-              <div
-                key={item.label}
-                className={`nav-item${activeNav === item.label ? " active" : ""}`}
-                onClick={() => setActiveNav(item.label)}
-              >
-                <span className="ni-icon">{item.icon}</span>
-                {item.label}
-                {item.badge && (
-                  <span className={`nav-badge${item.badgeType === "amber" ? " amber" : ""}`}>
-                    {item.badge}
-                  </span>
-                )}
+      {/* ROW 1: Vendor + Bookings */}
+      <div className="grid-2">
+        {/* Vendor Moderation */}
+        <div className="panel">
+          <div className="panel-head">
+            <div className="panel-title">Vendor Moderation</div>
+            <span className="panel-badge pb-amber">3 Pending</span>
+          </div>
+          {vendors.map((v, i) => (
+            <div key={i} className="vendor-row">
+              <div className={`sdot ${v.status === "pending" ? "pend" : "appr"}`} />
+              <div className={`v-av ${v.colorClass}`}>{v.initials}</div>
+              <div>
+                <div className="v-name">{v.name}</div>
+                <div className="v-type">{v.type}</div>
+              </div>
+              {v.status === "pending" ? (
+                <div className="v-actions">
+                  <button className="btn-mini btn-approve">✓ Approve</button>
+                  <button className="btn-mini btn-reject">✕ Reject</button>
+                </div>
+              ) : (
+                <span className="active-label">● Active</span>
+              )}
+            </div>
+          ))}
+          <div className="bars-block">
+            {vendorBars.map((b, i) => (
+              <div key={i} className="bar-item">
+                <div className="bar-meta">
+                  <span>{b.label}</span>
+                  <span className={`bar-val bv-${b.color}`}>{b.value}</span>
+                </div>
+                <div className="bar-track">
+                  <div className={`bar-fill bf-${b.color}`} style={{ width: `${b.pct}%` }} />
+                </div>
               </div>
             ))}
           </div>
-        ))}
+        </div>
 
-        <div className="sidebar-footer">
-          <div className="admin-card">
-            <div className="admin-av">SA</div>
-            <div>
-              <div className="admin-name">Super Admin</div>
-              <div className="admin-role">RBAC: Full Access</div>
+        {/* Booking Pipeline */}
+        <div className="panel">
+          <div className="panel-head">
+            <div className="panel-title">Booking Pipeline</div>
+            <span className="panel-badge pb-blue">342 Total</span>
+          </div>
+          <div className="bk-head">
+            <span>Customer</span><span>Amount</span><span>Date</span><span>Status</span>
+          </div>
+          {bookings.map((b, i) => (
+            <div key={i} className="bk-row">
+              <span className="bk-name">{b.name}</span>
+              <span className="bk-amt">{b.amount}</span>
+              <span className="bk-date">{b.date}</span>
+              <span className={`tag tag-${b.status === "confirmed" ? "ok" : b.status === "pending" ? "pnd" : "can"}`}>
+                {b.status.charAt(0).toUpperCase() + b.status.slice(1)}
+              </span>
             </div>
-            <div className="online-dot" />
+          ))}
+          <div className="pay-section">
+            <div className="pay-flow-label">Payment Flow</div>
+            <div className="pay-flow">
+              <div className="pay-seg pay-30">30% Advance</div>
+              <div className="pay-seg pay-70">7Post-Event Balance</div>
+            </div>
           </div>
         </div>
-      </aside>
+      </div>
 
-      {/* MAIN */}
-      <main className="main">
-        {/* Topbar */}
-        <div className="topbar">
-          <div>
-            <div className="page-title">Command <span>Center</span></div>
-            <div className="page-sub">Sunday, April 26, 2026 — Live data</div>
+      {/* ROW 2: Chat Logs + Refunds + Breakdown */}
+      <div className="grid-3">
+        {/* Chat Logs */}
+        <div className="panel">
+          <div className="panel-head">
+            <div className="panel-title">Chat Logs & Alerts</div>
+            <span className="panel-badge pb-red">2 Flagged</span>
           </div>
-          <div className="topbar-right">
-            <div className="chip"><span className="chip-dot live" /> Live</div>
-            <div className="chip">⚙ Commission: 0%</div>
-            <div className="chip">⊕ Export Report</div>
-          </div>
-        </div>
-
-        {/* RBAC Ribbon */}
-        <div className="rbac-ribbon">
-          <span className="rbac-icon">🔐</span>
-          <span><strong>Role-Based Access Control Active</strong> — This dashboard is accessible only to authorized administrators. All actions are logged.</span>
-        </div>
-
-        {/* STAT CARDS */}
-        <div className="stats-grid">
-          {statCards.map((card, i) => (
-            <div key={i} className={`stat-card ${card.color}`} style={{ animationDelay: `${i * 0.07}s` }}>
-              <div className={`stat-icon ${card.color}`}>{card.icon}</div>
-              <div className="stat-label">{card.label}</div>
-              <div className={`stat-val ${card.color}`}>{card.value}</div>
-              <div className="stat-trend">
-                <span className={card.trendUp ? "up" : "dn"}>{card.trend}</span> {card.trendLabel}
+          {chatLogs.map((c, i) => (
+            <div key={i} className="chat-item">
+              <div className={`chat-av ${c.colorClass}`}>{c.initials}</div>
+              <div className="chat-body">
+                <div className="chat-meta">
+                  <span className="chat-name">{c.name}</span>
+                  <span className="chat-to">→ {c.vendor}</span>
+                  {c.flagged && <span className="alert-chip">⚠ Bad Word</span>}
+                </div>
+                <div className="chat-msg">{c.msg}</div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* ROW 1: Vendor + Bookings */}
-        <div className="grid-2">
-          {/* Vendor Moderation */}
-          <div className="panel">
-            <div className="panel-head">
-              <div className="panel-title">Vendor Moderation</div>
-              <span className="panel-badge pb-amber">3 Pending</span>
-            </div>
-            {vendors.map((v, i) => (
-              <div key={i} className="vendor-row">
-                <div className={`sdot ${v.status === "pending" ? "pend" : "appr"}`} />
-                <div className={`v-av ${v.colorClass}`}>{v.initials}</div>
-                <div>
-                  <div className="v-name">{v.name}</div>
-                  <div className="v-type">{v.type}</div>
-                </div>
-                {v.status === "pending" ? (
-                  <div className="v-actions">
-                    <button className="btn-mini btn-approve">✓ Approve</button>
-                    <button className="btn-mini btn-reject">✕ Reject</button>
-                  </div>
-                ) : (
-                  <span className="active-label">● Active</span>
-                )}
-              </div>
-            ))}
-            <div className="bars-block">
-              {vendorBars.map((b, i) => (
-                <div key={i} className="bar-item">
-                  <div className="bar-meta">
-                    <span>{b.label}</span>
-                    <span className={`bar-val bv-${b.color}`}>{b.value}</span>
-                  </div>
-                  <div className="bar-track">
-                    <div className={`bar-fill bf-${b.color}`} style={{ width: `${b.pct}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Refund Policy */}
+        <div className="panel">
+          <div className="panel-head">
+            <div className="panel-title">Refund Policy</div>
           </div>
-
-          {/* Booking Pipeline */}
-          <div className="panel">
-            <div className="panel-head">
-              <div className="panel-title">Booking Pipeline</div>
-              <span className="panel-badge pb-blue">342 Total</span>
-            </div>
-            <div className="bk-head">
-              <span>Customer</span><span>Amount</span><span>Date</span><span>Status</span>
-            </div>
-            {bookings.map((b, i) => (
-              <div key={i} className="bk-row">
-                <span className="bk-name">{b.name}</span>
-                <span className="bk-amt">{b.amount}</span>
-                <span className="bk-date">{b.date}</span>
-                <span className={`tag tag-${b.status === "confirmed" ? "ok" : b.status === "pending" ? "pnd" : "can"}`}>
-                  {b.status.charAt(0).toUpperCase() + b.status.slice(1)}
-                </span>
-              </div>
-            ))}
-            <div className="pay-section">
-              <div className="pay-flow-label">Payment Flow</div>
-              <div className="pay-flow">
-                <div className="pay-seg pay-30">30% Advance</div>
-                <div className="pay-seg pay-70">70% Post-Event Balance</div>
-              </div>
-              <div className="pay-footer">
-                <span>Booking confirmation</span>
-                <span>After event completion</span>
+          {refunds.map((r, i) => (
+            <div key={i} className="refund-item">
+              <div>
+                <div className={`refund-title rt-${r.color}`}>{r.title}</div>
+                <div className="refund-desc">{r.desc}</div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
 
-        {/* ROW 2: Chat Logs + Refund Policy + Booking Breakdown */}
-        <div className="grid-3">
-          {/* Chat Logs */}
-          <div className="panel">
-            <div className="panel-head">
-              <div className="panel-title">Chat Logs & Alerts</div>
-              <span className="panel-badge pb-red">2 Flagged</span>
-            </div>
-            {chatLogs.map((c, i) => (
-              <div key={i} className="chat-item">
-                <div className={`chat-av ${c.colorClass}`}>{c.initials}</div>
-                <div className="chat-body">
-                  <div className="chat-meta">
-                    <span className="chat-name">{c.name}</span>
-                    <span className="chat-to">→ {c.vendor}</span>
-                    {c.flagged && <span className="alert-chip">⚠ Bad Word</span>}
-                    <span className="chat-time">{c.time}</span>
-                  </div>
-                  <div className="chat-msg">{c.msg}</div>
+        {/* Booking Breakdown */}
+        <div className="panel">
+          <div className="panel-head">
+            <div className="panel-title">Booking Breakdown</div>
+          </div>
+          <div className="bars-block rev-bars">
+            {revenueBars.map((b, i) => (
+              <div key={i} className="bar-item">
+                <div className="bar-meta">
+                  <span>{b.label}</span>
+                  <span className={`bar-val bv-${b.color}`}>{b.value}</span>
+                </div>
+                <div className="bar-track">
+                  <div className={`bar-fill bf-${b.color}`} style={{ width: `${b.pct}%` }} />
                 </div>
               </div>
             ))}
-            <div className="privacy-note"> Privacy protocol: Admin accesses logs only during dispute resolution</div>
-          </div>
-
-          {/* Refund Policy */}
-          <div className="panel">
-            <div className="panel-head">
-              <div className="panel-title">Refund Policy</div>
-              <span className="panel-badge pb-green">Active</span>
-            </div>
-            {refunds.map((r, i) => (
-              <div key={i} className="refund-item">
-                <div className={`refund-icon ${r.iconClass}`}>{r.icon}</div>
-                <div>
-                  <div className={`refund-title rt-${r.color}`}>{r.title}</div>
-                  <div className="refund-desc">{r.desc}</div>
-                </div>
-              </div>
-            ))}
-            <div className="bars-block">
-              <div className="bars-sub-label">This Month Refunds</div>
-              {refundBars.map((b, i) => (
-                <div key={i} className="bar-item">
-                  <div className="bar-meta">
-                    <span>{b.label}</span>
-                    <span className={`bar-val bv-${b.color}`}>{b.value}</span>
-                  </div>
-                  <div className="bar-track">
-                    <div className={`bar-fill bf-${b.color}`} style={{ width: `${b.pct}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Booking Breakdown */}
-          <div className="panel">
-            <div className="panel-head">
-              <div className="panel-title">Booking Breakdown</div>
-              <span className="panel-badge pb-blue">Live</span>
-            </div>
-            <div className="donut-wrap">
-              <svg className="donut-svg" width="100" height="100" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(30,60,114,0.08)" strokeWidth="14" />
-                <circle cx="50" cy="50" r="38" fill="none" stroke="#10b981" strokeWidth="14"
-                  strokeDasharray="144.5 238.76" strokeDashoffset="0"
-                  transform="rotate(-90 50 50)" strokeLinecap="round" />
-                <circle cx="50" cy="50" r="38" fill="none" stroke="#f59e0b" strokeWidth="14"
-                  strokeDasharray="66.5 238.76" strokeDashoffset="-144.5"
-                  transform="rotate(-90 50 50)" strokeLinecap="round" />
-                <circle cx="50" cy="50" r="38" fill="none" stroke="#ef4444" strokeWidth="14"
-                  strokeDasharray="26.3 238.76" strokeDashoffset="-211"
-                  transform="rotate(-90 50 50)" strokeLinecap="round" />
-                <text x="50" y="47" textAnchor="middle" fontFamily="'Plus Jakarta Sans',sans-serif" fontSize="14" fontWeight="700" fill="#1e3a5f">342</text>
-                <text x="50" y="59" textAnchor="middle" fontFamily="'DM Sans',sans-serif" fontSize="8" fill="#94a3b8">total</text>
-              </svg>
-              <div className="donut-legend">
-                {[
-                  { color: "#10b981", label: "Confirmed", val: "61%" },
-                  { color: "#f59e0b", label: "Pending", val: "28%" },
-                  { color: "#ef4444", label: "Cancelled", val: "11%" },
-                ].map((l, i) => (
-                  <div key={i} className="legend-item">
-                    <div className="legend-dot" style={{ background: l.color }} />
-                    <span className="legend-label">{l.label}</span>
-                    <span className="legend-val" style={{ color: l.color }}>{l.val}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="bars-block rev-bars">
-              <div className="bars-sub-label">Revenue by Category</div>
-              {revenueBars.map((b, i) => (
-                <div key={i} className="bar-item">
-                  <div className="bar-meta">
-                    <span>{b.label}</span>
-                    <span className={`bar-val bv-${b.color}`}>{b.value}</span>
-                  </div>
-                  <div className="bar-track">
-                    <div className={`bar-fill bf-${b.color}`} style={{ width: `${b.pct}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </>
   );
-};
+}

@@ -56,8 +56,12 @@ const VendorRegister = () => {
       await axiosInstance.post("/vendors/register", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setSuccess("Registration submitted! Waiting for approval.");
-      setTimeout(() => navigate("/vendor-dashboard"), 2000);
+      setSuccess("Registration submitted! Please login to continue.");
+      localStorage.setItem('vendorRegistered', 'true');
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('role');
+      setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong.");
     } finally {
