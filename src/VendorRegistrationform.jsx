@@ -37,33 +37,41 @@ const VendorRegister = () => {
 
     const userId = localStorage.getItem("userId");
     if (!userId) {
-      setError("Please login first.");
+      setError("Please login first to submit vendor form.");
       return;
     }
 
+    // Creating FormData pipeline with exact separate attributes matching relational schema
     const data = new FormData();
     data.append("user", userId);
     data.append("businessName", formData.businessName);
     data.append("description", formData.description);
-    data.append(
-      "location",
-      JSON.stringify({ city: formData.city, address: formData.address })
-    );
+    data.append("city", formData.city);
+    data.append("address", formData.address);
+    
     files.forEach((file) => data.append("documents", file));
 
     try {
       setLoading(true);
-      await axiosInstance.post("/vendors/register", data, {
+      
+      // Axios request directed with absolute /api endpoint prefix matching node instance
+      await axiosInstance.post("/api/vendors/register", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setSuccess("Registration submitted! Please login to continue.");
+      
+      setSuccess("Registration submitted successfully! Redirecting...");
       localStorage.setItem('vendorRegistered', 'true');
-      localStorage.removeItem('token');
-      localStorage.removeItem('userId');
-      localStorage.removeItem('role');
-      setTimeout(() => navigate("/login"), 2000);
+
+      // Secured state transition hook to clear storage flags safely after component switches
+      setTimeout(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('role');
+        navigate("/login");
+      }, 2000);
+
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong.");
+      setError(err.response?.data?.message || "Internal Configuration Error. Please verify connection parameters.");
     } finally {
       setLoading(false);
     }
@@ -104,7 +112,7 @@ const VendorRegister = () => {
             {loading ? "Submitting..." : "Submit Registration"}
           </button>
         </form>
-      </div>
+      </div>  
     </div>
   );
 };
