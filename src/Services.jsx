@@ -41,6 +41,12 @@ const SearchIcon = () => (
 );
 
 // ===== DATA =====
+const heroImages = [
+  "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&q=80",
+  "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1600&q=80",
+  "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1600&q=80",
+  "https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=1600&q=80",
+];
 const events = [
   { id: 1, label: "Birthdays", img: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80" },
   { id: 2, label: "Weddings",  img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80" },
@@ -60,6 +66,14 @@ const categories = [
 export default function Vendors() {
   const navigate = useNavigate();
   const [activeSlide, setActiveSlide] = useState(0);
+  const [heroSlide, setHeroSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHeroSlide(prev => (prev + 1) % heroImages.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
   const [search, setSearch] = useState("");
 
   const visible = [0, 1, 2].map((i) => events[(activeSlide + i) % events.length]);
@@ -75,6 +89,14 @@ export default function Vendors() {
     <div className="vendors-page"> 
       {/* HERO */}
       <section className="hero-section">
+{heroImages.map((img, i) => (
+          <div
+            key={i}
+            className={`hero-bg-slide ${i === heroSlide ? "active" : ""}`}
+            style={{ backgroundImage: `url(${img})` }}
+          />
+        ))}
+        <div className="hero-overlay" />
   <span className="hero-badge">Explore all services</span>
   <h1>Everything For Your Perfect Event</h1>
   <p>Search, compare, and book trusted vendors in minutes</p>
