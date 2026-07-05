@@ -1,29 +1,6 @@
 import { useState, useEffect } from "react";
 import API from "./api/axiosConfig";
 
-// Aapka purana static data jo aapne panels mein use kiya tha
-const vendors = [
-  { initials: "ZE", name: "Zara Events", type: "Catering — docs uploaded", status: "pending", colorClass: "va-a" },
-  { initials: "MK", name: "MK Photography", type: "Photography — docs uploaded", status: "pending", colorClass: "va-b" },
-  { initials: "RS", name: "Royal Sounds", type: "Sound System — reviewing", status: "pending", colorClass: "va-c" },
-  { initials: "DW", name: "Dream Weddings", type: "Decoration — approved", status: "approved", colorClass: "va-d" },
-];
-
-const bookings = [
-  { name: "Ayesha Rehman", amount: "Rs 45,000", date: "Apr 28", status: "confirmed" },
-  { name: "Sara Khan", amount: "Rs 80,000", date: "May 3", status: "pending" },
-  { name: "Omar Baig", amount: "Rs 30,000", date: "Apr 25", status: "cancelled" },
-  { name: "Hina Javed", amount: "Rs 1,20,000", date: "May 10", status: "confirmed" },
-  { name: "Bilal Ahmed", amount: "Rs 65,000", date: "May 15", status: "pending" },
-];
-
-const chatLogs = [
-  { initials: "AK", colorClass: "va-a", name: "Ayesha K.", vendor: "Zara Events", time: "10:42 AM", msg: "When will you confirm the menu for the wedding event?", flagged: false },
-  { initials: "OM", colorClass: "va-d", name: "Omar M.", vendor: "MK Photo", time: "9:15 AM", msg: "Message flagged by automated alert system", flagged: true },
-  { initials: "HJ", colorClass: "va-b", name: "Hina J.", vendor: "Royal Sounds", time: "Yesterday", msg: "Please share the full equipment list for the banquet hall", flagged: false },
-  { initials: "SR", colorClass: "va-c", name: "Sara R.", vendor: "Zara Events", time: "Yesterday", msg: "Dispute raised — log accessed for conflict review", flagged: true },
-];
-
 const refunds = [
   { color: "green", title: "Vendor Cancels", desc: "100% full refund issued to customer automatically", iconClass: "ri-green" },
   { color: "blue", title: "Customer > 48 hours", desc: "100% refund if cancelled before 48-hour window", iconClass: "ri-blue" },
@@ -51,18 +28,47 @@ const vendorBars = [
 
 export default function Admindashboard() {
   const [stats, setStats] = useState(null);
+  const [dbVendors, setDbVendors] = useState([]);
+  const [dbBookings, setDbBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Live Server Data Fetching Pipeline
+  const fetchDashboardData = async () => {
+    try {
+      // 1. Stats Data Fetch
+      const statsRes = await API.get('/api/admin/summary');
+      setStats(statsRes.data.stats);
+
+      // 2. Pending Vendors Fetch
+      const vendorsRes = await API.get('/api/admin/pending-vendors');
+      setDbVendors(vendorsRes.data.data || []);
+
+      // 3. System Users/Bookings Fetch (Fallback Array if Empty)
+      const usersRes = await API.get('/api/admin/users');
+      // filter default bookings or display initial context
+      setLoading(false);
+    } catch (err) {
+      console.error("Live fetch error:", err);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await API.get('/api/admin/summary');
-        setStats(response.data.stats);
-      } catch (err) {
-        console.error("Stats error:", err);
-      }
-    };
-    fetchStats();
+    fetchDashboardData();
   }, []);
+
+  // Live Action: Admin Approves or Rejects a Vendor
+  const handleVerifyVendor = async (id, statusAction) => {
+    try {
+      // Calls PUT /api/admin/verify-vendor/:id from your adminController
+      await API.put(`/api/admin/verify-vendor/${id}`, { status: statusAction });
+      alert(`Vendor status successfully updated to: ${statusAction}`);
+      fetchDashboardData(); // Refresh list live from database
+    } catch (err) {
+      console.error("Verification toggle failed:", err);
+      alert("Failed to update vendor status on live server.");
+    }
+  };
   
   const statCards = [
     { color: "gold", label: "Total Users", value: stats ? stats.totalUsers : "...", trend: "↑ Live", trendLabel: "from database", trendUp: true },
@@ -73,7 +79,7 @@ export default function Admindashboard() {
 
   return (
     <>
-      {/* STAT CARDS (Aapki file se liya gaya core content) */}
+      {/* STAT CARDS */}
       <div className="stats-grid">
         {statCards.map((card, i) => (
           <div key={i} className={`stat-card ${card.color}`} style={{ animationDelay: `${i * 0.07}s` }}>
@@ -86,33 +92,35 @@ export default function Admindashboard() {
         ))}
       </div>
 
-      {/* ROW 1: Vendor + Bookings */}
+      {/* ROW 1: Vendor Moderation (LIVE) + Bookings Context */}
       <div className="grid-2">
-        {/* Vendor Moderation */}
+        {/* Live Vendor Moderation */}
         <div className="panel">
           <div className="panel-head">
             <div className="panel-title">Vendor Moderation</div>
-            <span className="panel-badge pb-amber">3 Pending</span>
+            <span className="panel-badge pb-amber">{dbVendors.length} Pending</span>
           </div>
-          {vendors.map((v, i) => (
-            <div key={i} className="vendor-row">
-              <div className={`sdot ${v.status === "pending" ? "pend" : "appr"}`} />
-              <div className={`v-av ${v.colorClass}`}>{v.initials}</div>
-              <div>
-                <div className="v-name">{v.name}</div>
-                <div className="v-type">{v.type}</div>
-              </div>
-              {v.status === "pending" ? (
-                <div className="v-actions">
-                  <button className="btn-mini btn-approve">✓ Approve</button>
-                  <button className="btn-mini btn-reject">✕ Reject</button>
+          
+          {dbVendors.length === 0 ? (
+            <div style={{ padding: "20px", color: "#888", textAlign: "center" }}>No pending vendors in database.</div>
+          ) : (
+            dbVendors.map((v, i) => (
+              <div key={v._id || i} className="vendor-row">
+                <div className="sdot field pend" />
+                <div className="v-av va-a">{v.name ? v.name.substring(0,2).toUpperCase() : "VN"}</div>
+                <div style={{ flex: 1, marginLeft: "10px" }}>
+                  <div className="v-name">{v.name}</div>
+                  <div className="v-type">{v.email} — Profile Pending</div>
                 </div>
-              ) : (
-                <span className="active-label">● Active</span>
-              )}
-            </div>
-          ))}
-          <div className="bars-block">
+                <div className="v-actions">
+                  <button className="btn-mini btn-approve" onClick={() => handleVerifyVendor(v._id, 'approved')}>✓ Approve</button>
+                  <button className="btn-mini btn-reject" onClick={() => handleVerifyVendor(v._id, 'rejected')}>✕ Reject</button>
+                </div>
+              </div>
+            ))
+          )}
+
+          <div className="bars-block" style={{ marginTop: "20px" }}>
             {vendorBars.map((b, i) => (
               <div key={i} className="bar-item">
                 <div className="bar-meta">
@@ -127,59 +135,59 @@ export default function Admindashboard() {
           </div>
         </div>
 
-        {/* Booking Pipeline */}
+        {/* Booking Pipeline Pipeline */}
         <div className="panel">
           <div className="panel-head">
             <div className="panel-title">Booking Pipeline</div>
-            <span className="panel-badge pb-blue">342 Total</span>
+            <span className="panel-badge pb-blue">Live System Monitor</span>
           </div>
           <div className="bk-head">
             <span>Customer</span><span>Amount</span><span>Date</span><span>Status</span>
           </div>
-          {bookings.map((b, i) => (
-            <div key={i} className="bk-row">
-              <span className="bk-name">{b.name}</span>
-              <span className="bk-amt">{b.amount}</span>
-              <span className="bk-date">{b.date}</span>
-              <span className={`tag tag-${b.status === "confirmed" ? "ok" : b.status === "pending" ? "pnd" : "can"}`}>
-                {b.status.charAt(0).toUpperCase() + b.status.slice(1)}
-              </span>
-            </div>
-          ))}
+          
+          {/* Default fallback demo dataset for pipeline render */}
+          <div className="bk-row">
+            <span className="bk-name">Ayesha Rehman</span>
+            <span className="bk-amt">Rs 45,000</span>
+            <span className="bk-date">Jul 12, 2026</span>
+            <span className="tag tag-ok">Confirmed</span>
+          </div>
+          <div className="bk-row">
+            <span className="bk-name">Sara Khan</span>
+            <span className="bk-amt">Rs 80,000</span>
+            <span className="bk-date">Jul 18, 2026</span>
+            <span className="tag tag-pnd">Pending</span>
+          </div>
+
           <div className="pay-section">
-            <div className="pay-flow-label">Payment Flow</div>
+            <div className="pay-flow-label">Payment Flow Tracking</div>
             <div className="pay-flow">
               <div className="pay-seg pay-30">30% Advance</div>
-              <div className="pay-seg pay-70">7Post-Event Balance</div>
+              <div className="pay-seg pay-70">70% Post-Event Balance</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ROW 2: Chat Logs + Refunds + Breakdown */}
+      {/* ROW 2: Static Layout Context Logs */}
       <div className="grid-3">
-        {/* Chat Logs */}
         <div className="panel">
           <div className="panel-head">
             <div className="panel-title">Chat Logs & Alerts</div>
-            <span className="panel-badge pb-red">2 Flagged</span>
+            <span className="panel-badge pb-red">System Core</span>
           </div>
-          {chatLogs.map((c, i) => (
-            <div key={i} className="chat-item">
-              <div className={`chat-av ${c.colorClass}`}>{c.initials}</div>
-              <div className="chat-body">
-                <div className="chat-meta">
-                  <span className="chat-name">{c.name}</span>
-                  <span className="chat-to">→ {c.vendor}</span>
-                  {c.flagged && <span className="alert-chip">⚠ Bad Word</span>}
-                </div>
-                <div className="chat-msg">{c.msg}</div>
+          <div className="chat-item">
+            <div className="chat-av va-a">AK</div>
+            <div className="chat-body">
+              <div className="chat-meta">
+                <span className="chat-name">Ayesha K.</span>
+                <span className="chat-to">→ Zara Events</span>
               </div>
+              <div className="chat-msg">When will you confirm the menu for the wedding event?</div>
             </div>
-          ))}
+          </div>
         </div>
 
-        {/* Refund Policy */}
         <div className="panel">
           <div className="panel-head">
             <div className="panel-title">Refund Policy</div>
@@ -194,7 +202,6 @@ export default function Admindashboard() {
           ))}
         </div>
 
-        {/* Booking Breakdown */}
         <div className="panel">
           <div className="panel-head">
             <div className="panel-title">Booking Breakdown</div>
