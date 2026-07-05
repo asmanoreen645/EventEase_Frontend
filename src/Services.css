@@ -361,10 +361,28 @@ body {
 }
 
 .categories-section h2 {
+  font-family: 'Playfair Display', serif;
   font-size: 1.35rem;
   font-weight: 700;
   color: #1a1a2e;
-  margin-bottom: 32px;
+  margin-bottom: 8px;
+  text-align: center;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 12px;
+}
+.categories-section h2::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 2px;
+  background: #b4945a;
+}
+.categories-section {
+  text-align: center;
 }
 
 .categories-grid {
@@ -383,31 +401,31 @@ body {
   border-radius: 12px;
   transition: background-color 0.2s;
 }
-
 .category-card:hover {
-  background-color: #e8f0fa;
+  background-color: transparent;
 }
-
 .category-icon {
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
-  border: 2px solid #3a9bd5;
+  border: none;
+  background-color: #f0ebe0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #3a9bd5;
-  transition: background-color 0.2s, color 0.2s;
+  color: #b4945a;
+  transition: background-color 0.2s, color 0.2s, transform 0.2s;
 }
 
 .category-icon svg {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
 }
 
 .category-card:hover .category-icon {
-  background-color: #3a9bd5;
+  background-color: #b4945a;
   color: #fff;
+  transform: scale(1.06);
 }
 
 .category-card p {
