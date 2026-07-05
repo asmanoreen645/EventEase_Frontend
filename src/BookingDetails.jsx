@@ -48,6 +48,12 @@ function BookingDetails() {
     setBookingDetails(form);
     navigate("/Package");
   };
+  const phoneRegex = /^03\d{9}$/;
+
+if (!phoneRegex.test(form.contact)) {
+   alert("write correct phone number");
+   return;
+}
 
   return (
     <div className="booking-page">
@@ -105,11 +111,12 @@ function BookingDetails() {
             <div className="form-group">
               <label>Event Date</label>
               <input
-                type="date"
-                name="eventDate"
-                value={form.eventDate}
-                onChange={handleChange}
-              />
+              type="date"
+              name="eventDate"
+              min={new Date().toISOString().split("T")[0]}
+             value={form.eventDate}
+             onChange={handleChange}
+             />
             </div>
 
             <div className="form-group">
@@ -126,11 +133,10 @@ function BookingDetails() {
             <div className="form-group">
               <label>Guest Count</label>
               <input
-                type="number"
-                name="guestCount"
-                placeholder="e.g. 250"
-                value={form.guestCount}
-                onChange={handleChange}
+               type="number"
+               min="1"
+               value={form.guestCount}
+               onChange={handleChange}
               />
             </div>
 

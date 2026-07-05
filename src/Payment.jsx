@@ -10,7 +10,12 @@ const ADVANCE_PERCENT = 0.3;
 
 function Payment() {
   const navigate = useNavigate();
-  const { vendor, bookingDetails, selectedPackage, totalPrice } = useBooking();
+  const {
+  vendor,
+  bookingDetails,
+  selectedPackage,
+  totalPrice,
+} = useBooking();
 
   const [cardName, setCardName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
@@ -70,7 +75,9 @@ function Payment() {
         totalAmount: totalPrice,
       };
 
-      const response = await API.post('/api/bookings/book', bookingData);
+      const response = await API.post('/api/bookings/book', bookingData);   
+
+      console.log("Booking Response:", response.data);
 
       if (response.data.success) {
         const userEmail = localStorage.getItem('userEmail');
