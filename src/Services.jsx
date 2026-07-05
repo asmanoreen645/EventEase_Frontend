@@ -41,6 +41,18 @@ const SearchIcon = () => (
 );
 
 // ===== DATA =====
+const heroImages = [
+  "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&q=80",
+  "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1600&q=80",
+  "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1600&q=80",
+  "https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=1600&q=80",
+];
+const featuredEvents = [
+  { id: 1, type: "Wedding", city: "Lahore", img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=300&q=80" },
+  { id: 2, type: "Corporate", city: "Karachi", img: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=300&q=80" },
+  { id: 3, type: "Party", city: "Islamabad", img: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=300&q=80" },
+  { id: 4, type: "Gala", city: "Lahore", img: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=300&q=80" },
+];
 const events = [
   { id: 1, label: "Birthdays", img: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80" },
   { id: 2, label: "Weddings",  img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80" },
@@ -60,6 +72,14 @@ const categories = [
 export default function Vendors() {
   const navigate = useNavigate();
   const [activeSlide, setActiveSlide] = useState(0);
+  const [heroSlide, setHeroSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHeroSlide(prev => (prev + 1) % heroImages.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
   const [search, setSearch] = useState("");
 
   const visible = [0, 1, 2].map((i) => events[(activeSlide + i) % events.length]);
@@ -75,6 +95,14 @@ export default function Vendors() {
     <div className="vendors-page"> 
       {/* HERO */}
       <section className="hero-section">
+{heroImages.map((img, i) => (
+          <div
+            key={i}
+            className={`hero-bg-slide ${i === heroSlide ? "active" : ""}`}
+            style={{ backgroundImage: `url(${img})` }}
+          />
+        ))}
+        <div className="hero-overlay" />
   <span className="hero-badge">Explore all services</span>
   <h1>Everything For Your Perfect Event</h1>
   <p>Search, compare, and book trusted vendors in minutes</p>
@@ -88,31 +116,6 @@ export default function Vendors() {
     <button className="search-btn">Search</button>
   </div>
 </section>
-
-      {/* EVENTS */}
-      <section className="events-section">
-        <h2>Our Events</h2>
-        <div className="fade-carousel">
-          {events.map((ev, i) => (
-            <div
-              key={ev.id}
-              className={`fade-slide ${i === activeSlide ? "active" : ""}`}
-              style={{ backgroundImage: `url(${ev.img})` }}
-            >
-              <span className="event-label">{ev.label}</span>
-            </div>
-          ))}
-        </div>
-        <div className="carousel-dots">
-          {events.map((_, i) => (
-            <button
-              key={i}
-              className={"dot" + (activeSlide === i ? " dot-active" : "")}
-              onClick={() => setActiveSlide(i)}
-            />
-          ))}
-        </div>
-      </section>
 
       {/* CATEGORIES */}
       <section className="categories-section">
@@ -128,6 +131,77 @@ export default function Vendors() {
                  ))}
             </div>
       </section>
+      {/* HOW IT WORKS */}
+<section className="how-it-works-section">
+  <h2>How It Works</h2>
+  <div className="how-it-works-grid">
+    <div className="how-step">
+      <div className="how-step-number">1</div>
+      <h3>Browse services</h3>
+      <p>Explore vendors by category and city</p>
+    </div>
+    <div className="how-step">
+      <div className="how-step-number">2</div>
+      <h3>Compare and chat</h3>
+      <p>Check ratings, then message vendors directly</p>
+    </div>
+    <div className="how-step">
+      <div className="how-step-number">3</div>
+      <h3>Book and celebrate</h3>
+      <p>Pay securely and enjoy your event</p>
+    </div>
+  </div>
+</section>
+{/* FEATURED THIS WEEK */}
+<section className="featured-section">
+  <h2>Featured This Week</h2>
+  <p className="featured-subtitle">Recent events hosted through EventEase</p>
+  <div className="featured-grid">
+    {featuredEvents.map((ev) => (
+      <div className="featured-card" key={ev.id}>
+        <img src={ev.img} alt={ev.type} />
+        <div className="featured-caption">{ev.type} &middot; {ev.city}</div>
+      </div>
+    ))}
+  </div>
+</section>
+{/* STATS BAR */}
+<section className="stats-bar-section">
+  <div className="stat-item">
+    <div className="stat-number">50+</div>
+    <div className="stat-label">Vendors</div>
+  </div>
+  <div className="stat-item">
+    <div className="stat-number">6</div>
+    <div className="stat-label">Cities</div>
+  </div>
+  <div className="stat-item">
+    <div className="stat-number">4.8</div>
+    <div className="stat-label">Avg rating</div>
+  </div>
+</section>
+{/* FAQ */}
+<section className="faq-section">
+  <h2>Frequently Asked</h2>
+  <details className="faq-item">
+    <summary>How do I book a vendor?</summary>
+    <p>Chat with the vendor, confirm details, then pay a deposit to secure your date.</p>
+  </details>
+  <details className="faq-item">
+    <summary>Can I cancel a booking?</summary>
+    <p>Yes, cancellation terms are shown on each vendor profile before you book.</p>
+  </details>
+  <details className="faq-item">
+    <summary>How do payments work?</summary>
+    <p>Payments are made securely through the platform, split as a deposit and final balance.</p>
+  </details>
+</section>
+{/* CTA BANNER */}
+<section className="cta-banner">
+  <h2>Ready to start planning?</h2>
+  <p>Sign up free and get matched with vendors today</p>
+  <button className="cta-btn" onClick={() => navigate('/signup')}>Get started</button>
+</section>
     </div>
   );
 }

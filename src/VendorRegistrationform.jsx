@@ -104,7 +104,7 @@ const VendorRegister = () => {
             {loading ? "Submitting..." : "Submit Registration"}
           </button>
         </form>
-      </div>
+      </div>  
     </div>
   );
 };
