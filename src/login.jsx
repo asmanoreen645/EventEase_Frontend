@@ -34,7 +34,7 @@ const LoginForm = () => {
       const redirectPath = location.state?.from;
 
 const vendorOnlyPaths = ['/vendor-register', '/vendor-dashboard'];
-const adminOnlyPaths = ['/admin-dashboard'];
+const adminOnlyPaths = ['/admin'];
 
 const isPathAllowedForRole = (path, role) => {
   if (vendorOnlyPaths.includes(path) && role !== 'vendor') return false;
