@@ -758,3 +758,38 @@ body {
   padding-left: 16px;
   line-height: 1.6;
 }
+/* ===== CTA BANNER SECTION ===== */
+.cta-banner {
+  background-color: #12100c;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.cta-banner h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.cta-banner p {
+  font-size: 0.85rem;
+  color: #999;
+  margin-bottom: 20px;
+}
+
+.cta-btn {
+  background-color: #b4945a;
+  color: #fff;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cta-btn:hover {
+  background-color: #c9a96e;
+}

@@ -196,6 +196,12 @@ export default function Vendors() {
     <p>Payments are made securely through the platform, split as a deposit and final balance.</p>
   </details>
 </section>
+{/* CTA BANNER */}
+<section className="cta-banner">
+  <h2>Ready to start planning?</h2>
+  <p>Sign up free and get matched with vendors today</p>
+  <button className="cta-btn" onClick={() => navigate('/signup')}>Get started</button>
+</section>
     </div>
   );
 }
