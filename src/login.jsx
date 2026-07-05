@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import './login.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import googleIcon from './google-icon.png';
 import API from './api/axiosConfig';
 
@@ -12,6 +12,7 @@ const LoginForm = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,13 +29,24 @@ const LoginForm = () => {
       localStorage.setItem('role', user.role); 
       localStorage.setItem('userEmail', user.email);  
 
-      if (user.role === 'admin') {
-        navigate('/admin-dashboard');
-      } else if (user.role === 'vendor') {
-        navigate('/vendor-register');
-      } else {
-        navigate('/');  // customer → home
-      }
+      // 🔧 Agar user kisi specific page (chat/booking) se redirect hoke aya hai,
+      // tw usay wapis wahin bhejna hai — role-based default se pehle check karo
+      const redirectPath = location.state?.from;
+
+      if (redirectPath) {
+     navigate(redirectPath);
+     } else if (user.role === 'admin') {
+      navigate('/admin-dashboard');
+     } else if (user.role === 'vendor') {
+      const alreadyRegistered = localStorage.getItem('vendorRegistered') === 'true';
+     if (alreadyRegistered) {
+     navigate('/vendor-dashboard');
+     } else {
+     navigate('/vendor-register');
+   }
+}    else {
+  navigate('/');  // customer → home
+}
 
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');

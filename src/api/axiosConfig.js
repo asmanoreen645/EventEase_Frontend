@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 // 🤖 Auto-Switch Logic: Agar browser localhost par hai to local URL chalao, warna Render!
-const BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+const BASE_URL = /*window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:5000'
-  : 'https://eventease-backend-693s.onrender.com';
+  :*/ 'https://eventease-backend-693s.onrender.com';
 
 const API = axios.create({
   baseURL: BASE_URL,

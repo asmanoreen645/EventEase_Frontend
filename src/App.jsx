@@ -1,4 +1,5 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
+import ProtectedRoute from "./ProtectedRoute";
 import { BookingProvider } from "./Components/BookingContext";
 import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
@@ -52,6 +53,21 @@ function UserLayout() {
         <Route path="package" element={<PackageSelection />} />
         <Route path="payment" element={<Payment />} />
         <Route path="Vendorslist" element={<VendorsList />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/vendors" element={<Venuepage />} />
+        <Route path="/decorators" element={<Decorators />} />
+        <Route path="/photographer" element={<Photographer />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/vendor-register" element={<VendorRegister />} />
+        <Route path="/vendor-dashboard" element={<ProtectedRoute> <VendorDashboard /> </ProtectedRoute> }/>
+        <Route path="/about" element={<About />} />
+        <Route path="/vendors/:id" element={<VendorProfile />} />
+        <Route path="/chat/:vendorId" element={<ProtectedRoute> <ChatPage /> </ProtectedRoute> }/>
+        <Route path="/details" element={<ProtectedRoute> <BookingDetails /> </ProtectedRoute> }/> 
+        <Route path="/package" element={<ProtectedRoute> <PackageSelection /> </ProtectedRoute>} />
+       <Route path="/payment" element={<ProtectedRoute> <Payment /> </ProtectedRoute>}/>
+        <Route path="/Vendorslist" element={<VendorsList />} />
       </Routes>
       <Footer />
     </>

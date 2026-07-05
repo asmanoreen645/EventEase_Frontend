@@ -72,27 +72,22 @@ export default function Vendors() {
   }, []);
 
   return (
-    <div className="vendors-page">
-
-        
+    <div className="vendors-page"> 
       {/* HERO */}
       <section className="hero-section">
-        <div className="hero-text">
-          <h1>Explore Our Services</h1>
-          <p>Just a Click Away</p>
-        </div>
-        <div className="search-bar">
-          <input
-            type="text"
-            placeholder="Search for services..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <button className="search-btn">
-            <SearchIcon />
-          </button>
-        </div>
-      </section>
+  <span className="hero-badge">Explore all services</span>
+  <h1>Everything For Your Perfect Event</h1>
+  <p>Search, compare, and book trusted vendors in minutes</p>
+  <div className="search-bar">
+    <input
+      type="text"
+      placeholder="Search photographers, venues, decor..."
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+    />
+    <button className="search-btn">Search</button>
+  </div>
+</section>
 
       {/* EVENTS */}
       <section className="events-section">
