@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import "../Admindashboard.css";
 
 const navSections = [
@@ -37,8 +37,26 @@ const navSections = [
 ];
 
 export default function AdminLayout() {
-  const [activeNav, setActiveNav] = useState("Dashboard");
   const navigate = useNavigate();
+  const location = useLocation();
+  const [pageTitle, setPageTitle] = useState("Command Center");
+
+  // URL badalne par header ka title automatic update karne ke liye
+  useEffect(() => {
+    const currentPath = location.pathname;
+    if (currentPath.includes("/vendors")) setPageTitle("Vendor Verification");
+    else if (currentPath.includes("/bookings")) setPageTitle("Transactional Bookings");
+    else if (currentPath.includes("/payouts")) setPageTitle("Financial Payouts");
+    else if (currentPath.includes("/users")) setPageTitle("User Identity Control");
+    else if (currentPath.includes("/chats")) setPageTitle("Secure Chat Auditor");
+    else if (currentPath.includes("/disputes")) setPageTitle("Dispute Resolution");
+    else if (currentPath.includes("/alerts")) setPageTitle("System Automated Alerts");
+    else if (currentPath.includes("/analytics")) setPageTitle("Platform Analytics");
+    else if (currentPath.includes("/commission")) setPageTitle("Commission Settings");
+    else if (currentPath.includes("/settings")) setPageTitle("System Configuration");
+    else if (currentPath.includes("/profile")) setPageTitle("Admin Profile");
+    else setPageTitle("Command Center");
+  }, [location]);
 
   return (
     <div className="shell">
@@ -47,7 +65,7 @@ export default function AdminLayout() {
 
       {/* FIXED SIDEBAR */}
       <aside className="sidebar">
-        <div className="brand">
+        <div className="brand" onClick={() => navigate("/admin")} style={{ cursor: 'pointer' }}>
           <div className="brand-mark">EE</div>
           <div>
             <div className="brand-name">EventEase</div>
@@ -58,22 +76,25 @@ export default function AdminLayout() {
         {navSections.map((section) => (
           <div key={section.label} className="nav-section">
             <div className="nav-label">{section.label}</div>
-            {section.items.map((item) => (
-              <Link
-                key={item.label}
-                to={item.path}
-                className={`nav-item${activeNav === item.label ? " active" : ""}`}
-                onClick={() => setActiveNav(item.label)}
-                style={{ textDecoration: 'none', color: 'inherit' }}
-              >
-                {item.label}
-                {item.badge && (
-                  <span className={`nav-badge${item.badgeType === "amber" ? " amber" : ""}`}>
-                    {item.badge}
-                  </span>
-                )}
-              </Link>
-            ))}
+            {section.items.map((item) => {
+              const isActive = location.pathname === item.path || 
+                               (item.path === "/admin" && location.pathname === "/admin/dashboard");
+              return (
+                <Link
+                  key={item.label}
+                  to={item.path}
+                  className={`nav-item${isActive ? " active" : ""}`}
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  {item.label}
+                  {item.badge && (
+                    <span className={`nav-badge${item.badgeType === "amber" ? " amber" : ""}`}>
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </div>
         ))}
 
@@ -94,7 +115,7 @@ export default function AdminLayout() {
         {/* Fixed Topbar */}
         <div className="topbar">
           <div>
-            <div className="page-title">Command <span>Center</span></div>
+            <div className="page-title">{pageTitle.split(" ")[0]} <span>{pageTitle.split(" ").slice(1).join(" ")}</span></div>
             <div className="page-sub">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} — Live data</div>
           </div>
           <div className="topbar-right">
@@ -110,7 +131,9 @@ export default function AdminLayout() {
         </div>
 
         {/* Dynamic Inner Component Render Area */}
-        <Outlet />
+        <div className="admin-content-area" style={{ marginTop: '20px' }}>
+          <Outlet />
+        </div>
       </main>
     </div>
   );
