@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "./api/axiosConfig";[cite: 9]
+import API from "./api/axiosConfig";
 
 export default function VendorRegister() {
   const navigate = useNavigate();
