@@ -190,18 +190,19 @@ body {
 }
 
 .search-btn {
-  padding: 10px 16px;
-  background-color: #3a6ea5;
+  padding: 10px 22px;
+  background-color: #b4945a;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
   border: none;
+  border-radius: 50px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   transition: background-color 0.2s;
 }
 
 .search-btn:hover {
-  background-color: #2d5a8a;
+  background-color: #c9a96e;
 }
 
 .search-btn svg {
