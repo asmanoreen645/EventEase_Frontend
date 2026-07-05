@@ -45,7 +45,7 @@ const isPathAllowedForRole = (path, role) => {
 if (redirectPath && isPathAllowedForRole(redirectPath, user.role)) {
   navigate(redirectPath);
 } else if (user.role === 'admin') {
-  navigate('/admin-dashboard');
+  navigate('/admin');
 } else if (user.role === 'vendor') {
   const alreadyRegistered = localStorage.getItem('vendorRegistered') === 'true';
   if (alreadyRegistered) {
