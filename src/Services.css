@@ -133,7 +133,7 @@ body {
   text-align: center;
   padding: 56px 24px 44px;
   background: linear-gradient(160deg, #0c0803 0%, #1a1007 60%, #241508 100%);
-  gap: 14px;
+  gap: 0px;
 }
 
 .hero-badge {
@@ -144,9 +144,15 @@ body {
   font-size: 12px;
   padding: 5px 16px;
   border-radius: 20px;
-  margin-bottom: 6px;
+  margin-top: 18px;
+  margin-bottom: 0px;
+  animation: heroGlowPulse 2s ease-in-out infinite;
 }
 
+@keyframes heroGlowPulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(201, 168, 76, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(201, 168, 76, 0.8); }
+}
 .hero-section h1 {
   font-family: 'Playfair Display', serif;
   font-size: 2.2rem;
