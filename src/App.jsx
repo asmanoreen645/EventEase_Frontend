@@ -19,7 +19,7 @@ import BookingDetails from "./BookingDetails";
 import PackageSelection from "./PackageSelection";
 import Payment from "./Payment";
 import VendorsList from "./VendorsList";
-import CustomerDashboard from "./CustomerDashboard"; // Ensure this file exists in the same folder
+import CustomerDashboard from "./Components/CustomerDashboard";
 
 // 👑 ADMIN IMPORTS
 import AdminLayout from "./Components/AdminLayout";
