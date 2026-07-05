@@ -33,19 +33,28 @@ const LoginForm = () => {
       // tw usay wapis wahin bhejna hai — role-based default se pehle check karo
       const redirectPath = location.state?.from;
 
-      if (redirectPath) {
-     navigate(redirectPath);
-     } else if (user.role === 'admin') {
-      navigate('/admin-dashboard');
-     } else if (user.role === 'vendor') {
-      const alreadyRegistered = localStorage.getItem('vendorRegistered') === 'true';
-     if (alreadyRegistered) {
-     navigate('/vendor-dashboard');
-     } else {
-     navigate('/vendor-register');
-   }
-}    else {
-  navigate('/');  // customer → home
+const vendorOnlyPaths = ['/vendor-register', '/vendor-dashboard'];
+const adminOnlyPaths = ['/admin-dashboard'];
+
+const isPathAllowedForRole = (path, role) => {
+  if (vendorOnlyPaths.includes(path) && role !== 'vendor') return false;
+  if (adminOnlyPaths.includes(path) && role !== 'admin') return false;
+  return true;
+};
+
+if (redirectPath && isPathAllowedForRole(redirectPath, user.role)) {
+  navigate(redirectPath);
+} else if (user.role === 'admin') {
+  navigate('/admin-dashboard');
+} else if (user.role === 'vendor') {
+  const alreadyRegistered = localStorage.getItem('vendorRegistered') === 'true';
+  if (alreadyRegistered) {
+    navigate('/vendor-dashboard');
+  } else {
+    navigate('/vendor-register');
+  }
+} else {
+  navigate('/');
 }
 
     } catch (err) {

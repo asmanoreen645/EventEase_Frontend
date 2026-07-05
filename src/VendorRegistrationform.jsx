@@ -53,7 +53,7 @@ const VendorRegister = () => {
 
     try {
       setLoading(true);
-      await axiosInstance.post("/vendors/register", data, {
+      await axiosInstance.post("/api/vendors/register", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setSuccess("Registration submitted! Please login to continue.");
@@ -104,7 +104,7 @@ const VendorRegister = () => {
             {loading ? "Submitting..." : "Submit Registration"}
           </button>
         </form>
-      </div>
+      </div>  
     </div>
   );
 };
