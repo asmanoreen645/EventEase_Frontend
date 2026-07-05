@@ -670,3 +670,91 @@ body {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+/* ===== STATS BAR SECTION ===== */
+.stats-bar-section {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  padding: 32px 24px;
+  flex-wrap: wrap;
+  text-align: center;
+}
+
+.stat-number {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #b4945a;
+}
+
+.stat-label {
+  font-size: 0.78rem;
+  color: #888;
+  margin-top: 2px;
+}
+/* ===== FAQ SECTION ===== */
+.faq-section {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 24px 64px;
+}
+
+.faq-section h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  text-align: center;
+  margin-bottom: 8px;
+  position: relative;
+  display: block;
+  padding-bottom: 12px;
+}
+
+.faq-section h2::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 2px;
+  background: #b4945a;
+}
+
+.faq-item {
+  border-bottom: 1px solid #e5ddd0;
+  padding: 14px 4px;
+}
+
+.faq-item summary {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #1a1a2e;
+  cursor: pointer;
+  list-style: none;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary::before {
+  content: "+";
+  display: inline-block;
+  width: 16px;
+  color: #b4945a;
+  font-weight: 700;
+}
+
+.faq-item[open] summary::before {
+  content: "−";
+}
+
+.faq-item p {
+  font-size: 0.85rem;
+  color: #777;
+  margin-top: 10px;
+  padding-left: 16px;
+  line-height: 1.6;
+}

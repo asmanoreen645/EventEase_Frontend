@@ -165,6 +165,37 @@ export default function Vendors() {
     ))}
   </div>
 </section>
+{/* STATS BAR */}
+<section className="stats-bar-section">
+  <div className="stat-item">
+    <div className="stat-number">50+</div>
+    <div className="stat-label">Vendors</div>
+  </div>
+  <div className="stat-item">
+    <div className="stat-number">6</div>
+    <div className="stat-label">Cities</div>
+  </div>
+  <div className="stat-item">
+    <div className="stat-number">4.8</div>
+    <div className="stat-label">Avg rating</div>
+  </div>
+</section>
+{/* FAQ */}
+<section className="faq-section">
+  <h2>Frequently Asked</h2>
+  <details className="faq-item">
+    <summary>How do I book a vendor?</summary>
+    <p>Chat with the vendor, confirm details, then pay a deposit to secure your date.</p>
+  </details>
+  <details className="faq-item">
+    <summary>Can I cancel a booking?</summary>
+    <p>Yes, cancellation terms are shown on each vendor profile before you book.</p>
+  </details>
+  <details className="faq-item">
+    <summary>How do payments work?</summary>
+    <p>Payments are made securely through the platform, split as a deposit and final balance.</p>
+  </details>
+</section>
     </div>
   );
 }
