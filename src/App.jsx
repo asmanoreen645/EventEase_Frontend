@@ -20,6 +20,7 @@ import BookingDetails from "./BookingDetails";
 import PackageSelection from "./PackageSelection";
 import Payment from "./Payment";
 import VendorsList from "./VendorsList";
+import CustomerDashboard from "./CustomerDashboard";
 
 // 👑 ADMIN IMPORTS
 import AdminLayout from "./Components/AdminLayout";
@@ -68,6 +69,8 @@ function UserLayout() {
         <Route path="/package" element={<ProtectedRoute> <PackageSelection /> </ProtectedRoute>} />
        <Route path="/payment" element={<ProtectedRoute> <Payment /> </ProtectedRoute>}/>
         <Route path="/Vendorslist" element={<VendorsList />} />
+        <Route path="/customer-dashboard" element={<ProtectedRoute> <CustomerDashboard /> </ProtectedRoute>} />
+
       </Routes>
       <Footer />
     </>
