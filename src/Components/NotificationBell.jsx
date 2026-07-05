@@ -13,7 +13,7 @@ function NotificationBell() {
         onClick={() => setIsOpen(!isOpen)}
         style={{ background: "none", border: "none", cursor: "pointer", position: "relative" }}
       >
-        <Bell size={24} />
+        <Bell size={24} color="#1a1a2e" />
         {unreadCount > 0 && (
           <span
             style={{
