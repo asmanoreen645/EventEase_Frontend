@@ -125,6 +125,27 @@ export default function Vendors() {
                  ))}
             </div>
       </section>
+      {/* HOW IT WORKS */}
+<section className="how-it-works-section">
+  <h2>How It Works</h2>
+  <div className="how-it-works-grid">
+    <div className="how-step">
+      <div className="how-step-number">1</div>
+      <h3>Browse services</h3>
+      <p>Explore vendors by category and city</p>
+    </div>
+    <div className="how-step">
+      <div className="how-step-number">2</div>
+      <h3>Compare and chat</h3>
+      <p>Check ratings, then message vendors directly</p>
+    </div>
+    <div className="how-step">
+      <div className="how-step-number">3</div>
+      <h3>Book and celebrate</h3>
+      <p>Pay securely and enjoy your event</p>
+    </div>
+  </div>
+</section>
     </div>
   );
 }

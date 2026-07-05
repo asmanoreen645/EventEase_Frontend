@@ -540,3 +540,72 @@ body {
     font-size: 1.7rem;
   }
 }
+/* ===== HOW IT WORKS SECTION ===== */
+.how-it-works-section {
+  padding: 40px 48px 64px;
+  text-align: center;
+}
+
+.how-it-works-section h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 12px;
+}
+
+.how-it-works-section h2::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 2px;
+  background: #b4945a;
+}
+
+.how-it-works-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  max-width: 720px;
+  margin: 32px auto 0;
+}
+
+.how-step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #1a3052;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+}
+
+.how-step h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 6px;
+}
+
+.how-step p {
+  font-size: 0.82rem;
+  color: #888;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .how-it-works-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
