@@ -19,7 +19,9 @@ import BookingDetails from "./BookingDetails";
 import PackageSelection from "./PackageSelection";
 import Payment from "./Payment";
 import VendorsList from "./VendorsList";
-import CustomerDashboard from "./Components/CustomerDashboard";
+
+// 👤 CUSTOMER DASHBOARD IMPORT (Path verifying)
+import CustomerDashboard from "./Components/CustomerDashboard"; 
 
 // 👑 ADMIN IMPORTS
 import AdminLayout from "./Components/AdminLayout";
@@ -31,7 +33,6 @@ import UserManagement from "./Components/UserManagement";
 import ChatLogs from "./Components/ChatLogs";
 import AdminProfile from "./Components/AdminProfile";
 
-// 🌐 USER LAYOUT
 function UserLayout() {
   return (
     <>
@@ -54,10 +55,8 @@ function UserLayout() {
         <Route path="payment" element={<Payment />} />
         <Route path="Vendorslist" element={<VendorsList />} />
         
-        {/* 👤 CUSTOMER DASHBOARD DIRECT ENTRY PATH */}
+        {/* CUSTOMER ROUTE */}
         <Route path="customer-dashboard" element={<CustomerDashboard />} />
-        
-        {/* Trailing duplicate catch lines removed to avoid duplicate key compilation warnings */}
       </Routes>
       <Footer />
     </>
@@ -70,8 +69,6 @@ function App() {
       <BookingProvider>
         <NotificationProvider>
           <Routes>
-            
-            {/* 🔐 ADMIN PANEL MODULE ROUTES */}
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
               <Route path="dashboard" element={<AdminDashboard />} />
@@ -87,10 +84,7 @@ function App() {
               <Route path="settings" element={<AdminDashboard />} />
               <Route path="profile" element={<AdminProfile />} />
             </Route>
-
-            {/* 🌐 MAIN WEBSITE LINK DETECTION */}
             <Route path="/*" element={<UserLayout />} />
-
           </Routes>
         </NotificationProvider>
       </BookingProvider>
