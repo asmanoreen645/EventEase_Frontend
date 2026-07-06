@@ -42,6 +42,7 @@ function Payment() {
 
   const handlePay = async (e) => {
     e.preventDefault();
+    console.log("VENDOR OBJECT:", vendor);
 
     const userId = localStorage.getItem("userId");
     if (!userId) {
