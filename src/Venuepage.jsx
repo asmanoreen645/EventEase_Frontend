@@ -59,11 +59,29 @@ export default function Venuepage() {
     <div className="vlp-page">
       {/* Page Header */}
       <div className="vlp-header">
-        <div className="vlp-header-content">
-          <h1>Find Your Perfect Venue</h1>
-          <p>{filteredVenues.length} venues available</p>
-        </div>
+  <div className="vlp-header-inner">
+    <div className="vlp-header-content">
+      <h1>Find Your Perfect Venue</h1>
+      <p>{filteredVenues.length} venues available</p>
+    </div>
+    <div className="vlp-header-stats">
+      <div className="vlp-stat">
+        <span className="vlp-stat-value">{dummyVenues.length}+</span>
+        <span className="vlp-stat-label">vendors</span>
       </div>
+      <div className="vlp-stat">
+        <span className="vlp-stat-value">
+          ★ {(dummyVenues.reduce((sum, v) => sum + (v.rating || 0), 0) / dummyVenues.length).toFixed(1)}
+        </span>
+        <span className="vlp-stat-label">avg rating</span>
+      </div>
+      <div className="vlp-stat">
+        <span className="vlp-stat-value">1k+</span>
+        <span className="vlp-stat-label">events booked</span>
+      </div>
+    </div>
+  </div>
+</div>
 
       <div className="vlp-body">
         {/* Sidebar Filters */}
