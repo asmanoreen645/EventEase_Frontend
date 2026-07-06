@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Venuepage.css";
 import { dummyVenues } from "./Components/VendorsData";
@@ -15,6 +15,30 @@ const locationData = {
 };
 
 export default function Venuepage() {
+  const [animatedVendors, setAnimatedVendors] = useState(0);
+  const [animatedRating, setAnimatedRating] = useState(0);
+  const [animatedEvents, setAnimatedEvents] = useState(0);
+
+  useEffect(() => {
+    const targetVendors = dummyVenues.length;
+    const targetRating = dummyVenues.reduce((sum, v) => sum + (v.rating || 0), 0) / dummyVenues.length;
+    const targetEvents = 1000;
+    const duration = 1000;
+    const steps = 30;
+    const interval = duration / steps;
+
+    let step = 0;
+    const timer = setInterval(() => {
+      step++;
+      const progress = step / steps;
+      setAnimatedVendors(Math.round(targetVendors * progress));
+      setAnimatedRating((targetRating * progress).toFixed(1));
+      setAnimatedEvents(Math.round(targetEvents * progress));
+      if (step >= steps) clearInterval(timer);
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, []);
   const [selectedType, setSelectedType] = useState("All");
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
@@ -65,21 +89,19 @@ export default function Venuepage() {
       <p>{filteredVenues.length} venues available</p>
     </div>
     <div className="vlp-header-stats">
-      <div className="vlp-stat">
-        <span className="vlp-stat-value">{dummyVenues.length}+</span>
-        <span className="vlp-stat-label">vendors</span>
-      </div>
-      <div className="vlp-stat">
-        <span className="vlp-stat-value">
-          ★ {(dummyVenues.reduce((sum, v) => sum + (v.rating || 0), 0) / dummyVenues.length).toFixed(1)}
-        </span>
-        <span className="vlp-stat-label">avg rating</span>
-      </div>
-      <div className="vlp-stat">
-        <span className="vlp-stat-value">1k+</span>
-        <span className="vlp-stat-label">events booked</span>
-      </div>
-    </div>
+  <div className="vlp-stat">
+    <span className="vlp-stat-value">{animatedVendors}+</span>
+    <span className="vlp-stat-label">vendors</span>
+  </div>
+  <div className="vlp-stat">
+    <span className="vlp-stat-value">★ {animatedRating}</span>
+    <span className="vlp-stat-label">avg rating</span>
+  </div>
+  <div className="vlp-stat">
+    <span className="vlp-stat-value">{animatedEvents}+</span>
+    <span className="vlp-stat-label">events booked</span>
+  </div>
+</div>
   </div>
 </div>
 
