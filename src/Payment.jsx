@@ -52,14 +52,13 @@ function Payment() {
     }
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // aaj ka din start se compare karo
+    today.setHours(0, 0, 0, 0);
     const selectedDate = new Date(bookingDetails.eventDate);
     if (selectedDate < today) {
       alert("Booking is not possible on a past date");
       return;
     }
 
-    // Pehle se tha - card fields validation
     if (!cardName || !cardNumber || !expiry || !cvc || !billingAddress) {
       alert(" Fill Card details and billing address.");
       return;
@@ -69,28 +68,42 @@ function Payment() {
       setLoading(true);
 
       const bookingData = {
-        userId: userId,        
-        vendorId: vendor._id, 
+        userId: userId,
+        vendorId: vendor._id,
         eventDate: bookingDetails.eventDate,
         totalAmount: totalPrice,
       };
 
-      const response = await API.post('/api/bookings/book', bookingData);   
-
+      const response = await API.post('/api/bookings/book', bookingData);
       console.log("Booking Response:", response.data);
 
+      // Booking successful ho chuki hai - ab isse alag block treat karo.
+      // Chahe email fail ho jaye, user ko "booking failed" nahi dikhna chahiye.
       if (response.data.success) {
-        const userEmail = localStorage.getItem('userEmail');
-        await API.post('/api/notifications/send-email', {
-          to: userEmail,
-          subject: "EventEase - Booking Confirmed!",
-          text: `Assalam o Alaikum! Aapki booking ${vendor.name} ke sath confirm ho gayi. Event date: ${bookingDetails.eventDate}. Total amount: PKR ${totalPrice}`
-        });
-        alert("Booking confirmed! Email sent");
+        // Email + in-app notification ko ALAG try-catch me rakha,
+        // taake iski failure booking ki success ko override na kare.
+        try {
+          const userEmail = localStorage.getItem('userEmail');
+
+          await API.post('/api/notifications/send-email', {
+            userId: userId,
+            to: userEmail || undefined, // agar email na mile to bhi in-app notification save ho jayegi
+            subject: "EventEase - Booking Confirmed!",
+            text: `Assalam o Alaikum! Aapki booking ${vendor.name} ke sath confirm ho gayi. Event date: ${bookingDetails.eventDate}. Total amount: PKR ${totalPrice}`,
+            title: "Booking Confirmed",
+            type: "booking"
+          });
+        } catch (notifyErr) {
+          // Sirf console me log karo - user ko is se koi farq nahi parhna chahiye
+          console.error("Notification send failed (booking still confirmed):", notifyErr);
+        }
+
+        alert("Booking confirmed!");
         navigate("/");
       }
 
     } catch (err) {
+      // Ab yahan sirf ASLI booking errors aayenge, email ki wajah se nahi
       console.error("Booking error:", err);
       alert(err.response?.data?.message || "Booking failed! Please try again.");
     } finally {
