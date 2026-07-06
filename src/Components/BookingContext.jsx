@@ -18,16 +18,20 @@ export function BookingProvider({ children }) {
   // Final total price (package + extras, ya per-head x guests)
   const [totalPrice, setTotalPrice] = useState(0);
 
+  const [bookingId, setBookingId] = useState(null);
+
   const value = {
-    vendor,
-    setVendor,
-    bookingDetails,
-    setBookingDetails,
-    selectedPackage,
-    setSelectedPackage,
-    totalPrice,
-    setTotalPrice,
-  };
+  vendor,
+  setVendor,
+  bookingDetails,
+  setBookingDetails,
+  selectedPackage,
+  setSelectedPackage,
+  totalPrice,
+  setTotalPrice,
+  bookingId,
+  setBookingId,
+};
 
   return (
     <BookingContext.Provider value={value}>

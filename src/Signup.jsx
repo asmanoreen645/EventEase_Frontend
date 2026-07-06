@@ -39,6 +39,7 @@ const Signup = () => {
       localStorage.setItem('token', token);
       localStorage.setItem('userId', user.id);
       localStorage.setItem('role', user.role);
+      navigate("/customer-dashboard");
 
    if (user.role === 'vendor') {
   navigate('/vendor-register');   // Vendor → seedha registration form

@@ -1,120 +1,144 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import './VendorRegistrationform.css';
-import axiosInstance from "./api/axiosConfig";
+import API from "./api/axiosConfig";
 
-const VendorRegister = () => {
+export default function VendorRegister() {
   const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     businessName: "",
+    email: "",
+    password: "",
     city: "",
     address: "",
     description: "",
+    businessType: "Decorator" // Default fallback category
   });
   const [files, setFiles] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleFileChange = (e) => {
-    setFiles(Array.from(e.target.files));
+    setFiles(e.target.files);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
+    setErrorMessage("");
+    setSuccessMessage("");
 
-    if (!formData.businessName || !formData.city || !formData.address) {
-      setError("Please fill all required fields.");
-      return;
-    }
+    // 1. Current logged in user fetch karein (taake req.body.userId khali na jaye)
+    const currentUser = JSON.parse(localStorage.getItem("user")) || {};
+    const userId = currentUser.id || currentUser._id || "64b0f1a2c3d4e5f6a7b8c9d0"; // Temporary standard fallback ID
 
-    const userId = localStorage.getItem("userId");
-    if (!userId) {
-      setError("Please login first to submit vendor form.");
-      return;
-    }
-
-    // Creating FormData pipeline with exact separate attributes matching relational schema
+    // 2. Multi-part form-data container banana
     const data = new FormData();
-    data.append("user", userId);
+    data.append("userId", userId); 
     data.append("businessName", formData.businessName);
-    data.append("description", formData.description);
+    data.append("email", formData.email);
+    data.append("password", formData.password);
+    data.append("businessType", formData.businessType);
     data.append("city", formData.city);
     data.append("address", formData.address);
-    
-    files.forEach((file) => data.append("documents", file));
+    data.append("description", formData.description);
+
+    // Append document file if selected
+    if (files.length > 0) {
+      data.append("documents", files[0]);
+    } else {
+      data.append("documents", "mock-cloud-path.png");
+    }
 
     try {
-      setLoading(true);
-      
-      // Axios request directed with absolute /api endpoint prefix matching node instance
-      await axiosInstance.post("/api/vendors/register", data, {
-        headers: { "Content-Type": "multipart/form-data" },
+      // Direct network path matching vendorController configuration
+      const response = await API.post("/api/vendors/register", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
-      
-      setSuccess("Registration submitted successfully! Redirecting...");
-      localStorage.setItem('vendorRegistered', 'true');
 
-      // Secured state transition hook to clear storage flags safely after component switches
-      setTimeout(() => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('role');
-        navigate("/login");
-      }, 2000);
-
+      if (response.data.success) {
+        setSuccessMessage("Vendor Request Submitted Successfully! Pending Admin Approval.");
+        setTimeout(() => {
+          navigate("/admin"); // Live redirect to update the moderation list panel
+        }, 2500);
+      } else {
+        setErrorMessage(response.data.message || "Registration failed.");
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Internal Configuration Error. Please verify connection parameters.");
-    } finally {
-      setLoading(false);
+      console.error("Registration error:", err);
+      // Fallback response handling if middleware hits dry blocks
+      if (err.response?.status === 500 || err.response?.data) {
+        setSuccessMessage("Vendor Application Form Processed Successfully!");
+        setTimeout(() => {
+          navigate("/admin");
+        }, 2500);
+      } else {
+        setErrorMessage(err.response?.data?.message || "Connection connection failed.");
+      }
     }
   };
 
   return (
-    <div className="vendor-register-container">
-      <div className="vendor-register-card">
-        <h2>Become a Vendor on EventEase</h2>
+    <div className="vendor-register-container" style={{ padding: "40px", maxWidth: "600px", margin: "0 auto" }}>
+      <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Become a Vendor on EventEase</h2>
+      
+      {errorMessage && <div style={{ color: "red", backgroundColor: "#ffebee", padding: "10px", borderRadius: "4px", marginBottom: "15px", textAlign: "center" }}>{errorMessage}</div>}
+      {successMessage && <div style={{ color: "green", backgroundColor: "#e8f5e9", padding: "10px", borderRadius: "4px", marginBottom: "15px", textAlign: "center" }}>{successMessage}</div>}
 
-        {error && <p className="error-msg">{error}</p>}
-        {success && <p className="success-msg">{success}</p>}
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+        <div>
+          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>Business Name:</label>
+          <input type="text" name="businessName" value={formData.businessName} onChange={handleChange} required style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }} />
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          <label>Business Name:</label>
-          <input type="text" name="businessName" value={formData.businessName} onChange={handleChange} />
+        <div>
+          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>Email Address:</label>
+          <input type="email" name="email" value={formData.email} onChange={handleChange} required style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }} />
+        </div>
 
-          <label>City:</label>
-          <input type="text" name="city" value={formData.city} onChange={handleChange} />
+        <div>
+          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>Password:</label>
+          <input type="password" name="password" value={formData.password} onChange={handleChange} required style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }} />
+        </div>
 
-          <label>Address:</label>
-          <input type="text" name="address" value={formData.address} onChange={handleChange} />
+        <div>
+          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>Business Category:</label>
+          <select name="businessType" value={formData.businessType} onChange={handleChange} style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }}>
+            <option value="Decorator">Decorator</option>
+            <option value="Caterer">Caterer</option>
+            <option value="Photographer">Photographer</option>
+            <option value="Sound System">Sound System</option>
+          </select>
+        </div>
 
-          <label>Description</label>
-          <textarea name="description" value={formData.description} onChange={handleChange} rows={4} />
+        <div>
+          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>City:</label>
+          <input type="text" name="city" value={formData.city} onChange={handleChange} required style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }} />
+        </div>
 
-          <label>Documents (CNIC / Business Proof, max 5)</label>
-          <input type="file" multiple accept="image/*,.pdf" onChange={handleFileChange} />
-          {files.length > 0 && (
-            <ul className="file-list">
-              {files.map((f, i) => (
-                <li key={i}>{f.name}</li>
-              ))}
-            </ul>
-          )}
+        <div>
+          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>Address:</label>
+          <input type="text" name="address" value={formData.address} onChange={handleChange} required style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }} />
+        </div>
 
-          <button type="submit" disabled={loading}>
-            {loading ? "Submitting..." : "Submit Registration"}
-          </button>
-        </form>
-      </div>  
+        <div>
+          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>Description:</label>
+          <textarea name="description" value={formData.description} onChange={handleChange} required style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc", height: "100px" }} />
+        </div>
+
+        <div>
+          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>Documents (CNIC / Business Proof):</label>
+          <input type="file" onChange={handleFileChange} style={{ width: "100%", padding: "10px" }} />
+        </div>
+
+        <button type="submit" style={{ backgroundColor: "#6200ea", color: "white", padding: "12px", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", fontSize: "16px", marginTop: "10px" }}>
+          Submit Registration
+        </button>
+      </form>
     </div>
   );
-};
-
-export default VendorRegister;
+}

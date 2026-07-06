@@ -34,7 +34,7 @@ const LoginForm = () => {
       const redirectPath = location.state?.from;
 
 const vendorOnlyPaths = ['/vendor-register', '/vendor-dashboard'];
-const adminOnlyPaths = ['/admin-dashboard'];
+const adminOnlyPaths = ['/admin'];
 
 const isPathAllowedForRole = (path, role) => {
   if (vendorOnlyPaths.includes(path) && role !== 'vendor') return false;
@@ -45,7 +45,7 @@ const isPathAllowedForRole = (path, role) => {
 if (redirectPath && isPathAllowedForRole(redirectPath, user.role)) {
   navigate(redirectPath);
 } else if (user.role === 'admin') {
-  navigate('/admin-dashboard');
+  navigate('/admin');
 } else if (user.role === 'vendor') {
   const alreadyRegistered = localStorage.getItem('vendorRegistered') === 'true';
   if (alreadyRegistered) {

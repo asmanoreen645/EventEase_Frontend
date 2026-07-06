@@ -83,7 +83,7 @@ export default function ChatPage() {
       setLoadingVendors(true);
       try {
         // Backend route: GET /api/vendors (getAllVendors)
-        const res = await API.get("/api/vendors");
+       const res = await API.get("/api/vendors/search");
         const vendorList = res.data.vendors || res.data.data || res.data;
 
         if (!Array.isArray(vendorList) || vendorList.length === 0) {
@@ -93,28 +93,28 @@ export default function ChatPage() {
         // Real vendor data ko sidebar ke structure mein map karen
         // ⚠️ Field names apne VendorProfile schema ke mutabiq check/adjust karen
         const formatted = vendorList.map((v) => ({
-          id: v._id,
-          vendorId: v._id,
-          name: v.businessName || v.name || "Unnamed Vendor",
-          type: v.category?.toLowerCase().includes("photo")
-            ? "photo"
-            : v.category?.toLowerCase().includes("cater")
-            ? "cat"
-            : v.category?.toLowerCase().includes("decor")
-            ? "dec"
-            : "other",
-          icon: v.category?.toLowerCase().includes("photo")
-            ? "photo_camera"
-            : v.category?.toLowerCase().includes("cater")
-            ? "restaurant"
-            : v.category?.toLowerCase().includes("decor")
-            ? "yard"
-            : "storefront",
-          location: v.city || v.location || "N/A",
-          price: v.startingPrice ? `PKR ${v.startingPrice}` : "Contact for price",
-          verified: v.status === "approved" || v.verified === true,
-          online: false, // future feature — abhi ke liye default false
-        }));
+  id: v._id,
+  vendorId: v._id,
+  name: v.businessName || "Unnamed Vendor",
+  type: (v.category || "").toLowerCase().includes("photo")
+    ? "photo"
+    : (v.category || "").toLowerCase().includes("cater")
+    ? "cat"
+    : (v.category || "").toLowerCase().includes("decor")
+    ? "dec"
+    : "other",
+  icon: (v.category || "").toLowerCase().includes("photo")
+    ? "photo_camera"
+    : (v.category || "").toLowerCase().includes("cater")
+    ? "restaurant"
+    : (v.category || "").toLowerCase().includes("decor")
+    ? "yard"
+    : "storefront",
+  location: v.location?.city || "N/A",
+  price: "Contact for price",
+  verified: v.isVerified === true,
+  online: false,
+}));
 
         setConversations(formatted);
         setUsingDummy(false);
