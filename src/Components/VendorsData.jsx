@@ -46,7 +46,7 @@ const dummyVenues = [
     type: "Hotel",
     eventTypes: ["Wedding", "Corporate"],
     description: "Elegant ballroom in the heart of Islamabad.",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=280&fit=crop",
+    image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&h=280&fit=crop",
     topPick: false,
     bookedDates: ["2026-06-06", "2026-06-08", "2026-06-22"],
   },
