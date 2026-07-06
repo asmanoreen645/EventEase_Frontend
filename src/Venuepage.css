@@ -7,11 +7,43 @@
 
 /* ===== HEADER ===== */
 .vlp-header {
-  background: linear-gradient(135deg, #1a3c6e 0%, #2563a8 100%);
-  padding: 48px 40px 36px;
-  color: white;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 32px 40px;
 }
 
+.vlp-header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.vlp-header-stats {
+  display: flex;
+  gap: 24px;
+}
+
+.vlp-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vlp-stat-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a3c6e;
+}
+
+.vlp-stat-label {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin-top: 2px;
+}
 .vlp-header-content h1 {
   font-size: 2.2rem;
   font-weight: 700;
