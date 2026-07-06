@@ -69,8 +69,7 @@ function Payment() {
 
       const bookingData = {
         userId: userId,        
-        serviceId: vendor.id,
-        vendorId: vendor.id,
+        vendorId: vendor._id, 
         eventDate: bookingDetails.eventDate,
         totalAmount: totalPrice,
       };
