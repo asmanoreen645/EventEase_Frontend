@@ -138,15 +138,9 @@ const [serviceSlide, setServiceSlide] = useState(0);
         </div>
       </nav>
       <section className="ee-hero">
-  <div className="ee-hero-slider">
-    {heroImages.map((img, i) => (
-      <div
-        key={i}
-        className={`ee-hero-slide ${i === currentSlide ? "active" : i === (currentSlide - 1 + heroImages.length) % heroImages.length ? "prev" : ""}`}
-        style={{ backgroundImage: `url(${img})` }}
-      />
-    ))}
-  </div>
+  <video className="ee-hero-video" autoPlay loop muted playsInline>
+    <source src="/hero-video.mp4" type="video/mp4" />
+  </video>
   <div className="ee-hero-overlay" />
   <div className="ee-hero-content">
      {/* Trust Badge */}
