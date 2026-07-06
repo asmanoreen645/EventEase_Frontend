@@ -487,3 +487,32 @@
     font-size: 1.6rem;
   }
 }
+/* ===== PILL FILTERS ===== */
+.vlp-pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.vlp-pill {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid #dde2ee;
+  background: #fff;
+  color: #555;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.vlp-pill:hover {
+  border-color: #2563a8;
+  color: #2563a8;
+}
+
+.vlp-pill.active {
+  background: #2563a8;
+  border-color: #2563a8;
+  color: #fff;
+  font-weight: 600;
+}

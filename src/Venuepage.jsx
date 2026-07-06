@@ -118,18 +118,19 @@ export default function Venuepage() {
 
           {/* Venue Type */}
           <div className="vlp-filter-section">
-          <h4>Select Services</h4>
-          {VendorsType.map((type) => (
-          <label key={type} className="vlp-checkbox">
-          <input
-            type="checkbox"
-             checked={selectedEvents.includes(type)}
-              onChange={() => toggleEventType(type)}
-              />
-              <span>{type}</span>
-              </label>
-               ))}
-             </div>
+  <h4>Select Services</h4>
+  <div className="vlp-pill-group">
+    {VendorsType.map((type) => (
+      <button
+        key={type}
+        className={`vlp-pill ${selectedEvents.includes(type) ? "active" : ""}`}
+        onClick={() => toggleEventType(type)}
+      >
+        {type}
+      </button>
+    ))}
+  </div>
+</div>
           <div className="vlp-filter-section">
             <h4>Venue Type</h4>
             {venueTypes.map((type) => (
