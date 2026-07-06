@@ -42,6 +42,7 @@ function Payment() {
 
   const handlePay = async (e) => {
     e.preventDefault();
+    console.log("VENDOR OBJECT:", vendor);
 
     const userId = localStorage.getItem("userId");
     if (!userId) {
@@ -69,8 +70,7 @@ function Payment() {
 
       const bookingData = {
         userId: userId,        
-        serviceId: vendor.id,
-        vendorId: vendor.id,
+        vendorId: vendor._id, 
         eventDate: bookingDetails.eventDate,
         totalAmount: totalPrice,
       };

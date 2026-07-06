@@ -22,7 +22,7 @@ function BookingDetails() {
     return (
       <div className="booking-page">
         <div className="booking-card">
-          <p>Pehle koi vendor select karo.</p>
+          <p>firstly select any vendor.</p>
           <button className="btn-next" onClick={() => navigate("/services")}>
             Back to Vendors
           </button>
@@ -45,15 +45,16 @@ function BookingDetails() {
       return;
     }
 
+    // Phone number validation
+    const phoneRegex = /^03\d{9}$/;
+    if (!phoneRegex.test(form.contact)) {
+      alert("Please write correct phone number (e.g. 03001234567)");
+      return;
+    }
+
     setBookingDetails(form);
     navigate("/Package");
   };
-  const phoneRegex = /^03\d{9}$/;
-
-if (!phoneRegex.test(form.contact)) {
-   alert("write correct phone number");
-   return;
-}
 
   return (
     <div className="booking-page">
@@ -111,12 +112,12 @@ if (!phoneRegex.test(form.contact)) {
             <div className="form-group">
               <label>Event Date</label>
               <input
-              type="date"
-              name="eventDate"
-              min={new Date().toISOString().split("T")[0]}
-             value={form.eventDate}
-             onChange={handleChange}
-             />
+                type="date"
+                name="eventDate"
+                min={new Date().toISOString().split("T")[0]}
+                value={form.eventDate}
+                onChange={handleChange}
+              />
             </div>
 
             <div className="form-group">
@@ -133,10 +134,11 @@ if (!phoneRegex.test(form.contact)) {
             <div className="form-group">
               <label>Guest Count</label>
               <input
-               type="number"
-               min="1"
-               value={form.guestCount}
-               onChange={handleChange}
+                type="number"
+                min="1"
+                name="guestCount"
+                value={form.guestCount}
+                onChange={handleChange}
               />
             </div>
 
