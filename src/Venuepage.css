@@ -7,12 +7,41 @@
 
 /* ===== HEADER ===== */
 .vlp-header {
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(160deg, #0c0803 0%, #1a1007 60%, #241508 100%);
   padding: 32px 40px;
 }
 
+.vlp-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, rgba(201,168,76,0.9), transparent),
+    radial-gradient(1.5px 1.5px at 90px 60px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(2px 2px at 160px 20px, rgba(201,168,76,0.7), transparent),
+    radial-gradient(1px 1px at 230px 80px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(2px 2px at 300px 40px, rgba(201,168,76,0.8), transparent),
+    radial-gradient(1.5px 1.5px at 400px 70px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(2px 2px at 480px 15px, rgba(201,168,76,0.7), transparent),
+    radial-gradient(1px 1px at 550px 55px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(2px 2px at 650px 35px, rgba(201,168,76,0.8), transparent),
+    radial-gradient(1.5px 1.5px at 750px 65px, rgba(255,255,255,0.6), transparent);
+  background-repeat: repeat;
+  background-size: 800px 120px;
+  animation: sparkleMove 8s linear infinite;
+  opacity: 0.9;
+}
+
+@keyframes sparkleMove {
+  0% { background-position: 0 0; }
+  100% { background-position: 800px 0; }
+}
+
 .vlp-header-inner {
+  position: relative;
+  z-index: 2;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -36,27 +65,31 @@
 .vlp-stat-value {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1a3c6e;
+  color: #d4aa6a;
 }
 
 .vlp-stat-label {
   font-size: 0.7rem;
-  color: #9ca3af;
+  color: rgba(255,255,255,0.5);
   margin-top: 2px;
 }
+
 .vlp-header-content h1 {
+  font-family: 'Playfair Display', serif;
   font-size: 2.2rem;
   font-weight: 700;
+  color: #fff;
   margin: 0 0 8px 0;
   letter-spacing: -0.5px;
 }
 
 .vlp-header-content p {
   font-size: 1rem;
-  opacity: 0.85;
+  color: rgba(255,255,255,0.7);
+  opacity: 1;
   margin: 0;
 }
-
+ 
 /* ===== BODY LAYOUT ===== */
 .vlp-body {
   display: flex;
