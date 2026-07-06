@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useBooking } from "./Components/BookingContext";
+import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js"; // CHANGE: naya import - Stripe hooks aur CardElement
 import "./BookingDetails.css";
 import "./Payment.css";
 import API from './api/axiosConfig';
@@ -8,21 +9,35 @@ import API from './api/axiosConfig';
 const PLATFORM_FEE = 600;
 const ADVANCE_PERCENT = 0.3;
 
+// CHANGE: naya object - CardElement ki styling 
+const cardElementOptions = {
+  style: {
+    base: {
+      fontSize: "16px",
+      color: "#1a1a1a",
+      fontFamily: "inherit",
+      "::placeholder": { color: "#999" },
+    },
+    invalid: { color: "#e5424d" },
+  },
+};
+
 function Payment() {
   const navigate = useNavigate();
+  const stripe = useStripe();       
+  const elements = useElements();  
   const {
-  vendor,
-  bookingDetails,
-  selectedPackage,
-  totalPrice,
-} = useBooking();
+    vendor,
+    bookingDetails,
+    selectedPackage,
+    totalPrice,
+  } = useBooking();
 
   const [cardName, setCardName] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvc, setCvc] = useState("");
+  // CHANGE: cardNumber, expiry, cvc states HATA DIYE - Stripe CardElement khud ye manage karta hai
   const [billingAddress, setBillingAddress] = useState("");
   const [loading, setLoading] = useState(false);
+  const [cardError, setCardError] = useState(""); // CHANGE: naya state - Stripe ka error message dikhane ke liye
 
   if (!vendor || !bookingDetails || !selectedPackage) {
     return (
@@ -42,7 +57,7 @@ function Payment() {
 
   const handlePay = async (e) => {
     e.preventDefault();
-    console.log("VENDOR OBJECT:", vendor);
+    setCardError(""); 
 
     const userId = localStorage.getItem("userId");
     if (!userId) {
@@ -52,43 +67,102 @@ function Payment() {
     }
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // aaj ka din start se compare karo
+    today.setHours(0, 0, 0, 0);
     const selectedDate = new Date(bookingDetails.eventDate);
     if (selectedDate < today) {
       alert("Booking is not possible on a past date");
       return;
     }
 
-    // Pehle se tha - card fields validation
-    if (!cardName || !cardNumber || !expiry || !cvc || !billingAddress) {
-      alert(" Fill Card details and billing address.");
+    // ab sirf cardName aur billingAddress check ho rahe hain (card number/cvc Stripe khud validate karega)
+    if (!cardName || !billingAddress) {
+      alert("Fill cardholder name and billing address.");
+      return;
+    }
+
+    //  - Stripe.js abhi load ho raha ho to rukna
+    if (!stripe || !elements) {
+      alert("Payment system loading, thori dair rukein.");
       return;
     }
 
     try {
       setLoading(true);
 
+      // ===== STEP 1: Booking create kar0 =====
       const bookingData = {
-        userId: userId,        
-        vendorId: vendor._id, 
+        userId: userId,
+        vendorId: vendor._id,
         eventDate: bookingDetails.eventDate,
         totalAmount: totalPrice,
       };
 
-      const response = await API.post('/api/bookings/book', bookingData);   
+      const bookingResponse = await API.post('/api/bookings/book', bookingData);
+      console.log("Booking Response:", bookingResponse.data);
 
-      console.log("Booking Response:", response.data);
+      if (!bookingResponse.data.success) {
+        alert("Booking failed! Please try again.");
+        setLoading(false);
+        return;
+      }
 
-      if (response.data.success) {
+      // booking response se bookingId nikal rahe hain (payment API ko chahiye)
+      const bookingId = bookingResponse.data.booking?._id || bookingResponse.data._id;
+
+      // ===== STEP 2 Card details ko Stripe token mein convert karo =====
+      const cardElement = elements.getElement(CardElement);
+      const { token, error } = await stripe.createToken(cardElement, {
+        name: cardName,
+        address_line1: billingAddress,
+      });
+
+      if (error) {
+        // agar card declined/invalid ho - booking already ban chuki hai, lekin payment nahi hui
+        console.error("Stripe token error:", error);
+        setCardError(error.message);
+        alert("Card error: " + error.message);
+        setLoading(false);
+        return;
+      }
+
+      // ===== STEP 3 Backend ko token bhejo, actual charge ho =====
+      try {
+        const chargeResponse = await API.post('/api/payments/charge', {
+          bookingId: bookingId,
+          token: token.id,
+        });
+
+        console.log("Charge Response:", chargeResponse.data);
+
+        if (!chargeResponse.data.success) {
+          alert("Payment failed: " + (chargeResponse.data.message || "Please try again."));
+          setLoading(false);
+          return;
+        }
+      } catch (chargeErr) {
+        console.error("Charge error:", chargeErr);
+        alert(chargeErr.response?.data?.message || "Payment failed! Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      // ===== STEP 4: Notification bhejo (pehle jaisa try-catch, bas ab payment ke baad chalta hai) =====
+      try {
         const userEmail = localStorage.getItem('userEmail');
         await API.post('/api/notifications/send-email', {
-          to: userEmail,
+          userId: userId,
+          to: userEmail || undefined,
           subject: "EventEase - Booking Confirmed!",
-          text: `Assalam o Alaikum! Aapki booking ${vendor.name} ke sath confirm ho gayi. Event date: ${bookingDetails.eventDate}. Total amount: PKR ${totalPrice}`
+          text: `Assalam o Alaikum! Aapki booking ${vendor.name} ke sath confirm ho gayi aur payment successful hui. Event date: ${bookingDetails.eventDate}. Total amount: PKR ${totalPrice}`,
+          title: "Booking Confirmed",
+          type: "booking"
         });
-        alert("Booking confirmed! Email sent");
-        navigate("/");
+      } catch (notifyErr) {
+        console.error("Notification send failed (booking still confirmed):", notifyErr);
       }
+
+      alert("Booking confirmed! Payment successful.");
+      navigate("/");
 
     } catch (err) {
       console.error("Booking error:", err);
@@ -153,31 +227,15 @@ function Payment() {
             <label>Card information</label>
             <div className="card-info-box">
               <span className="card-badge">VISA</span>
-              <input
-                type="text"
-                className="card-number-input"
-                placeholder="1234 1234 1234 1234"
-                maxLength="19"
-                value={cardNumber}
-                onChange={(e) => setCardNumber(e.target.value)}
-              />
-              <input
-                type="text"
-                className="card-expiry-input"
-                placeholder="MM/YY"
-                maxLength="5"
-                value={expiry}
-                onChange={(e) => setExpiry(e.target.value)}
-              />
-              <input
-                type="text"
-                className="card-cvc-input"
-                placeholder="CVC"
-                maxLength="4"
-                value={cvc}
-                onChange={(e) => setCvc(e.target.value)}
-              />
+              {/* CHANGE: purane 3 inputs (number, expiry, cvc) hata kar ye single CardElement lagaya - PCI-safe */}
+              <div style={{ flex: 1, padding: "10px" }}>
+                <CardElement options={cardElementOptions} />
+              </div>
             </div>
+            {/*- Stripe error message yahan dikhega agar card invalid ho */}
+            {cardError && (
+              <p style={{ color: "#e5424d", fontSize: "13px", marginTop: "4px" }}>{cardError}</p>
+            )}
           </div>
 
           <div className="form-group form-group--full">
@@ -206,7 +264,8 @@ function Payment() {
             </div>
           </div>
 
-          <button type="submit" className="btn-pay" disabled={loading}>
+          {/* disabled condition mein !stripe add kiya - Stripe load hone tak button disabled rahega */}
+          <button type="submit" className="btn-pay" disabled={loading || !stripe}>
             {loading ? "Processing..." : `Confirm & Pay PKR ${totalDueToday.toLocaleString()}`}
           </button>
 
