@@ -1,13 +1,11 @@
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react"; 
 import { useBooking } from "./Components/BookingContext";
-import { dummyVenues } from "./Components/VendorsData";
 import VendorCalendar from "./Components/VendorCalendar";
 import VendorMap from "./Components/VendorMap";
 import API from "./api/axiosConfig";
 import "./Photographer.css";
-
 
 const portfolioItems = [
   {
@@ -67,7 +65,6 @@ const services = [
 function VendorHeader({ vendor, navigate, onBookNow }) {
   return (
     <div className="vendor-header">
-      {/* Avatar */}
       <div className="vendor-header__avatar">
         <div
           className="vendor-header__avatar-img"
@@ -81,17 +78,13 @@ function VendorHeader({ vendor, navigate, onBookNow }) {
             borderRadius: "50%",
           }}
         >
-          <span
-            className="material-symbols-outlined"
-            style={{ fontSize: 40, color: "#9ca3af" }}
-          >
+          <span className="material-symbols-outlined" style={{ fontSize: 40, color: "#9ca3af" }}>
             photo_camera
           </span>
         </div>
         <div className="vendor-header__avatar-label">{vendor.avatarLabel}</div>
       </div>
 
-      {/* Info */}
       <div className="vendor-header__info">
         <div className="vendor-header__name-row">
           <h1 className="vendor-header__name">{vendor.name}</h1>
@@ -99,7 +92,8 @@ function VendorHeader({ vendor, navigate, onBookNow }) {
             <span className="material-symbols-outlined star" style={{ fontVariationSettings: "'FILL' 1" }}>
               star
             </span>
-            <span>{vendor.rating.toFixed(1)} Rating</span>
+            {/* vendor.rating undefined ho sakta hai real backend data mein, safe fallback lagaya */}
+            <span>{(vendor.rating ?? 0).toFixed(1)} Rating</span>
           </div>
         </div>
 
@@ -125,7 +119,7 @@ function VendorHeader({ vendor, navigate, onBookNow }) {
         </div>
 
         <div className="vendor-header__cta">
-          <button className="btn-chat" onClick={() => navigate(`/chat/${vendor.Id}`)}> Chat with Vendor </button>
+          <button className="btn-chat" onClick={() => navigate(`/chat/${vendor._id}`)}> Chat with Vendor </button>
           <button className="btn-book" onClick={onBookNow}>Book Now</button>
           <button className="btn-deposit">Pay Deposit</button>
         </div>
@@ -160,14 +154,11 @@ function PortfolioSection({ items }) {
               alt={item.caption || `Portfolio item ${item.UserId}`}
               className="portfolio-item__img"
             />
-
             {item.hasPlay && (
               <div className="portfolio-item__play">
-                
-                  <span className="material-symbols-outlined">play_arrow</span>
-                </div>
+                <span className="material-symbols-outlined">play_arrow</span>
+              </div>
             )}
-
             {item.caption && (
               <div className="portfolio-item__caption">{item.caption}</div>
             )}
@@ -197,7 +188,9 @@ function ServicesSection({ services }) {
     </section>
   );
 }
-function RatingSection({ vendorUserId }) {
+
+
+function RatingSection({ vendorId }) {
   const [userRating, setUserRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
@@ -214,7 +207,7 @@ function RatingSection({ vendorUserId }) {
     try {
       setLoading(true);
       await API.post("/api/ratings/give-rating", {
-        vendorId: vendorUserId.toString(),
+        vendorId: vendorId,
         customerId,
         stars,
       });
@@ -223,7 +216,8 @@ function RatingSection({ vendorUserId }) {
       alert("Rating submit ho gayi! Shukriya! ⭐");
     } catch (err) {
       console.error("Rating error:", err);
-      alert("Rating submit nahi hui. Dobara try karo.");
+      // CHANGE: backend ka asal error message dikhana, taake future debugging aasan ho
+      alert(err.response?.data?.message || "Rating submit nahi hui. Dobara try karo.");
     } finally {
       setLoading(false);
     }
@@ -242,7 +236,7 @@ function RatingSection({ vendorUserId }) {
         Rate this Vendor
       </h3>
       <p style={{ marginBottom: "14px", color: "#6b7280", fontSize: "13px" }}>
-        How was your experience?click on stars!
+        How was your experience? click on stars!
       </p>
 
       {ratingSubmitted ? (
@@ -281,31 +275,61 @@ function getCategoryFromType(type) {
   const t = (type || "").toLowerCase();
   if (t.includes("photo")) return "photographer";
   if (t.includes("decor")) return "decorator";
-  return "venue"; // Marquee, Hotel, Farmhouse, Hall, Convention Centre, Caterers
+  return "venue";
 }
+
 export default function VendorProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { setVendor } = useBooking();
-  const vendor = dummyVenues.find((v) => v.UserId === Number(id));
-  console.log("Vendor found:", vendor);
-  
 
-  if (!vendor) return <p>Vendor not found</p>;
+  //  dummyVenues.find() ki jagah real backend fetch
+  const [vendor, setVendorData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchVendor = async () => {
+      try {
+        setLoading(true);
+        // /api/vendors/search se sab vendors laye
+        const response = await API.get("/api/vendors/search");
+        const allVendors = response.data.vendors || response.data.data || response.data;
+
+        const foundVendor = allVendors.find((v) => v._id === id);
+
+        if (!foundVendor) {
+          setError("Vendor not found");
+        } else {
+          setVendorData(foundVendor);
+        }
+      } catch (err) {
+        console.error("Vendor fetch error:", err);
+        setError("Failed to load vendor");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVendor();
+  }, [id]);
 
   const handleBookNow = () => {
-  setVendor({
-    id: vendor._id,
-    name: vendor.name,
-    category: getCategoryFromType(vendor.type),
-    price: vendor.price,
-  });
-  navigate("/details");
-};
+    setVendor({
+      id: vendor._id, 
+      name: vendor.name,
+      category: getCategoryFromType(vendor.type),
+      price: vendor.price,
+    });
+    navigate("/details");
+  };
+
+  // CHANGE: loading aur error states add kiye
+  if (loading) return <p style={{ padding: "40px", textAlign: "center" }}>Loading vendor...</p>;
+  if (error || !vendor) return <p style={{ padding: "40px", textAlign: "center" }}>Vendor not found</p>;
 
   return (
     <>
-      {/* Material Symbols Font */}
       <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet"
@@ -316,19 +340,19 @@ export default function VendorProfile() {
         <PortfolioSection items={portfolioItems} />
         <ServicesSection services={services} />
         <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginTop: "20px" }}>
-  <div>
-    <VendorCalendar vendor={vendor} />
-  </div>
+          <div>
+            <VendorCalendar vendor={vendor} />
+          </div>
+          <div style={{ flex: 1, minWidth: "300px" }}>
+            <h3 style={{ marginBottom: "10px", color: "#888", fontSize: "14px" }}>
+              VENDOR LOCATION
+            </h3>
+            <VendorMap />
+          </div>
+        </div>
 
-  <div style={{ flex: 1, minWidth: "300px" }}>
-    <h3 style={{ marginBottom: "10px", color: "#888", fontSize: "14px" }}>
-      VENDOR LOCATION
-    </h3>
-    <VendorMap />
-     </div>
-   </div>
-
-    <RatingSection vendorUserId={vendor.UserId} /> 
+        {/* CHANGE: prop ka naam vendorId, aur real _id pass ho raha hai */}
+        <RatingSection vendorId={vendor._id} />
       </main>
     </>
   );
