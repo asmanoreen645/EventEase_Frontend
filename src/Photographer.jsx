@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react"; 
+import { useState, useEffect } from "react";
 import { useBooking } from "./Components/BookingContext";
 import VendorCalendar from "./Components/VendorCalendar";
 import VendorMap from "./Components/VendorMap";
@@ -92,7 +92,6 @@ function VendorHeader({ vendor, navigate, onBookNow }) {
             <span className="material-symbols-outlined star" style={{ fontVariationSettings: "'FILL' 1" }}>
               star
             </span>
-            {/* vendor.rating undefined ho sakta hai real backend data mein, safe fallback lagaya */}
             <span>{(vendor.rating ?? 0).toFixed(1)} Rating</span>
           </div>
         </div>
@@ -189,7 +188,6 @@ function ServicesSection({ services }) {
   );
 }
 
-
 function RatingSection({ vendorId }) {
   const [userRating, setUserRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
@@ -216,7 +214,6 @@ function RatingSection({ vendorId }) {
       alert("Rating submit ho gayi! Shukriya! ⭐");
     } catch (err) {
       console.error("Rating error:", err);
-      // CHANGE: backend ka asal error message dikhana, taake future debugging aasan ho
       alert(err.response?.data?.message || "Rating submit nahi hui. Dobara try karo.");
     } finally {
       setLoading(false);
@@ -283,7 +280,6 @@ export default function VendorProfile() {
   const navigate = useNavigate();
   const { setVendor } = useBooking();
 
-  //  dummyVenues.find() ki jagah real backend fetch
   const [vendor, setVendorData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -292,7 +288,6 @@ export default function VendorProfile() {
     const fetchVendor = async () => {
       try {
         setLoading(true);
-        // /api/vendors/search se sab vendors laye
         const response = await API.get("/api/vendors/search");
         const allVendors = response.data.vendors || response.data.data || response.data;
 
@@ -316,7 +311,7 @@ export default function VendorProfile() {
 
   const handleBookNow = () => {
     setVendor({
-      id: vendor._id, 
+      id: vendor._id,
       name: vendor.name,
       category: getCategoryFromType(vendor.type),
       price: vendor.price,
@@ -324,7 +319,6 @@ export default function VendorProfile() {
     navigate("/details");
   };
 
-  // CHANGE: loading aur error states add kiye
   if (loading) return <p style={{ padding: "40px", textAlign: "center" }}>Loading vendor...</p>;
   if (error || !vendor) return <p style={{ padding: "40px", textAlign: "center" }}>Vendor not found</p>;
 
@@ -351,7 +345,6 @@ export default function VendorProfile() {
           </div>
         </div>
 
-        {/* CHANGE: prop ka naam vendorId, aur real _id pass ho raha hai */}
         <RatingSection vendorId={vendor._id} />
       </main>
     </>
