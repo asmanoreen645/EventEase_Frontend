@@ -40,7 +40,7 @@ export default function Admindashboard() {
       setStats(statsRes.data.stats);
 
       // 2. Pending Vendors Fetch
-      const vendorsRes = await API.get('/api/admin/pending-vendors');
+      const vendorsRes = await API.get('/api/admin/pending');
       setDbVendors(vendorsRes.data.data || []);
 
       // 3. System Users/Bookings Fetch (Fallback Array if Empty)
@@ -61,7 +61,7 @@ export default function Admindashboard() {
   const handleVerifyVendor = async (id, statusAction) => {
     try {
       // Calls PUT /api/admin/verify-vendor/:id from your adminController
-      await API.put(`/api/admin/verify-vendor/${id}`, { status: statusAction });
+      await API.put(`/api/admin/verify${id}`, { status: statusAction });
       alert(`Vendor status successfully updated to: ${statusAction}`);
       fetchDashboardData(); // Refresh list live from database
     } catch (err) {

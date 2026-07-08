@@ -9,7 +9,7 @@ export default function VendorApproval() {
   const fetchPendingVendors = () => {
     setLoading(true);
     setError(null);
-    API.get('/api/admin/pending-vendors')
+    API.get('/api/admin/pending')
       .then(res => {
         const fetchedData = res.data.data || res.data.vendors || [];
         setVendors(fetchedData);
@@ -28,7 +28,7 @@ export default function VendorApproval() {
 
   const updateStatus = async (id, status) => {
     try {
-      await API.put(`/api/admin/verify-vendor/${id}`, { status });
+      await API.put(`/api/admin/${id}/verify`, { status });
       alert(`Vendor application successfully ${status}!`);
       fetchPendingVendors(); // Real list dobara fetch karo taake sahi state dikhe
     } catch (err) {
