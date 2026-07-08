@@ -33,7 +33,7 @@ export default function Venuepage() {
           UserId: v._id,          // real ID (dummy cards bhi isi key ko use karte hain)
           _id: v._id,
           name: v.businessName || "Unnamed Vendor",
-          image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&q=80", // placeholder, real image field abhi backend mein nahi
+          image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&q=80", 
           type: v.category || "Decorators",
           rating: v.rating || 0,
           reviews: v.totalReviews || 0,
