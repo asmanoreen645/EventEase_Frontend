@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Venuepage.css";
 import { dummyVenues } from "./Components/VendorsData";
+import API from "./api/axiosConfig";
 
 const VendorsType = ["Photographers", "Caterers", "Decorators"];
 const venueTypes = ["All", "Marquee", "Hotel", "Farmhouse", "Hall", "Convention Centre"];
@@ -18,9 +19,45 @@ export default function Venuepage() {
   const [animatedVendors, setAnimatedVendors] = useState(0);
   const [animatedRating, setAnimatedRating] = useState(0);
   const [animatedEvents, setAnimatedEvents] = useState(0);
+  const [realVendors, setRealVendors] = useState([]);
+
+  // Fetch real vendors from backend
+  useEffect(() => {
+    const fetchRealVendors = async () => {
+      try {
+        const res = await API.get("/api/vendors/search");
+        const backendVendors = res.data.vendors || [];
+
+        // Real vendor data ko card ke expected shape mein map karo
+        const mapped = backendVendors.map((v) => ({
+          UserId: v._id,          // real ID (dummy cards bhi isi key ko use karte hain)
+          _id: v._id,
+          name: v.businessName || "Unnamed Vendor",
+          image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&q=80", // placeholder, real image field abhi backend mein nahi
+          type: v.category || "Decorators",
+          rating: v.rating || 0,
+          reviews: v.totalReviews || 0,
+          location: v.location?.city || "Location not set",
+          description: v.description || "No description provided.",
+          eventTypes: ["Wedding"],   // backend mein abhi ye field nahi, placeholder
+          price: v.price || 0,
+          country: "Pakistan",      // backend mein country field nahi, filter ke liye default
+          city: v.location?.city || "",
+          topPick: false,
+          isReal: true,             // taake pehchan sakein ye real vendor hai
+        }));
+
+        setRealVendors(mapped);
+      } catch (err) {
+        console.error("Real vendors fetch error:", err);
+      }
+    };
+
+    fetchRealVendors();
+  }, []);
 
   useEffect(() => {
-    const targetVendors = dummyVenues.length;
+    const targetVendors = dummyVenues.length + realVendors.length;
     const targetRating = dummyVenues.reduce((sum, v) => sum + (v.rating || 0), 0) / dummyVenues.length;
     const targetEvents = 1000;
     const duration = 1000;
@@ -38,7 +75,8 @@ export default function Venuepage() {
     }, interval);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [realVendors]);
+
   const [selectedType, setSelectedType] = useState("All");
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
@@ -60,7 +98,10 @@ export default function Venuepage() {
     setSelectedCity(""); // Reset city dropdown when country changes
   };
 
-  const filteredVenues = dummyVenues
+  // Real + Dummy vendors ek sath
+  const allVenues = [...realVendors, ...dummyVenues];
+
+  const filteredVenues = allVenues
     .filter((v) => {
       if (selectedType !== "All" && v.type !== selectedType) return false;
       if (selectedCountry && v.country !== selectedCountry) return false;
@@ -77,33 +118,34 @@ export default function Venuepage() {
       if (sortBy === "rating") return b.rating - a.rating;
       return 0;
     });
-     const navigate = useNavigate();
+
+  const navigate = useNavigate();
 
   return (
     <div className="vlp-page">
       {/* Page Header */}
       <div className="vlp-header">
-  <div className="vlp-header-inner">
-    <div className="vlp-header-content">
-      <h1>Find Your Perfect Venue</h1>
-      <p>{filteredVenues.length} venues available</p>
-    </div>
-    <div className="vlp-header-stats">
-  <div className="vlp-stat">
-    <span className="vlp-stat-value">{animatedVendors}+</span>
-    <span className="vlp-stat-label">vendors</span>
-  </div>
-  <div className="vlp-stat">
-    <span className="vlp-stat-value">★ {animatedRating}</span>
-    <span className="vlp-stat-label">avg rating</span>
-  </div>
-  <div className="vlp-stat">
-    <span className="vlp-stat-value">{animatedEvents}+</span>
-    <span className="vlp-stat-label">events booked</span>
-  </div>
-</div>
-  </div>
-</div>
+        <div className="vlp-header-inner">
+          <div className="vlp-header-content">
+            <h1>Find Your Perfect Venue</h1>
+            <p>{filteredVenues.length} venues available</p>
+          </div>
+          <div className="vlp-header-stats">
+            <div className="vlp-stat">
+              <span className="vlp-stat-value">{animatedVendors}+</span>
+              <span className="vlp-stat-label">vendors</span>
+            </div>
+            <div className="vlp-stat">
+              <span className="vlp-stat-value">★ {animatedRating}</span>
+              <span className="vlp-stat-label">avg rating</span>
+            </div>
+            <div className="vlp-stat">
+              <span className="vlp-stat-value">{animatedEvents}+</span>
+              <span className="vlp-stat-label">events booked</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="vlp-body">
         {/* Sidebar Filters */}
@@ -118,19 +160,19 @@ export default function Venuepage() {
 
           {/* Venue Type */}
           <div className="vlp-filter-section">
-  <h4>Select Services</h4>
-  <div className="vlp-pill-group">
-    {VendorsType.map((type) => (
-      <button
-        key={type}
-        className={`vlp-pill ${selectedEvents.includes(type) ? "active" : ""}`}
-        onClick={() => toggleEventType(type)}
-      >
-        {type}
-      </button>
-    ))}
-  </div>
-</div>
+            <h4>Select Services</h4>
+            <div className="vlp-pill-group">
+              {VendorsType.map((type) => (
+                <button
+                  key={type}
+                  className={`vlp-pill ${selectedEvents.includes(type) ? "active" : ""}`}
+                  onClick={() => toggleEventType(type)}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="vlp-filter-section">
             <h4>Venue Type</h4>
             {venueTypes.map((type) => (
@@ -149,8 +191,8 @@ export default function Venuepage() {
           {/* Location Filter Section (Country & City Dropdowns) */}
           <div className="vlp-filter-section">
             <h4>Select Country</h4>
-            <select 
-              value={selectedCountry} 
+            <select
+              value={selectedCountry}
               onChange={handleCountryChange}
               style={{
                 width: "100%",
@@ -167,11 +209,10 @@ export default function Venuepage() {
                 <option key={country} value={country}>{country}</option>
               ))}
             </select>
-            
 
             <h4>Select City</h4>
-            <select 
-              value={selectedCity} 
+            <select
+              value={selectedCity}
               onChange={(e) => setSelectedCity(e.target.value)}
               disabled={!selectedCountry}
               style={{
@@ -206,7 +247,6 @@ export default function Venuepage() {
               </label>
             ))}
           </div>
-          
 
           {/* Price Range */}
           <div className="vlp-filter-section">
@@ -282,7 +322,7 @@ export default function Venuepage() {
               </div>
             ) : (
               filteredVenues.map((venue) => (
-                <div key={venue.UserId} className="vlp-card">
+                <div key={venue._id || venue.UserId} className="vlp-card">
                   <div className="vlp-card-image">
                     <img src={venue.image} alt={venue.name} />
                     {venue.topPick && (
@@ -314,7 +354,12 @@ export default function Venuepage() {
                         <span className="vlp-price-label">Starting from</span>
                         <span className="vlp-price-value">PKR {venue.price.toLocaleString()}/head</span>
                       </div>
-                      <button className="vlp-details-btn" onClick={() => navigate(`/vendors/${venue.UserId}`)} > View Profile </button>
+                      <button
+                        className="vlp-details-btn"
+                        onClick={() => navigate(`/vendors/${venue._id || venue.UserId}`)}
+                      >
+                        View Profile
+                      </button>
                     </div>
                   </div>
                 </div>
