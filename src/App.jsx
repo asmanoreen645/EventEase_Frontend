@@ -19,6 +19,7 @@ import BookingDetails from "./BookingDetails";
 import PackageSelection from "./PackageSelection";
 import Payment from "./Payment";
 import VendorsList from "./VendorsList";
+import { AuthProvider } from "./Component/AuthContext";
 
 // 👤 CUSTOMER DASHBOARD IMPORT (Path verifying)
 import CustomerDashboard from "./Components/CustomerDashboard"; 
@@ -83,6 +84,7 @@ function App() {
               <Route path="commission" element={<AdminDashboard />} />
               <Route path="settings" element={<AdminDashboard />} />
               <Route path="profile" element={<AdminProfile />} />
+              <AuthProvider>  <App /> </AuthProvider>
             </Route>
             <Route path="/*" element={<UserLayout />} />
           </Routes>

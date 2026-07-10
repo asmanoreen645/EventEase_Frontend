@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './login.css';
 import { useNavigate, useLocation } from 'react-router-dom';
 import googleIcon from './google-icon.png';
+import { useAuth } from './Components/AuthContext'; 
 import API from './api/axiosConfig';
 
 const LoginForm = () => {
@@ -13,6 +14,7 @@ const LoginForm = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,10 +26,7 @@ const LoginForm = () => {
 
       const { token, user } = response.data;
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('userId', user.id);
-      localStorage.setItem('role', user.role); 
-      localStorage.setItem('userEmail', user.email);  
+      login(user, token);
 
       // 🔧 Agar user kisi specific page (chat/booking) se redirect hoke aya hai,
       // tw usay wapis wahin bhejna hai — role-based default se pehle check karo
