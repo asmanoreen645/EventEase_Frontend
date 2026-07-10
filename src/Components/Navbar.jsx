@@ -1,7 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import NotificationBell from "./NotificationBell";
-import { useAuth } from "./Components/AuthContext"; // apna actual path check kar lena
+import { useAuth } from "../Components/AuthContext"; // apna actual path check kar lena
 import "./Navbar.css";
 
 export default function Navbar() {
