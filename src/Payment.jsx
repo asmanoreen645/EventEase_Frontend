@@ -58,6 +58,7 @@ function Payment() {
   const handlePay = async (e) => {
     e.preventDefault();
     setCardError(""); 
+    console.log("selectedPackage check:", selectedPackage); 
 
     const userId = localStorage.getItem("userId");
     if (!userId) {
@@ -91,12 +92,11 @@ function Payment() {
 
       // ===== STEP 1: Booking create kar0 =====
       const bookingData = {
-        userId: userId,
-        vendorId: vendor._id,
-        eventDate: bookingDetails.eventDate,
-        totalAmount: totalPrice,
-      };
-
+     vendorId: vendor._id,
+     serviceId: selectedPackage._id,
+     eventDate: bookingDetails.eventDate,
+     totalAmount: totalPrice,
+};
       const bookingResponse = await API.post('/api/bookings/book', bookingData);
       console.log("Booking Response:", bookingResponse.data);
 
