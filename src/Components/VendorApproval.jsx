@@ -4,47 +4,37 @@ import API from "../api/axiosConfig";
 export default function VendorApproval() {
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const fetchPendingVendors = () => {
     setLoading(true);
-    API.get('/api/admin/vendors/pending')
+    setError(null);
+    API.get('/api/admin/pending')
       .then(res => {
-        // Checking backend response layers
-        const fetchedData = res.data.vendors || res.data.data || res.data;
-        
-        if (Array.isArray(fetchedData) && fetchedData.length > 0) {
-          setVendors(fetchedData);
-        } else {
-          // 🚀 FAIL-SAFE BACKUP: Agar database khali ho to live dynamic panels generate hon
-          setVendors([
-            { _id: "v1", name: "Zara Events Mandi", email: "zara@eventease.com", businessType: "Decorator", city: "Mandi Bahauddin" },
-            { _id: "v2", name: "MK Photography Studio", email: "mk@eventease.com", businessType: "Photography", city: "Lahore" },
-            { _id: "v3", name: "Royal Sound System", email: "royal@eventease.com", businessType: "Sound System", city: "Mandi Bahauddin" }
-          ]);
-        }
+        const fetchedData = res.data.data || res.data.vendors || [];
+        setVendors(fetchedData);
       })
       .catch(err => {
-        console.log("Using backup visual rendering pipeline");
-        // Fallback checks if endpoint hits CORS
-        setVendors([
-          { _id: "v1", name: "Zara Events Mandi", email: "zara@eventease.com", businessType: "Decorator", city: "Mandi Bahauddin" },
-          { _id: "v2", name: "MK Photography Studio", email: "mk@eventease.com", businessType: "Photography", city: "Lahore" },
-          { _id: "v3", name: "Royal Sound System", email: "royal@eventease.com", businessType: "Sound System", city: "Mandi Bahauddin" }
-        ]);
+        console.error("Pending vendors fetch error:", err);
+        setError("Failed to load pending vendors from server.");
+        setVendors([]);
       })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchPendingVendors();
   }, []);
 
   const updateStatus = async (id, status) => {
     try {
-      // Trying safe API triggers
-      await API.put(`/api/admin/vendors/${id}/status`, { status });
-    } catch (e) {
-      console.log("Mock approval trigger executed standard sync.");
+      await API.put(`/api/admin/${id}/verify`, { status });
+      alert(`Vendor application successfully ${status}!`);
+      fetchPendingVendors(); // Real list dobara fetch karo taake sahi state dikhe
+    } catch (err) {
+      console.error("Vendor status update error:", err);
+      alert("Failed to update vendor status. Please try again.");
     }
-    // Instantly remove card with smooth animation layout transition
-    setVendors(prev => prev.filter(v => v._id !== id));
-    alert(`Vendor application successfully ${status}!`);
   };
 
   return (
@@ -57,6 +47,8 @@ export default function VendorApproval() {
 
       {loading ? (
         <p style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>Syncing with database pipeline...</p>
+      ) : error ? (
+        <p style={{ padding: '20px', textAlign: 'center', color: '#ef4444', fontWeight: 'bold' }}>{error}</p>
       ) : vendors.length === 0 ? (
         <p style={{ padding: '20px', textAlign: 'center', color: '#10b981', fontWeight: 'bold' }}>✓ All pending vendor verification queues cleared!</p>
       ) : (
@@ -72,16 +64,16 @@ export default function VendorApproval() {
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
-                <button 
-                  onClick={() => updateStatus(v._id, 'approved')} 
+                <button
+                  onClick={() => updateStatus(v._id, 'approved')}
                   style={{ backgroundColor: '#10b981', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', transition: '0.2s' }}
                   onMouseOver={(e) => e.target.style.backgroundColor = '#059669'}
                   onMouseOut={(e) => e.target.style.backgroundColor = '#10b981'}
                 >
                   ✓ Approve
                 </button>
-                <button 
-                  onClick={() => updateStatus(v._id, 'rejected')} 
+                <button
+                  onClick={() => updateStatus(v._id, 'rejected')}
                   style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', transition: '0.2s' }}
                   onMouseOver={(e) => e.target.style.backgroundColor = '#dc2626'}
                   onMouseOut={(e) => e.target.style.backgroundColor = '#ef4444'}

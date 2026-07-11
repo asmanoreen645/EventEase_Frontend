@@ -3,6 +3,7 @@ import { BookingProvider } from "./Components/BookingContext";
 import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
 import { NotificationProvider } from "./Components/NotificationContext";
+import { AuthProvider } from "./Components/AuthContext";
 import Home from './Home';
 import Services from './Services';
 import Venuepage from './Venuepage';
@@ -65,30 +66,32 @@ function UserLayout() {
 
 function App() {
   return (
-    <HashRouter>
-      <BookingProvider>
-        <NotificationProvider>
-          <Routes>
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="analytics" element={<AdminDashboard />} />
-              <Route path="vendors" element={<VendorApproval />} />
-              <Route path="bookings" element={<AllBookings />} />
-              <Route path="payouts" element={<Payouts />} />
-              <Route path="users" element={<UserManagement />} />
-              <Route path="chats" element={<ChatLogs />} />
-              <Route path="disputes" element={<ChatLogs />} />
-              <Route path="alerts" element={<ChatLogs />} />
-              <Route path="commission" element={<AdminDashboard />} />
-              <Route path="settings" element={<AdminDashboard />} />
-              <Route path="profile" element={<AdminProfile />} />
-            </Route>
-            <Route path="/*" element={<UserLayout />} />
-          </Routes>
-        </NotificationProvider>
-      </BookingProvider>
-    </HashRouter>
+    <AuthProvider>
+      <HashRouter>
+        <BookingProvider>
+          <NotificationProvider>
+            <Routes>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="analytics" element={<AdminDashboard />} />
+                <Route path="vendors" element={<VendorApproval />} />
+                <Route path="bookings" element={<AllBookings />} />
+                <Route path="payouts" element={<Payouts />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="chats" element={<ChatLogs />} />
+                <Route path="disputes" element={<ChatLogs />} />
+                <Route path="alerts" element={<ChatLogs />} />
+                <Route path="commission" element={<AdminDashboard />} />
+                <Route path="settings" element={<AdminDashboard />} />
+                <Route path="profile" element={<AdminProfile />} />
+              </Route>
+              <Route path="/*" element={<UserLayout />} />
+            </Routes>
+          </NotificationProvider>
+        </BookingProvider>
+      </HashRouter>
+    </AuthProvider>
   );
 }
 

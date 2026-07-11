@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useBooking } from "./Components/BookingContext";
 import { dummyVenues } from "./Components/VendorsData";
 import VendorCalendar from "./Components/VendorCalendar";
@@ -99,7 +99,7 @@ function VendorHeader({ vendor, navigate, onBookNow }) {
             <span className="material-symbols-outlined star" style={{ fontVariationSettings: "'FILL' 1" }}>
               star
             </span>
-            <span>{vendor.rating.toFixed(1)} Rating</span>
+            <span>{Number(vendor.rating || 0).toFixed(1)} Rating</span>
           </div>
         </div>
 
@@ -125,7 +125,7 @@ function VendorHeader({ vendor, navigate, onBookNow }) {
         </div>
 
         <div className="vendor-header__cta">
-          <button className="btn-chat" onClick={() => navigate(`/chat/${vendor.Id}`)}> Chat with Vendor </button>
+          <button className="btn-chat" onClick={() => navigate(`/chat/${vendor._id}`)}> Chat with Vendor </button>
           <button className="btn-book" onClick={onBookNow}>Book Now</button>
           <button className="btn-deposit">Pay Deposit</button>
         </div>
@@ -163,9 +163,8 @@ function PortfolioSection({ items }) {
 
             {item.hasPlay && (
               <div className="portfolio-item__play">
-                
-                  <span className="material-symbols-outlined">play_arrow</span>
-                </div>
+                <span className="material-symbols-outlined">play_arrow</span>
+              </div>
             )}
 
             {item.caption && (
@@ -197,11 +196,19 @@ function ServicesSection({ services }) {
     </section>
   );
 }
-function RatingSection({ vendorUserId }) {
+
+// ─── RATING SECTION ────────────────────────────────────────────────────────────
+function isValidObjectId(id) {
+  return typeof id === "string" && /^[0-9a-fA-F]{24}$/.test(id);
+}
+
+function RatingSection({ vendorId }) {
   const [userRating, setUserRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const isDummy = !isValidObjectId(vendorId);
 
   const handleRating = async (stars) => {
     const customerId = localStorage.getItem("userId");
@@ -211,10 +218,15 @@ function RatingSection({ vendorUserId }) {
       return;
     }
 
+    if (isDummy) {
+      alert("Ye demo vendor hai, real rating sirf asli vendors par kaam karegi.");
+      return;
+    }
+
     try {
       setLoading(true);
       await API.post("/api/ratings/give-rating", {
-        vendorId: vendorUserId.toString(),
+        vendorId,
         customerId,
         stars,
       });
@@ -222,8 +234,10 @@ function RatingSection({ vendorUserId }) {
       setRatingSubmitted(true);
       alert("Rating submit ho gayi! Shukriya! ⭐");
     } catch (err) {
-      console.error("Rating error:", err);
-      alert("Rating submit nahi hui. Dobara try karo.");
+      console.error("Rating error:", err.response?.data || err.message);
+      alert(
+        err.response?.data?.message || "Rating submit nahi hui. Dobara try karo."
+      );
     } finally {
       setLoading(false);
     }
@@ -241,8 +255,15 @@ function RatingSection({ vendorUserId }) {
       <h3 style={{ marginBottom: "6px", color: "#1e293b", fontSize: "16px", fontWeight: 600 }}>
         Rate this Vendor
       </h3>
+
+      {isDummy && (
+        <p style={{ marginBottom: "10px", color: "#b45309", fontSize: "12px", fontStyle: "italic" }}>
+          (Demo vendor — real rating sirf live vendors ke liye available hai)
+        </p>
+      )}
+
       <p style={{ marginBottom: "14px", color: "#6b7280", fontSize: "13px" }}>
-        How was your experience?click on stars!
+        How was your experience? Click on stars!
       </p>
 
       {ratingSubmitted ? (
@@ -283,25 +304,76 @@ function getCategoryFromType(type) {
   if (t.includes("decor")) return "decorator";
   return "venue"; // Marquee, Hotel, Farmhouse, Hall, Convention Centre, Caterers
 }
+
 export default function VendorProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { setVendor } = useBooking();
-  const vendor = dummyVenues.find((v) => v.UserId === Number(id));
-  console.log("Vendor found:", vendor);
-  
 
-  if (!vendor) return <p>Vendor not found</p>;
+  const [vendor, setVendorData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchVendor = async () => {
+      setLoading(true);
+      setError(null);
+
+      // Step 1: Pehle real backend vendors mein dhoondo
+      try {
+        const res = await API.get("/api/vendors/search");
+        const allVendors = res.data.vendors || [];
+        const foundReal = allVendors.find((v) => v._id === id);
+
+        if (foundReal) {
+          setVendorData({
+            _id: foundReal._id,
+            name: foundReal.businessName || "Unnamed Vendor",
+            phone: foundReal.phone || "Not provided",
+            email: foundReal.email || "Not provided",
+            location: foundReal.location?.city || "Location not set",
+            rating: foundReal.rating || 0,
+            avatarLabel: foundReal.businessName?.charAt(0) || "V",
+            price: foundReal.price || 0,
+            type: foundReal.category || "venue",
+          });
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.error("Real vendor fetch error:", err);
+      }
+
+      // Step 2: Real mein nahi mila, to dummy list mein dhoondo (id number ho to)
+      const numericId = Number(id);
+      const foundDummy = !isNaN(numericId)
+        ? dummyVenues.find((v) => v.UserId === numericId)
+        : null;
+
+      if (foundDummy) {
+        setVendorData(foundDummy);
+      } else {
+        setError("Vendor not found");
+      }
+
+      setLoading(false);
+    };
+
+    fetchVendor();
+  }, [id]);
+
+  if (loading) return <p>Loading vendor...</p>;
+  if (error || !vendor) return <p>Vendor not found</p>;
 
   const handleBookNow = () => {
-  setVendor({
-    id: vendor._id,
-    name: vendor.name,
-    category: getCategoryFromType(vendor.type),
-    price: vendor.price,
-  });
-  navigate("/details");
-};
+    setVendor({
+      id: vendor._id,
+      name: vendor.name,
+      category: getCategoryFromType(vendor.type),
+      price: vendor.price,
+    });
+    navigate("/details");
+  };
 
   return (
     <>
@@ -316,19 +388,19 @@ export default function VendorProfile() {
         <PortfolioSection items={portfolioItems} />
         <ServicesSection services={services} />
         <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginTop: "20px" }}>
-  <div>
-    <VendorCalendar vendor={vendor} />
-  </div>
+          <div>
+            <VendorCalendar vendor={vendor} />
+          </div>
 
-  <div style={{ flex: 1, minWidth: "300px" }}>
-    <h3 style={{ marginBottom: "10px", color: "#888", fontSize: "14px" }}>
-      VENDOR LOCATION
-    </h3>
-    <VendorMap />
-     </div>
-   </div>
+          <div style={{ flex: 1, minWidth: "300px" }}>
+            <h3 style={{ marginBottom: "10px", color: "#888", fontSize: "14px" }}>
+              VENDOR LOCATION
+            </h3>
+            <VendorMap />
+          </div>
+        </div>
 
-    <RatingSection vendorUserId={vendor.UserId} /> 
+        <RatingSection vendorId={vendor._id} />
       </main>
     </>
   );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Bell } from "lucide-react";
 import { useNotifications } from "./NotificationContext";
 import NotificationDropdown from "./NotificationDropdown";
@@ -6,9 +6,23 @@ import NotificationDropdown from "./NotificationDropdown";
 function NotificationBell() {
   const { unreadCount } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
-    <div style={{ position: "relative", display: "inline-block" }}>
+    <div ref={wrapperRef} style={{ position: "relative", display: "inline-block" }}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         style={{ background: "none", border: "none", cursor: "pointer", position: "relative" }}

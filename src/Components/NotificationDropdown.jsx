@@ -35,7 +35,11 @@ function NotificationDropdown({ closeDropdown }) {
         </p>
       ) : (
         notifications.map((notif) => (
-          <NotificationItem key={notif._id} notification={notif} />
+          <NotificationItem
+            key={notif._id}
+            notification={notif}
+            closeDropdown={closeDropdown}
+          />
         ))
       )}
     </div>

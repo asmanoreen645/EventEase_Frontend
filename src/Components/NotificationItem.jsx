@@ -1,11 +1,18 @@
 import { useNotifications } from "./NotificationContext";
 
-function NotificationItem({ notification }) {
+function NotificationItem({ notification, closeDropdown }) {
   const { markAsRead } = useNotifications();
+
+  const handleClick = () => {
+    if (!notification.isRead) {
+      markAsRead(notification._id);
+    }
+    closeDropdown();
+  };
 
   return (
     <div
-      onClick={() => !notification.isRead && markAsRead(notification._id)}
+      onClick={handleClick}
       style={{
         padding: "10px",
         borderBottom: "1px solid #f0f0f0",
