@@ -234,18 +234,19 @@ export default function Venuepage() {
 
           {/* Event Type */}
           <div className="vlp-filter-section">
-            <h4>Event Type</h4>
-            {eventTypes.map((type) => (
-              <label key={type} className="vlp-checkbox">
-                <input
-                  type="checkbox"
-                  checked={selectedEvents.includes(type)}
-                  onChange={() => toggleEventType(type)}
-                />
-                <span>{type}</span>
-              </label>
-            ))}
-          </div>
+  <h4>Event Type</h4>
+  <div className="vlp-pill-group">
+    {eventTypes.map((type) => (
+      <button
+        key={type}
+        className={`vlp-pill ${selectedEvents.includes(type) ? "active" : ""}`}
+        onClick={() => toggleEventType(type)}
+      >
+        {type}
+      </button>
+    ))}
+  </div>
+</div>
 
           {/* Price Range */}
           <div className="vlp-filter-section">
