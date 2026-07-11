@@ -250,23 +250,20 @@ export default function Venuepage() {
 
           {/* Price Range */}
           <div className="vlp-filter-section">
-            <h4>Price per Head (PKR)</h4>
-            <div className="vlp-price-inputs">
-              <input
-                type="number"
-                value={minPrice}
-                onChange={(e) => setMinPrice(Number(e.target.value))}
-                placeholder="Min"
-              />
-              <span>—</span>
-              <input
-                type="number"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                placeholder="Max"
-              />
-            </div>
-          </div>
+  <h4>Price per Head (PKR)</h4>
+  <input
+    type="range"
+    min="0"
+    max="20000"
+    step="500"
+    value={maxPrice}
+    onChange={(e) => setMaxPrice(Number(e.target.value))}
+    className="vlp-slider"
+  />
+  <div className="vlp-price-readout">
+    PKR {minPrice.toLocaleString()} – {maxPrice.toLocaleString()}
+  </div>
+</div>
 
           {/* Capacity */}
           <div className="vlp-filter-section">
