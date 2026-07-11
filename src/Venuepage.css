@@ -280,7 +280,7 @@
 
 .vlp-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(37, 99, 168, 0.13);
+  box-shadow: 0 8px 24px rgba(180, 148, 90, 0.18);
 }
 
 .vlp-card-image {
