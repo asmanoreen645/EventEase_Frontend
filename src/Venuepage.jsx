@@ -132,20 +132,19 @@ export default function Venuepage() {
   </div>
 </div>
           <div className="vlp-filter-section">
-            <h4>Venue Type</h4>
-            {venueTypes.map((type) => (
-              <label key={type} className="vlp-checkbox">
-                <input
-                  type="radio"
-                  name="venueType"
-                  checked={selectedType === type}
-                  onChange={() => setSelectedType(type)}
-                />
-                <span>{type}</span>
-              </label>
-            ))}
-          </div>
-
+  <h4>Venue Type</h4>
+  <div className="vlp-pill-group">
+    {venueTypes.map((type) => (
+      <button
+        key={type}
+        className={`vlp-pill ${selectedType === type ? "active" : ""}`}
+        onClick={() => setSelectedType(type)}
+      >
+        {type}
+      </button>
+    ))}
+  </div>
+</div>
           {/* Location Filter Section (Country & City Dropdowns) */}
           <div className="vlp-filter-section">
             <h4>Select Country</h4>
