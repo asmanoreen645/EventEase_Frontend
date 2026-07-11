@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Venuepage.css";
+import { Heart } from "lucide-react";
 import { dummyVenues } from "./Components/VendorsData";
 import API from "./api/axiosConfig";
 
@@ -86,13 +87,17 @@ export default function Venuepage() {
   const [minCapacity, setMinCapacity] = useState(0);
   const [sortBy, setSortBy] = useState("relevance");
   const [filtersOpen, setFiltersOpen] = useState(true);
-
+  const [favorites, setFavorites] = useState([]);
   const toggleEventType = (type) => {
     setSelectedEvents((prev) =>
       prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     );
   };
-
+const toggleFavorite = (id) => {
+  setFavorites((prev) =>
+    prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
+  );
+};
   const handleCountryChange = (e) => {
     setSelectedCountry(e.target.value);
     setSelectedCity(""); // Reset city dropdown when country changes
@@ -286,14 +291,21 @@ export default function Venuepage() {
               </div>
             ) : (
               filteredVenues.map((venue) => (
-                <div key={venue._id || venue.UserId} className="vlp-card">
-                  <div className="vlp-card-image">
-                    <img src={venue.image} alt={venue.name} />
-                    {venue.topPick && (
-                      <span className="vlp-top-pick">⭐ Top Pick</span>
-                    )}
-                    <span className="vlp-venue-type-badge">{venue.type}</span>
-                  </div>
+              <div key={venue._id || venue.UserId} className="vlp-card">
+  <div className="vlp-card-image">
+    <img src={venue.image} alt={venue.name} />
+    {venue.topPick && (
+      <span className="vlp-top-pick">⭐ Top Pick</span>
+    )}
+    <button
+      className={`vlp-fav-btn ${favorites.includes(venue._id || venue.UserId) ? "active" : ""}`}
+      onClick={() => toggleFavorite(venue._id || venue.UserId)}
+      aria-label="Save to favorites"
+    >
+      <Heart size={14} fill={favorites.includes(venue._id || venue.UserId) ? "currentColor" : "none"} />
+    </button>
+    <span className="vlp-venue-type-badge">{venue.type}</span>
+  </div>
                   <div className="vlp-card-info">
                     <div className="vlp-card-top">
                       <h3>{venue.name}</h3>
