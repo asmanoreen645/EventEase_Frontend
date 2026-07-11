@@ -188,64 +188,31 @@ export default function Venuepage() {
   </div>
 </div>
           {/* Location Filter Section (Country & City Dropdowns) */}
-          <div className="vlp-filter-section">
-            <h4>Select Country</h4>
-            <select
-              value={selectedCountry}
-              onChange={handleCountryChange}
-              style={{
-                width: "100%",
-                padding: "8px",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-                marginTop: "5px",
-                marginBottom: "15px",
-                fontSize: "14px"
-              }}
-            >
-              <option value="">All Countries</option>
-              {Object.keys(locationData).map((country) => (
-                <option key={country} value={country}>{country}</option>
-              ))}
-            </select>
-
-            <h4>Select City</h4>
-            <select
-              value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
-              disabled={!selectedCountry}
-              style={{
-                width: "100%",
-                padding: "8px",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-                marginTop: "5px",
-                fontSize: "14px",
-                backgroundColor: !selectedCountry ? "#f5f5f5" : "#fff",
-                cursor: !selectedCountry ? "not-allowed" : "pointer"
-              }}
-            >
-              <option value="">All Cities</option>
-              {selectedCountry && locationData[selectedCountry].map((city) => (
-                <option key={city} value={city}>{city}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Event Type */}
-          <div className="vlp-filter-section">
-  <h4>Event Type</h4>
-  <div className="vlp-pill-group">
-    {eventTypes.map((type) => (
-      <button
-        key={type}
-        className={`vlp-pill ${selectedEvents.includes(type) ? "active" : ""}`}
-        onClick={() => toggleEventType(type)}
-      >
-        {type}
-      </button>
+        <div className="vlp-filter-section">
+  <h4>Select Country</h4>
+  <select
+    className="vlp-select"
+    value={selectedCountry}
+    onChange={handleCountryChange}
+  >
+    <option value="">All Countries</option>
+    {Object.keys(locationData).map((country) => (
+      <option key={country} value={country}>{country}</option>
     ))}
-  </div>
+  </select>
+
+  <h4>Select City</h4>
+  <select
+    className="vlp-select"
+    value={selectedCity}
+    onChange={(e) => setSelectedCity(e.target.value)}
+    disabled={!selectedCountry}
+  >
+    <option value="">All Cities</option>
+    {selectedCountry && locationData[selectedCountry].map((city) => (
+      <option key={city} value={city}>{city}</option>
+    ))}
+  </select>
 </div>
 
           {/* Price Range */}
