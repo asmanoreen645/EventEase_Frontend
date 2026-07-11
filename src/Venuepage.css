@@ -247,14 +247,19 @@
 }
 
 .vlp-sort-select select {
-  padding: 6px 12px;
+  padding: 8px 14px;
   border: 1px solid #dde2ee;
   border-radius: 8px;
   font-size: 0.875rem;
   color: #333;
   outline: none;
   cursor: pointer;
-  accent-color: #2563a8;
+  transition: border-color 0.2s;
+}
+
+.vlp-sort-select select:hover,
+.vlp-sort-select select:focus {
+  border-color: #b4945a;
 }
 
 /* ===== CARDS ===== */
