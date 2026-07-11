@@ -203,18 +203,22 @@
   width: 100%;
   padding: 10px;
   background: transparent;
-  border: 2px solid #2563a8;
-  color: #2563a8;
+  border: 2px solid #b4945a;
+  color: #b4945a;
   border-radius: 10px;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .vlp-reset-btn:hover {
-  background: #2563a8;
+  background: #b4945a;
   color: white;
 }
 
