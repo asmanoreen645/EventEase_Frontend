@@ -59,6 +59,8 @@ function Payment() {
     e.preventDefault();
     setCardError(""); 
     console.log("selectedPackage check:", selectedPackage); 
+    console.log("DEBUG vendor object:", vendor);
+  console.log("DEBUG vendor keys:", vendor ? Object.keys(vendor) : "vendor is null/undefined");
 
     const userId = localStorage.getItem("userId");
     if (!userId) {
