@@ -344,7 +344,8 @@ const toggleFavorite = (id) => {
                     <div className="vlp-card-footer">
                       <div className="vlp-price">
                         <span className="vlp-price-label">Starting from</span>
-                        <span className="vlp-price-value">PKR {venue.price.toLocaleString()}/head</span>
+                        <span className="vlp-price-value">PKR {venue.price.toLocaleString()}{venue.priceLabel ? "" : "/head"}
+                          </span>
                       </div>
                       <button
                         className="vlp-details-btn"
