@@ -9,7 +9,7 @@ import API from './api/axiosConfig';
 const PLATFORM_FEE = 600;
 const ADVANCE_PERCENT = 0.3;
 
-// CHANGE: naya object - CardElement ki styling 
+// naya object - CardElement ki styling 
 const cardElementOptions = {
   style: {
     base: {
@@ -34,10 +34,10 @@ function Payment() {
   } = useBooking();
 
   const [cardName, setCardName] = useState("");
-  // CHANGE: cardNumber, expiry, cvc states HATA DIYE - Stripe CardElement khud ye manage karta hai
+  // cardNumber, expiry, cvc states HATA DIYE - Stripe CardElement khud ye manage karta hai
   const [billingAddress, setBillingAddress] = useState("");
   const [loading, setLoading] = useState(false);
-  const [cardError, setCardError] = useState(""); // CHANGE: naya state - Stripe ka error message dikhane ke liye
+  const [cardError, setCardError] = useState(""); //  - Stripe ka error message dikhane ke liye
 
   if (!vendor || !bookingDetails || !selectedPackage) {
     return (
@@ -92,10 +92,10 @@ function Payment() {
 
       // ===== STEP 1: Booking create kar0 =====
       const bookingData = {
-     vendorId: vendor._id,
-     serviceId: selectedPackage._id,
-     eventDate: bookingDetails.eventDate,
-     totalAmount: totalPrice,
+      vendorId: vendor._id,
+      packageDetails: selectedPackage,
+      eventDate: bookingDetails.eventDate,
+        totalAmount: totalPrice,
 };
       const bookingResponse = await API.post('/api/bookings/book', bookingData);
       console.log("Booking Response:", bookingResponse.data);
