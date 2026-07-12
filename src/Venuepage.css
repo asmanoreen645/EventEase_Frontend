@@ -185,13 +185,14 @@
   border-radius: 8px;
   font-size: 0.875rem;
   color: #333;
+  background: #fff;
   outline: none;
   transition: border-color 0.2s;
 }
 
 .vlp-price-inputs input:focus,
 .vlp-capacity-input:focus {
-  border-color: #2563a8;
+ border-color: #b4945a;
 }
 
 .vlp-price-inputs span {
