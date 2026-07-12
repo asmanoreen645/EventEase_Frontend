@@ -286,9 +286,25 @@ const toggleFavorite = (id) => {
           <div className="vlp-cards">
             {filteredVenues.length === 0 ? (
               <div className="vlp-no-results">
-                <span className="material-symbols-outlined">search_off</span>
-                <p>No venues match your filters. Try adjusting them!</p>
-              </div>
+  <div className="vlp-no-results-icon">🔍</div>
+  <h3>No venues found</h3>
+  <p>We couldn't find any venues matching your filters. Try adjusting or resetting them.</p>
+  <button
+    className="vlp-reset-btn"
+    style={{ maxWidth: "200px", margin: "16px auto 0" }}
+    onClick={() => {
+      setSelectedType("All");
+      setSelectedCountry("");
+      setSelectedCity("");
+      setSelectedEvents([]);
+      setMinPrice(0);
+      setMaxPrice(10000);
+      setMinCapacity(0);
+    }}
+  >
+    Reset Filters
+  </button>
+</div>
             ) : (
               filteredVenues.map((venue) => (
               <div key={venue._id || venue.UserId} className="vlp-card">
