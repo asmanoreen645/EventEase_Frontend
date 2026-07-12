@@ -532,10 +532,15 @@
   border-radius: 8px;
   font-size: 0.85rem;
   color: #333;
+  background: #fff;
   outline: none;
   margin-bottom: 10px;
   cursor: pointer;
   transition: border-color 0.2s;
+}
+.vlp-select option {
+  background: #fff;
+  color: #333;
 }
 
 .vlp-select:hover {
