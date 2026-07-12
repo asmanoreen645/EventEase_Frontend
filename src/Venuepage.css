@@ -252,9 +252,14 @@
   border-radius: 8px;
   font-size: 0.875rem;
   color: #333;
+  background: #fff;
   outline: none;
   cursor: pointer;
   transition: border-color 0.2s;
+}
+.vlp-sort-select select option {
+  background: #fff;
+  color: #333;
 }
 
 .vlp-sort-select select:hover,
