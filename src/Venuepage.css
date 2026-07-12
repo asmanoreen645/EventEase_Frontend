@@ -185,13 +185,14 @@
   border-radius: 8px;
   font-size: 0.875rem;
   color: #333;
+  background: #fff;
   outline: none;
   transition: border-color 0.2s;
 }
 
 .vlp-price-inputs input:focus,
 .vlp-capacity-input:focus {
-  border-color: #2563a8;
+ border-color: #b4945a;
 }
 
 .vlp-price-inputs span {
@@ -252,9 +253,14 @@
   border-radius: 8px;
   font-size: 0.875rem;
   color: #333;
+  background: #fff;
   outline: none;
   cursor: pointer;
   transition: border-color 0.2s;
+}
+.vlp-sort-select select option {
+  background: #fff;
+  color: #333;
 }
 
 .vlp-sort-select select:hover,
@@ -282,14 +288,14 @@
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(180, 148, 90, 0.18);
 }
-
 .vlp-card-image {
   position: relative;
   width: 260px;
   min-width: 260px;
+  height: 220px;
   overflow: hidden;
+  flex-shrink: 0;
 }
-
 .vlp-card-image img {
   width: 100%;
   height: 100%;
@@ -532,10 +538,15 @@
   border-radius: 8px;
   font-size: 0.85rem;
   color: #333;
+  background: #fff;
   outline: none;
   margin-bottom: 10px;
   cursor: pointer;
   transition: border-color 0.2s;
+}
+.vlp-select option {
+  background: #fff;
+  color: #333;
 }
 
 .vlp-select:hover {
@@ -569,4 +580,9 @@
 
 .vlp-fav-btn.active {
   color: #d85a30;
+}
+.vlp-slider {
+  width: 100%;
+  accent-color: #b4945a;
+  margin-bottom: 6px;
 }
