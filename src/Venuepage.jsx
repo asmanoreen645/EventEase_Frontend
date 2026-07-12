@@ -113,7 +113,7 @@ const toggleFavorite = (id) => {
       if (selectedCity && v.city !== selectedCity) return false;
       if (selectedEvents.length > 0 && !selectedEvents.some((e) => v.eventTypes.includes(e)))
         return false;
-      if (v.price < minPrice || v.price > maxPrice) return false;
+      if (!v.priceLabel && (v.price < minPrice || v.price > maxPrice)) return false;
       if (minCapacity > 0 && (v.capacity || 0) < minCapacity) return false;
       return true;
     })
