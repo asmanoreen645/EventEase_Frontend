@@ -570,3 +570,8 @@
 .vlp-fav-btn.active {
   color: #d85a30;
 }
+.vlp-slider {
+  width: 100%;
+  accent-color: #b4945a;
+  margin-bottom: 6px;
+}
