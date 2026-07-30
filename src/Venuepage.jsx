@@ -79,6 +79,11 @@ export default function Venuepage() {
   }, [realVendors]);
 
   const [selectedType, setSelectedType] = useState("All");
+  // CHANGE: Services filter (Photographers/Caterers/Decorators) ke liye single-select state
+  // (naam fix: pehle "selectedServices" tha jo baaki code mein "selectedService" se mismatch tha)
+  const [selectedService, setSelectedService] = useState("All");
+  // CHANGE: naya state — search-by-name field ke liye
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedEvents, setSelectedEvents] = useState([]);
@@ -88,11 +93,18 @@ export default function Venuepage() {
   const [sortBy, setSortBy] = useState("relevance");
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [favorites, setFavorites] = useState([]);
+
+  // CHANGE: toggleEventType (Wedding/Corporate/etc ke liye) rakha hua hai kyunke selectedEvents
+  // abhi bhi array/multi-select hai
   const toggleEventType = (type) => {
     setSelectedEvents((prev) =>
       prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     );
   };
+
+  // CHANGE: toggleService function hata diya — ab zaroorat nahi kyunke Services single-select
+  // hai aur pill button seedha setSelectedService call karta hai (neeche JSX mein dekho)
+
 const toggleFavorite = (id) => {
   setFavorites((prev) =>
     prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
@@ -108,7 +120,20 @@ const toggleFavorite = (id) => {
 
   const filteredVenues = allVenues
     .filter((v) => {
+      // CHANGE: search-by-name check — sab se pehle chalta hai
+      if (
+        searchQuery.trim() &&
+        !v.name?.toLowerCase().includes(searchQuery.trim().toLowerCase())
+      )
+        return false;
       if (selectedType !== "All" && v.type !== selectedType) return false;
+      // CHANGE: services filter — ab single value (selectedService) ko venue ke "type" field
+      // se case-insensitive compare karta hai
+      if (
+        selectedService !== "All" &&
+        v.type?.toLowerCase() !== selectedService.toLowerCase()
+      )
+        return false;
       if (selectedCountry && v.country !== selectedCountry) return false;
       if (selectedCity && v.city !== selectedCity) return false;
       if (selectedEvents.length > 0 && !selectedEvents.some((e) => v.eventTypes.includes(e)))
@@ -163,6 +188,17 @@ const toggleFavorite = (id) => {
             </button>
           </div>
 
+          {/* CHANGE: naya search-by-name input box, Filters header ke turant baad */}
+          <div className="vlp-filter-section">
+            <input
+              type="text"
+              className="vlp-search-input"
+              placeholder="Search by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
           {/* Venue Type */}
           <div className="vlp-filter-section">
             <h4>Select Services</h4>
@@ -170,8 +206,9 @@ const toggleFavorite = (id) => {
               {VendorsType.map((type) => (
                 <button
                   key={type}
-                  className={`vlp-pill ${selectedEvents.includes(type) ? "active" : ""}`}
-                  onClick={() => toggleEventType(type)}
+                  // CHANGE: single-select — sirf ek hi service active hogi ek waqt mein
+                  className={`vlp-pill ${selectedService === type ? "active" : ""}`}
+                  onClick={() => setSelectedService(selectedService === type ? "All" : type)}
                 >
                   {type}
                 </button>
@@ -254,6 +291,10 @@ const toggleFavorite = (id) => {
             className="vlp-reset-btn"
             onClick={() => {
               setSelectedType("All");
+              // CHANGE: reset par service state (fixed naam) clear ki jaye
+              setSelectedService("All");
+              // CHANGE: reset par search box bhi clear ho
+              setSearchQuery("");
               setSelectedCountry("");
               setSelectedCity("");
               setSelectedEvents([]);
@@ -294,6 +335,10 @@ const toggleFavorite = (id) => {
     style={{ maxWidth: "200px", margin: "16px auto 0" }}
     onClick={() => {
       setSelectedType("All");
+      // CHANGE: yahan bhi service state (fixed naam) reset karo
+      setSelectedService("All");
+      // CHANGE: yahan bhi search box reset karo
+      setSearchQuery("");
       setSelectedCountry("");
       setSelectedCity("");
       setSelectedEvents([]);

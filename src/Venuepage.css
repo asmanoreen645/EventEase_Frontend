@@ -100,6 +100,18 @@
 }
 
 /* ===== SIDEBAR ===== */
+.vlp-search-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+.vlp-search-input:focus {
+  border-color: #b8860b;
+}
 .vlp-sidebar {
   width: 260px;
   min-width: 260px;

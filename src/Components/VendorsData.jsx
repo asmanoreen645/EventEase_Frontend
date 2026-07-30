@@ -152,6 +152,22 @@ const dummyVenues = [
     topPick: false,
     bookedDates: ["2026-06-06", "2026-06-08", "2026-06-22"],
   },
+  {
+  UserId: 10,
+  name: "Spice Route Catering",
+  country: "Pakistan",
+  city: "Lahore",
+  location: "Gulberg, Lahore",
+  rating: 4.6,
+  reviews: 90,
+  price: 1500,
+  type: "Caterers",
+  eventTypes: ["Wedding", "Corporate"],
+  description: "Premium catering services for all occasions.",
+  image: "https://images.unsplash.com/photo-1555244162-803834f70033?w=400&h=280&fit=crop",
+  topPick: false,
+  bookedDates: [],
+},
 ];
 
 
