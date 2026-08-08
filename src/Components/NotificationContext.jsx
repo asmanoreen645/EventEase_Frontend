@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import API from '../axiosConfig'; // Path adjust kar lein agar needed ho
+import API from "../../axiosConfig";
 import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext();
