@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import API from "../../axiosConfig";
+//import API from "../../axiosConfig";
+import API from "/src/axiosConfig";
 import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext();
