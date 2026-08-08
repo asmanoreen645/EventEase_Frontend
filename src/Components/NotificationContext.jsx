@@ -1,79 +1,64 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import API from "../api/axiosConfig"; 
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import API from '../axiosConfig'; // Path adjust kar lein agar needed ho
+import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext();
 
-export function NotificationProvider({ children }) {
+export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const { user } = useAuth();
 
+  // 1. Fetch Notifications from Database
   const fetchNotifications = async () => {
-    const token = localStorage.getItem("token");
-
-    // Agar login nahi hai to API call hi mat karo, khali rakho
-    if (!token) {
-      setNotifications([]);
-      setLoading(false);
-      return;
-    }
+    // Check agar user logged in hai aur uski ID ya _id majood hai
+    const userId = user?._id || user?.id;
+    if (!userId) return;
 
     try {
-      const res = await API.get("/api/notifications");
-      setNotifications(res.data);
+      const response = await API.get(`/api/notifications/user/${userId}`);
+      if (response.data && response.data.success) {
+        const list = response.data.data || [];
+        setNotifications(list);
+        setUnreadCount(list.filter(n => !n.isRead).length);
+      }
     } catch (error) {
-      console.error("Failed to fetch notifications:", error);
-    } finally {
-      setLoading(false);
+      console.error("Error fetching notifications:", error);
     }
   };
 
+  // Jab bhi logged-in user change ho, DB se notifications load hongi
   useEffect(() => {
     fetchNotifications();
-
-    // Har 30 second baad khud check karega
+    
+    // Optional: Har 30 seconds baad auto-refresh for real-time updates
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
-
-  const markAsRead = async (notificationId) => {
+  // 2. Mark Notification as Read
+  const markAsRead = async (id) => {
     try {
-      await API.patch(`/api/notifications/${notificationId}/read`);
-      setNotifications((prev) =>
-        prev.map((n) =>
-          n._id === notificationId ? { ...n, isRead: true } : n
-        )
+      // Local state instant update for UI responsiveness
+      setNotifications(prev =>
+        prev.map(n => (n._id === id ? { ...n, isRead: true } : n))
       );
-    } catch (error) {
-      console.error("Failed to mark as read:", error);
-    }
-  };
+      setUnreadCount(prev => Math.max(0, prev - 1));
 
-  const markAllAsRead = async () => {
-    try {
-      await API.patch("/api/notifications/read-all");
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      // Backend API Call (agar read mark karne ka endpoint hai)
+      // await API.put(`/api/notifications/read/${id}`);
     } catch (error) {
-      console.error("Failed to mark all as read:", error);
+      console.error("Error marking notification read:", error);
     }
   };
 
   return (
     <NotificationContext.Provider
-      value={{
-        notifications,
-        unreadCount,
-        markAsRead,
-        markAllAsRead,
-        setNotifications,
-        loading,
-        refetch: fetchNotifications,
-      }}
+      value={{ notifications, unreadCount, markAsRead, fetchNotifications }}
     >
       {children}
     </NotificationContext.Provider>
   );
-}
+};
 
 export const useNotifications = () => useContext(NotificationContext);
