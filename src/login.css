@@ -1,67 +1,101 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap");
+
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f9f9f9;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa; /* Clean light background */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  padding: 32px 16px;
+  box-sizing: border-box;
 }
 
 .login-card {
-  background: white;
-  padding: 40px;
-  border-radius: 12px;
+  background: #ffffff;
+  padding: 40px 36px 32px;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top Gold Accent Line */
+.login-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #b89553;
 }
 
 /* Logo & Headers */
 .logo-box {
-  background-color: #a3e4f1; /* Light blue from image */
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 15px;
-  border-radius: 15px;
+  background-color: rgba(184, 149, 83, 0.12); /* Soft Gold Tint */
+  color: #b89553;
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 18px;
+  border-radius: 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 40px;
+  font-size: 32px;
 }
 
 .logo-section h1 {
+  font-family: "Fraunces", "Georgia", serif;
   margin: 10px 0 5px;
-  font-size: 28px;
-  font-weight: bold;
-  color: #000;
+  font-size: 26px;
+  font-weight: 600;
+  color: #222222;
 }
 
 .subtitle {
-  color: #666;
-  margin-bottom: 30px;
+  color: #666666;
+  font-size: 14px;
+  margin-bottom: 25px;
 }
 
 /* Form Styles */
 .input-group {
   text-align: left;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .input-group label {
   display: block;
-  font-weight: 600;
-  font-size: 14px;
-  color: #4b5563;
-  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #444444;
+  margin-bottom: 6px;
 }
 
 .input-group input {
   width: 100%;
   padding: 12px 15px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background-color: #f3f4f6;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background-color: #f0f4f8;
+  font-size: 14px;
+  color: #222222;
+  outline: none;
   box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.input-group input:focus {
+  border-color: #b89553;
+  box-shadow: 0 0 0 3px rgba(184, 149, 83, 0.15);
+  background-color: #ffffff;
 }
 
 .password-wrapper {
@@ -81,37 +115,47 @@
 
 .forgot-password {
   text-align: right;
-  margin-top: -10px;
-  margin-bottom: 25px;
+  margin-top: -6px;
+  margin-bottom: 22px;
 }
 
 .forgot-password a {
-  color: #00bcd4;
+  color: #b89553; /* Replaced Cyan with Gold */
   text-decoration: none;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.forgot-password a:hover {
+  color: #a38144;
+  text-decoration: underline;
 }
 
 /* Buttons */
 .login-btn {
   width: 100%;
-  padding: 14px;
-  background-color: #b89553; /* Main cyan color */
+  padding: 13px 16px;
+  background-color: #b89553;
   color: #ffffff;
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
+  border-radius: 24px; /* Rounded pill style */
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background-color 0.2s ease, transform 0.15s ease;
 }
 
 .login-btn:hover {
   background-color: #a38144;
 }
 
+.login-btn:active {
+  transform: scale(0.98);
+}
+
 .divider {
-  margin: 25px 0;
+  margin: 22px 0;
   position: relative;
   font-size: 12px;
   color: #9ca3af;
@@ -121,33 +165,43 @@
 .google-btn {
   width: 100%;
   padding: 12px;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   cursor: pointer;
-  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #444444;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.google-btn:hover {
+  border-color: #b89553;
+  background-color: #fcfbf8;
 }
 
 .google-btn img {
   width: 20px;
   height: 20px;
-  margin-right: 10px;
   display: inline-block;
-
 }
 
 .footer-text {
-  margin-top: 25px;
-  color: #6b7280;
-  font-size: 14px;
+  margin-top: 22px;
+  color: #666666;
+  font-size: 13px;
 }
 
 .footer-text a {
-  color: #00bcd4;
+  color: #b89553; /* Replaced Cyan with Gold */
   text-decoration: none;
-  font-weight: bold;
+  font-weight: 600;
+}
+
+.footer-text a:hover {
+  text-decoration: underline;
 }
