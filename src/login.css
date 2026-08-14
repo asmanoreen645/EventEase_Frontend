@@ -96,8 +96,8 @@
 .login-btn {
   width: 100%;
   padding: 14px;
-  background-color: #00bcd4; /* Main cyan color */
-  color: white;
+  background-color: #b89553; /* Main cyan color */
+  color: #ffffff;
   border: none;
   border-radius: 8px;
   font-size: 16px;
@@ -107,7 +107,7 @@
 }
 
 .login-btn:hover {
-  background-color: #0097a7;
+  background-color: #a38144;
 }
 
 .divider {

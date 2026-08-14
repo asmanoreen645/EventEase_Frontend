@@ -3,6 +3,7 @@ import './login.css';
 import { useNavigate, useLocation } from 'react-router-dom';
 import googleIcon from './google-icon.png';
 import { useAuth } from './Components/AuthContext'; 
+import { Link } from 'react-router-dom';
 import API from './api/axiosConfig';
 
 const LoginForm = () => {
@@ -107,9 +108,8 @@ if (redirectPath && isPathAllowedForRole(redirectPath, user.role)) {
           </div>
 
           <div className="forgot-password">
-            <a href="#forgot">Forgot Password?</a>
+         <Link to="/forgot-password">Forgot Password?</Link>
           </div>
-
           <button type="submit" className="login-btn" disabled={loading}>
             {loading ? 'Logging in...' : 'Login'}
           </button>
