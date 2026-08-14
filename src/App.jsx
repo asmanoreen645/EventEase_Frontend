@@ -21,7 +21,19 @@ import PackageSelection from "./PackageSelection";
 import Payment from "./Payment";
 import VendorsList from "./VendorsList";
 
-// 👤 CUSTOMER DASHBOARD IMPORT (Path verifying)
+// 💳 STRIPE IMPORTS & ACCURATE INITIALIZATION FIX
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+
+// Fallback Stripe Key ensure karega ke undefined wala red error kabhi mat aaye
+const STRIPE_PUBLISHABLE_KEY = 
+  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 
+  process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || 
+  "pk_test_51PxxxxxxDummyStripeKeyForTestingOnly000000";
+
+const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
+
+// 👤 CUSTOMER DASHBOARD IMPORT
 import CustomerDashboard from "./Components/CustomerDashboard"; 
 
 // 👑 ADMIN IMPORTS
@@ -53,7 +65,17 @@ function UserLayout() {
         <Route path="chat/:vendorId" element={<ChatPage />} />
         <Route path="details" element={<BookingDetails />} />
         <Route path="package" element={<PackageSelection />} />
-        <Route path="payment" element={<Payment />} />
+        
+        {/* Payment route ko Stripe Elements Wrapper ke sath connect kar diya hai */}
+        <Route 
+          path="payment" 
+          element={
+            <Elements stripe={stripePromise}>
+              <Payment />
+            </Elements>
+          } 
+        />
+        
         <Route path="Vendorslist" element={<VendorsList />} />
         
         {/* CUSTOMER ROUTE */}
