@@ -1,30 +1,32 @@
 import { useState } from 'react';
 import './Signup.css';
 import API from './api/axiosConfig';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from './Components/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('customer'); // Default role 'customer' rahega
+  const [role, setRole] = useState('customer');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // 🔑 OTP Verification States
+  // OTP Verification States
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otp, setOtp] = useState('');
   const [otpLoading, setOtpLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  // 1. Handlers for Initial Form Submission (Trigger OTP Email)
+  // Handlers for Initial Form Submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
-    // Basic Form Validation
     if (!name.trim() || !email.trim() || !password.trim()) {
       return setError('Please fill in all fields.');
     }
@@ -39,21 +41,19 @@ const Signup = () => {
         role
       });
 
-      // Agar signup backend API request successful ho jaye
       if (response.data.success) {
-        setShowOtpModal(true); // Screen par OTP Input Box show ho jayega
+        setShowOtpModal(true);
       }
       
     } catch (err) {
       console.log("FULL ERROR:", err);
-      console.log("ERROR RESPONSE:", err.response);
       setError(err.response?.data?.message || 'Signup failed. Please try again.');
     } finally {
       if (loading) setLoading(false);
     }
   };
 
-  // 2. Handler for OTP Verification
+  // Handler for OTP Verification
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     setError('');
@@ -71,17 +71,12 @@ const Signup = () => {
       });
 
       const { token, user } = response.data;
+      login(user, token);
 
-      // LocalStorage me user data save karna
-      localStorage.setItem('token', token);
-      localStorage.setItem('userId', user.id);
-      localStorage.setItem('role', user.role);
-
-      // Role ke mutabiq redirection logic
       if (user.role === 'vendor') {
-        navigate('/vendor-register');   // Vendor → seedha registration form
+        navigate('/vendor-register');
       } else {
-        navigate('/login');             // Customer → login page
+        navigate('/login');
       }
 
     } catch (err) {
@@ -89,6 +84,27 @@ const Signup = () => {
       setError(err.response?.data?.message || 'OTP Verification Failed.');
     } finally {
       setOtpLoading(false);
+    }
+  };
+
+  // Google Signup/Login Handler
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const response = await API.post('/api/auth/google', {
+        token: credentialResponse.credential
+      });
+
+      const { token, user } = response.data;
+      login(user, token);
+
+      if (user.role === 'vendor') {
+        navigate('/vendor-register');
+      } else {
+        navigate('/');
+      }
+    } catch (err) {
+      console.error("Google Auth Error:", err);
+      setError(err.response?.data?.message || 'Google Auth Failed');
     }
   };
 
@@ -101,73 +117,80 @@ const Signup = () => {
         {error && <p className="error-message" style={{ color: 'red', marginBottom: '15px', fontWeight: 'bold' }}>{error}</p>}
 
         {!showOtpModal ? (
-          /* =========================================================
-             FORM 1: INITIAL SIGNUP DETAILS (NAME, EMAIL, PASSWORD, ROLE)
-             ========================================================= */
-          <form className="signup-form" onSubmit={handleSubmit}>
-            <div className="input-group">
-              <label>NAME</label>
-              <input
-                type="text"
-                placeholder="Enter your full name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="input-group">
-              <label>EMAIL ADDRESS</label>
-              <input
-                type="email"
-                placeholder="example@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="input-group">
-              <label>PASSWORD</label>
-              <div className="password-wrapper">
+          <>
+            <form className="signup-form" onSubmit={handleSubmit}>
+              <div className="input-group">
+                <label>NAME</label>
                 <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   required
                 />
-                <span
-                  className="eye-icon"
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  {showPassword ? "👁️‍🗨️" : "👁️"}
-                </span>
               </div>
+
+              <div className="input-group">
+                <label>EMAIL ADDRESS</label>
+                <input
+                  type="email"
+                  placeholder="example@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="input-group">
+                <label>PASSWORD</label>
+                <div className="password-wrapper">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <span
+                    className="eye-icon"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {showPassword ? "👁️‍🗨️" : "👁️"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label>I AM A...</label>
+                <select
+                  className="role-dropdown"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                >
+                  <option value="customer">Customer</option>
+                  <option value="vendor">Vendor</option>
+                </select>
+              </div>
+
+              <button type="submit" className="signup-btn" disabled={loading}>
+                {loading ? 'Sending OTP...' : 'Create Account'}
+              </button>
+            </form>
+
+            <div className="divider" style={{ margin: '20px 0', textAlign: 'center' }}>
+              <span>OR CONTINUE WITH</span>
             </div>
 
-            <div className="input-group">
-              <label>I AM A...</label>
-              <select
-                className="role-dropdown"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-              >
-                <option value="customer">Customer</option>
-                <option value="vendor">Vendor</option>
-                {/* 🔒 Security Fix: Admin option permanently removed from public registration */}
-              </select>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setError('Google Signup Failed')}
+                useOneTap
+              />
             </div>
-
-            <button type="submit" className="signup-btn" disabled={loading}>
-              {loading ? 'Sending OTP...' : 'Create Account'}
-            </button>
-          </form>
+          </>
         ) : (
-          /* =========================================================
-             FORM 2: 6-DIGIT OTP VERIFICATION INPUT
-             ========================================================= */
           <form className="signup-form" onSubmit={handleVerifyOTP}>
             <div className="input-group">
               <label>ENTER 6-DIGIT OTP SENT TO YOUR EMAIL</label>
@@ -188,8 +211,8 @@ const Signup = () => {
           </form>
         )}
 
-        <p className="footer-text">
-          Already have an account? <a href="/login">Log In</a>
+        <p className="footer-text" style={{ marginTop: '20px' }}>
+          Already have an account? <Link to="/login">Log In</Link>
         </p>
       </div>
     </div>
