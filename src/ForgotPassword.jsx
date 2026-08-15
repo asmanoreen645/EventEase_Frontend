@@ -3,36 +3,26 @@ import { useNavigate, Link } from "react-router-dom";
 import API from './api/axiosConfig';
 import "./ForgotPassword.css";
 
-// OTP validity window in seconds — must match the expiry set on the backend
-const OTP_EXPIRY_SECONDS = 300; // 5 minutes
+const OTP_EXPIRY_SECONDS = 300;
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
-
-  // step: 1 = enter email, 2 = enter OTP, 3 = set new password
   const [step, setStep] = useState(1);
-
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-
   const [timer, setTimer] = useState(OTP_EXPIRY_SECONDS);
   const otpInputRefs = useRef([]);
 
-  // countdown for OTP expiry, only runs while on step 2
   useEffect(() => {
-    if (step !== 2) return;
-    if (timer <= 0) return;
-
+    if (step !== 2 || timer <= 0) return;
     const interval = setInterval(() => {
       setTimer((prev) => prev - 1);
     }, 1000);
-
     return () => clearInterval(interval);
   }, [step, timer]);
 
@@ -47,16 +37,13 @@ const ForgotPassword = () => {
     setSuccessMsg("");
   };
 
-  // ---------- STEP 1: request OTP ----------
   const handleSendOtp = async (e) => {
     e.preventDefault();
     clearMessages();
-
     if (!email.trim()) {
       setError("Please enter your registered email address.");
       return;
     }
-
     setLoading(true);
     try {
       const response = await API.post("/api/auth/forgot-password", { email });
@@ -73,15 +60,11 @@ const ForgotPassword = () => {
     }
   };
 
-  // ---------- STEP 2: verify OTP ----------
   const handleOtpChange = (index, value) => {
-    if (!/^[0-9]?$/.test(value)) return; // digits only, one char per box
-
+    if (!/^[0-9]?$/.test(value)) return;
     const updated = [...otp];
     updated[index] = value;
     setOtp(updated);
-
-    // auto-focus next box
     if (value && index < 5) {
       otpInputRefs.current[index + 1]?.focus();
     }
@@ -96,7 +79,6 @@ const ForgotPassword = () => {
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     clearMessages();
-
     const otpValue = otp.join("");
     if (otpValue.length !== 6) {
       setError("Please enter the complete 6-digit OTP.");
@@ -106,7 +88,6 @@ const ForgotPassword = () => {
       setError("OTP has expired. Please request a new one.");
       return;
     }
-
     setLoading(true);
     try {
       const response = await API.post("/api/auth/verify-otp", {
@@ -140,11 +121,9 @@ const ForgotPassword = () => {
     }
   };
 
-  // ---------- STEP 3: reset password ----------
   const handleResetPassword = async (e) => {
     e.preventDefault();
     clearMessages();
-
     if (newPassword.length < 6) {
       setError("Password must be at least 6 characters long.");
       return;
@@ -153,7 +132,6 @@ const ForgotPassword = () => {
       setError("Passwords do not match.");
       return;
     }
-
     setLoading(true);
     try {
       const response = await API.post("/api/auth/reset-password", {
@@ -187,7 +165,6 @@ const ForgotPassword = () => {
           </p>
         </div>
 
-        {/* progress indicator */}
         <div className="fp-progress" aria-hidden="true">
           {[1, 2, 3].map((s) => (
             <div
@@ -202,7 +179,6 @@ const ForgotPassword = () => {
           <div className="fp-alert fp-alert--success">{successMsg}</div>
         )}
 
-        {/* STEP 1 */}
         {step === 1 && (
           <form onSubmit={handleSendOtp} className="fp-form">
             <label className="fp-label" htmlFor="email">
@@ -223,7 +199,6 @@ const ForgotPassword = () => {
           </form>
         )}
 
-        {/* STEP 2 */}
         {step === 2 && (
           <form onSubmit={handleVerifyOtp} className="fp-form">
             <div className="fp-otp-row">
@@ -276,7 +251,6 @@ const ForgotPassword = () => {
           </form>
         )}
 
-        {/* STEP 3 */}
         {step === 3 && (
           <form onSubmit={handleResetPassword} className="fp-form">
             <label className="fp-label" htmlFor="newPassword">

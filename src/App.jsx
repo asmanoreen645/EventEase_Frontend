@@ -11,6 +11,7 @@ import Decorators from './Decorators';
 import Photographer from './Photographer';
 import Login from './login';
 import Signup from './Signup';
+//import ForgotPassword from './ForgotPassword';
 import ForgotPassword from './ForgotPassword';
 import VendorRegister from './VendorRegistrationform';
 import VendorDashboard from './VendorDashboard';
@@ -59,7 +60,8 @@ function UserLayout() {
         <Route path="photographer" element={<Photographer />} />
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
-        <Route path="/forgot" element={<ForgotPassword />} />
+
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="vendor-register" element={<VendorRegister />} />
         <Route path="vendor-dashboard" element={<VendorDashboard />} />
         <Route path="about" element={<About />} />
