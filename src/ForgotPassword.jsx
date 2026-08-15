@@ -1,39 +1,29 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-// BACKEND INTEGRATION (Commented until APIs are ready)
-// import axiosInstance from "../utils/axiosConfig";
+import API from './api/axiosConfig';
 import "./ForgotPassword.css";
 
-// OTP validity window in seconds — must match the expiry set on the backend
-const OTP_EXPIRY_SECONDS = 300; // 5 minutes
+const OTP_EXPIRY_SECONDS = 300;
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
-
-  // step: 1 = enter email, 2 = enter OTP, 3 = set new password
   const [step, setStep] = useState(1);
-
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [verifiedOtp, setVerifiedOtp] = useState(""); // Stores verified OTP safely for Step 3
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-
   const [timer, setTimer] = useState(OTP_EXPIRY_SECONDS);
   const otpInputRefs = useRef([]);
 
-  // countdown for OTP expiry, only runs while on step 2
   useEffect(() => {
-    if (step !== 2) return;
-    if (timer <= 0) return;
-
+    if (step !== 2 || timer <= 0) return;
     const interval = setInterval(() => {
       setTimer((prev) => prev - 1);
     }, 1000);
-
     return () => clearInterval(interval);
   }, [step, timer]);
 
@@ -48,24 +38,18 @@ const ForgotPassword = () => {
     setSuccessMsg("");
   };
 
-  // ---------- STEP 1: request OTP ----------
+  // STEP 1: Send OTP
   const handleSendOtp = async (e) => {
     e.preventDefault();
     clearMessages();
-
     if (!email.trim()) {
       setError("Please enter your registered email address.");
       return;
     }
-
     setLoading(true);
     try {
-      // ---------------- BACKEND INTEGRATION (COMMENTED) ----------------
-      // await axiosInstance.post("/api/auth/forgot-password", { email });
-      // -----------------------------------------------------------------
-
-      // TEMPORARY DUMMY FLOW
-      setSuccessMsg("OTP sent to your email.");
+      const response = await API.post("/api/auth/forgot-password", { email });
+      setSuccessMsg(response.data?.message || "OTP sent to your email.");
       setStep(2);
       setTimer(OTP_EXPIRY_SECONDS);
     } catch (err) {
@@ -78,15 +62,12 @@ const ForgotPassword = () => {
     }
   };
 
-  // ---------- STEP 2: verify OTP ----------
+  // STEP 2: Handle OTP input
   const handleOtpChange = (index, value) => {
-    if (!/^[0-9]?$/.test(value)) return; // digits only, one char per box
-
+    if (!/^[0-9]?$/.test(value)) return;
     const updated = [...otp];
     updated[index] = value;
     setOtp(updated);
-
-    // auto-focus next box
     if (value && index < 5) {
       otpInputRefs.current[index + 1]?.focus();
     }
@@ -98,10 +79,10 @@ const ForgotPassword = () => {
     }
   };
 
+  // STEP 2: Verify OTP
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     clearMessages();
-
     const otpValue = otp.join("");
     if (otpValue.length !== 6) {
       setError("Please enter the complete 6-digit OTP.");
@@ -111,18 +92,14 @@ const ForgotPassword = () => {
       setError("OTP has expired. Please request a new one.");
       return;
     }
-
     setLoading(true);
     try {
-      // ---------------- BACKEND INTEGRATION (COMMENTED) ----------------
-      // await axiosInstance.post("/api/auth/verify-otp", {
-      //   email,
-      //   otp: otpValue,
-      // });
-      // -----------------------------------------------------------------
-
-      // TEMPORARY DUMMY FLOW
-      setSuccessMsg("OTP verified. Please set your new password.");
+      const response = await API.post("/api/auth/verify-otp", {
+        email,
+        otp: otpValue,
+      });
+      setVerifiedOtp(otpValue); // OTP save kar liya Step 3 ke liye
+      setSuccessMsg(response.data?.message || "OTP verified. Please set your new password.");
       setStep(3);
     } catch (err) {
       setError(
@@ -137,14 +114,10 @@ const ForgotPassword = () => {
     clearMessages();
     setLoading(true);
     try {
-      // ---------------- BACKEND INTEGRATION (COMMENTED) ----------------
-      // await axiosInstance.post("/api/auth/forgot-password", { email });
-      // -----------------------------------------------------------------
-
-      // TEMPORARY DUMMY FLOW
+      const response = await API.post("/api/auth/forgot-password", { email });
       setOtp(["", "", "", "", "", ""]);
       setTimer(OTP_EXPIRY_SECONDS);
-      setSuccessMsg("A new OTP has been sent to your email.");
+      setSuccessMsg(response.data?.message || "A new OTP has been sent to your email.");
       otpInputRefs.current[0]?.focus();
     } catch (err) {
       setError(err.response?.data?.message || "Could not resend OTP. Try again.");
@@ -153,7 +126,7 @@ const ForgotPassword = () => {
     }
   };
 
-  // ---------- STEP 3: reset password ----------
+  // STEP 3: Reset Password
   const handleResetPassword = async (e) => {
     e.preventDefault();
     clearMessages();
@@ -169,16 +142,13 @@ const ForgotPassword = () => {
 
     setLoading(true);
     try {
-      // ---------------- BACKEND INTEGRATION (COMMENTED) ----------------
-      // await axiosInstance.post("/api/auth/reset-password", {
-      //   email,
-      //   otp: otp.join(""),
-      //   newPassword,
-      // });
-      // -----------------------------------------------------------------
-
-      // TEMPORARY DUMMY FLOW
-      setSuccessMsg("Password reset successful! Redirecting to login...");
+      // Sending verifiedOtp along with email & newPassword
+      const response = await API.post("/api/auth/reset-password", {
+        email,
+        otp: verifiedOtp || otp.join(""),
+        newPassword,
+      });
+      setSuccessMsg(response.data?.message || "Password reset successful! Redirecting to login...");
       setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
       setError(
@@ -204,7 +174,6 @@ const ForgotPassword = () => {
           </p>
         </div>
 
-        {/* progress indicator */}
         <div className="fp-progress" aria-hidden="true">
           {[1, 2, 3].map((s) => (
             <div

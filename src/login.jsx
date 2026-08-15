@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import './login.css';
-import { useNavigate, useLocation } from 'react-router-dom';
-import googleIcon from './google-icon.png';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from './Components/AuthContext'; 
-import { Link } from 'react-router-dom';
 import API from './api/axiosConfig';
+import { GoogleLogin } from '@react-oauth/google';
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -17,6 +16,37 @@ const LoginForm = () => {
   const location = useLocation();
   const { login } = useAuth();
 
+  // Common Redirection Logic
+  const handleAuthSuccess = (user, token) => {
+    login(user, token);
+    const redirectPath = location.state?.from;
+
+    const vendorOnlyPaths = ['/vendor-register', '/vendor-dashboard'];
+    const adminOnlyPaths = ['/admin'];
+
+    const isPathAllowedForRole = (path, role) => {
+      if (vendorOnlyPaths.includes(path) && role !== 'vendor') return false;
+      if (adminOnlyPaths.includes(path) && role !== 'admin') return false;
+      return true;
+    };
+
+    if (redirectPath && isPathAllowedForRole(redirectPath, user.role)) {
+      navigate(redirectPath);
+    } else if (user.role === 'admin') {
+      navigate('/admin');
+    } else if (user.role === 'vendor') {
+      const alreadyRegistered = localStorage.getItem('vendorRegistered') === 'true';
+      if (alreadyRegistered) {
+        navigate('/vendor-dashboard');
+      } else {
+        navigate('/vendor-register');
+      }
+    } else {
+      navigate('/');
+    }
+  };
+
+  // Normal Email/Password Login Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -24,43 +54,27 @@ const LoginForm = () => {
 
     try {
       const response = await API.post('/api/auth/login', { email, password });
-
       const { token, user } = response.data;
-
-      login(user, token);
-
-      // 🔧 Agar user kisi specific page (chat/booking) se redirect hoke aya hai,
-      // tw usay wapis wahin bhejna hai — role-based default se pehle check karo
-      const redirectPath = location.state?.from;
-
-const vendorOnlyPaths = ['/vendor-register', '/vendor-dashboard'];
-const adminOnlyPaths = ['/admin'];
-
-const isPathAllowedForRole = (path, role) => {
-  if (vendorOnlyPaths.includes(path) && role !== 'vendor') return false;
-  if (adminOnlyPaths.includes(path) && role !== 'admin') return false;
-  return true;
-};
-
-if (redirectPath && isPathAllowedForRole(redirectPath, user.role)) {
-  navigate(redirectPath);
-} else if (user.role === 'admin') {
-  navigate('/admin');
-} else if (user.role === 'vendor') {
-  const alreadyRegistered = localStorage.getItem('vendorRegistered') === 'true';
-  if (alreadyRegistered) {
-    navigate('/vendor-dashboard');
-  } else {
-    navigate('/vendor-register');
-  }
-} else {
-  navigate('/');
-}
-
+      handleAuthSuccess(user, token);
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Google Login Success Handler
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const response = await API.post('/api/auth/google', {
+        token: credentialResponse.credential
+      });
+
+      const { token, user } = response.data;
+      handleAuthSuccess(user, token);
+    } catch (err) {
+      console.error("Google Login Error:", err);
+      setError(err.response?.data?.message || 'Google Login Failed');
     }
   };
 
@@ -75,7 +89,7 @@ if (redirectPath && isPathAllowedForRole(redirectPath, user.role)) {
           <p className="subtitle">Plan your perfect moment</p>
         </div>
 
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <p style={{ color: 'red', textAlign: 'center', marginBottom: '10px' }}>{error}</p>}
 
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="input-group">
@@ -108,7 +122,7 @@ if (redirectPath && isPathAllowedForRole(redirectPath, user.role)) {
           </div>
 
           <div className="forgot-password">
-         <Link to="/forgot-password">Forgot Password?</Link>
+            <Link to="/forgot-password">Forgot Password?</Link>
           </div>
           <button type="submit" className="login-btn" disabled={loading}>
             {loading ? 'Logging in...' : 'Login'}
@@ -119,13 +133,16 @@ if (redirectPath && isPathAllowedForRole(redirectPath, user.role)) {
           <span>OR CONTINUE WITH</span>
         </div>
 
-        <button className="google-btn">
-          <img src={googleIcon} alt="Google" />
-          Sign up with Google
-        </button>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '15px' }}>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => setError('Google Login Failed')}
+            useOneTap
+          />
+        </div>
 
         <p className="footer-text">
-          Don't have an account? <a href="#signup">Sign Up</a>
+          Don't have an account? <Link to="/signup">Sign Up</Link>
         </p>
       </div>
     </div>
