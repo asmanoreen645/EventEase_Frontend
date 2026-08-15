@@ -94,7 +94,7 @@ function Payment() {
 
       // ===== STEP 1: Booking create kar0 =====
       const bookingData = {
-      vendorId: vendor.id,
+      vendorId: vendor._id,
       packageDetails: selectedPackage,
       eventDate: bookingDetails.eventDate,
         totalAmount: totalPrice,
