@@ -10,6 +10,7 @@ const ForgotPassword = () => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [verifiedOtp, setVerifiedOtp] = useState(""); // Stores verified OTP safely for Step 3
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -37,6 +38,7 @@ const ForgotPassword = () => {
     setSuccessMsg("");
   };
 
+  // STEP 1: Send OTP
   const handleSendOtp = async (e) => {
     e.preventDefault();
     clearMessages();
@@ -60,6 +62,7 @@ const ForgotPassword = () => {
     }
   };
 
+  // STEP 2: Handle OTP input
   const handleOtpChange = (index, value) => {
     if (!/^[0-9]?$/.test(value)) return;
     const updated = [...otp];
@@ -76,6 +79,7 @@ const ForgotPassword = () => {
     }
   };
 
+  // STEP 2: Verify OTP
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     clearMessages();
@@ -94,6 +98,7 @@ const ForgotPassword = () => {
         email,
         otp: otpValue,
       });
+      setVerifiedOtp(otpValue); // OTP save kar liya Step 3 ke liye
       setSuccessMsg(response.data?.message || "OTP verified. Please set your new password.");
       setStep(3);
     } catch (err) {
@@ -121,9 +126,11 @@ const ForgotPassword = () => {
     }
   };
 
+  // STEP 3: Reset Password
   const handleResetPassword = async (e) => {
     e.preventDefault();
     clearMessages();
+
     if (newPassword.length < 6) {
       setError("Password must be at least 6 characters long.");
       return;
@@ -132,11 +139,13 @@ const ForgotPassword = () => {
       setError("Passwords do not match.");
       return;
     }
+
     setLoading(true);
     try {
+      // Sending verifiedOtp along with email & newPassword
       const response = await API.post("/api/auth/reset-password", {
         email,
-        otp: otp.join(""),
+        otp: verifiedOtp || otp.join(""),
         newPassword,
       });
       setSuccessMsg(response.data?.message || "Password reset successful! Redirecting to login...");
@@ -179,6 +188,7 @@ const ForgotPassword = () => {
           <div className="fp-alert fp-alert--success">{successMsg}</div>
         )}
 
+        {/* STEP 1 */}
         {step === 1 && (
           <form onSubmit={handleSendOtp} className="fp-form">
             <label className="fp-label" htmlFor="email">
@@ -199,6 +209,7 @@ const ForgotPassword = () => {
           </form>
         )}
 
+        {/* STEP 2 */}
         {step === 2 && (
           <form onSubmit={handleVerifyOtp} className="fp-form">
             <div className="fp-otp-row">
@@ -251,6 +262,7 @@ const ForgotPassword = () => {
           </form>
         )}
 
+        {/* STEP 3 */}
         {step === 3 && (
           <form onSubmit={handleResetPassword} className="fp-form">
             <label className="fp-label" htmlFor="newPassword">
