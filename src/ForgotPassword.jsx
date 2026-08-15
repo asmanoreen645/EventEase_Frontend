@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-// BACKEND INTEGRATION (Commented until APIs are ready)
-// import axiosInstance from "../utils/axiosConfig";
+import API from './api/axiosConfig';
 import "./ForgotPassword.css";
 
 // OTP validity window in seconds — must match the expiry set on the backend
@@ -60,12 +59,8 @@ const ForgotPassword = () => {
 
     setLoading(true);
     try {
-      // ---------------- BACKEND INTEGRATION (COMMENTED) ----------------
-      // await axiosInstance.post("/api/auth/forgot-password", { email });
-      // -----------------------------------------------------------------
-
-      // TEMPORARY DUMMY FLOW
-      setSuccessMsg("OTP sent to your email.");
+      const response = await API.post("/api/auth/forgot-password", { email });
+      setSuccessMsg(response.data?.message || "OTP sent to your email.");
       setStep(2);
       setTimer(OTP_EXPIRY_SECONDS);
     } catch (err) {
@@ -114,15 +109,11 @@ const ForgotPassword = () => {
 
     setLoading(true);
     try {
-      // ---------------- BACKEND INTEGRATION (COMMENTED) ----------------
-      // await axiosInstance.post("/api/auth/verify-otp", {
-      //   email,
-      //   otp: otpValue,
-      // });
-      // -----------------------------------------------------------------
-
-      // TEMPORARY DUMMY FLOW
-      setSuccessMsg("OTP verified. Please set your new password.");
+      const response = await API.post("/api/auth/verify-otp", {
+        email,
+        otp: otpValue,
+      });
+      setSuccessMsg(response.data?.message || "OTP verified. Please set your new password.");
       setStep(3);
     } catch (err) {
       setError(
@@ -137,14 +128,10 @@ const ForgotPassword = () => {
     clearMessages();
     setLoading(true);
     try {
-      // ---------------- BACKEND INTEGRATION (COMMENTED) ----------------
-      // await axiosInstance.post("/api/auth/forgot-password", { email });
-      // -----------------------------------------------------------------
-
-      // TEMPORARY DUMMY FLOW
+      const response = await API.post("/api/auth/forgot-password", { email });
       setOtp(["", "", "", "", "", ""]);
       setTimer(OTP_EXPIRY_SECONDS);
-      setSuccessMsg("A new OTP has been sent to your email.");
+      setSuccessMsg(response.data?.message || "A new OTP has been sent to your email.");
       otpInputRefs.current[0]?.focus();
     } catch (err) {
       setError(err.response?.data?.message || "Could not resend OTP. Try again.");
@@ -169,16 +156,12 @@ const ForgotPassword = () => {
 
     setLoading(true);
     try {
-      // ---------------- BACKEND INTEGRATION (COMMENTED) ----------------
-      // await axiosInstance.post("/api/auth/reset-password", {
-      //   email,
-      //   otp: otp.join(""),
-      //   newPassword,
-      // });
-      // -----------------------------------------------------------------
-
-      // TEMPORARY DUMMY FLOW
-      setSuccessMsg("Password reset successful! Redirecting to login...");
+      const response = await API.post("/api/auth/reset-password", {
+        email,
+        otp: otp.join(""),
+        newPassword,
+      });
+      setSuccessMsg(response.data?.message || "Password reset successful! Redirecting to login...");
       setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
       setError(
