@@ -17,7 +17,9 @@ const LoginForm = () => {
   const { login } = useAuth();
 
   // Common Redirection Logic
+ 
   const handleAuthSuccess = (user, token) => {
+     console.log("FULL USER OBJECT:", user);
     login(user, token);
     const redirectPath = location.state?.from;
 
