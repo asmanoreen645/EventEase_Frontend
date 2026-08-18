@@ -94,11 +94,14 @@ function Payment() {
 
       // ===== STEP 1: Booking create kar0 =====
       const bookingData = {
-      vendorId: vendor.id,
+      vendorId: vendor._id || vendor.id || vendor.vendorId,
       packageDetails: selectedPackage,
       eventDate: bookingDetails.eventDate,
         totalAmount: totalPrice,
+        billingAddress: billingAddress, 
+        userId: userId
 };
+      console.log("Sending Payload to Backend:", bookingData); // Debugging ke liye check kar sakti
       const bookingResponse = await API.post('/api/bookings/book', bookingData);
       console.log("Booking Response:", bookingResponse.data);
 
