@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from "react";
-import { Link } from 'react-router-dom';
 import "./Home.css";
 
 const heroImages = [
@@ -123,20 +122,6 @@ const [serviceSlide, setServiceSlide] = useState(0);
 
   return (
     <div className="ee-main-wrapper">
-      {/* NAV */}
-      <nav className="ee-nav">
-        <div className="ee-logo">Event<span>Ease</span></div>
-        <div className="ee-nav-links">
-          <Link to="/">Home</Link>
-          <Link to="/services">Services</Link>
-          <a href="#">Vendors</a>
-          <a href="#">About Us</a>
-        </div>
-        <div className="ee-nav-actions">
-          <button className="ee-btn-ghost" onClick={() => navigate('/login')}>Login</button>
-          <button className="ee-btn-primary" onClick={() => navigate('/signup')}>Sign Up</button>
-        </div>
-      </nav>
       <section className="ee-hero">
   <video className="ee-hero-video" autoPlay loop muted playsInline>
     <source src="/hero-video.mp4" type="video/mp4" />
