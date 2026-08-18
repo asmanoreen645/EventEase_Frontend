@@ -62,35 +62,46 @@ export default function Navbar() {
             </div>
 
             {showDropdown && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "45px",
-                  right: 0,
-                  background: "white",
-                  boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
-                  borderRadius: "8px",
-                  width: "160px",
-                  zIndex: 1000,
-                }}
-              >
-                <div style={{ padding: "10px", borderBottom: "1px solid #eee", fontSize: "13px", color: "#888" }}>
-                  {user.email}
-                </div>
-                <div
-                  onClick={() => { navigate('/profile'); setShowDropdown(false); }}
-                  style={{ padding: "10px", cursor: "pointer" }}
-                >
-                  Profile
-                </div>
-                <div
-                  onClick={handleLogout}
-                  style={{ padding: "10px", cursor: "pointer", color: "red" }}
-                >
-                  Logout
-                </div>
-              </div>
-            )}
+  <div
+    style={{
+      position: "absolute",
+      top: "45px",
+      right: 0,
+      background: "white",
+      boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
+      borderRadius: "8px",
+      width: "160px",
+      zIndex: 1000,
+    }}
+  >
+    <div style={{ padding: "10px", borderBottom: "1px solid #eee", fontSize: "13px", color: "#888" }}>
+      {user.email}
+    </div>
+    <div
+      onClick={() => { navigate('/profile'); setShowDropdown(false); }}
+      style={{ padding: "10px", cursor: "pointer" }}
+    >
+      Profile
+    </div>
+
+    {/* NAYA ADDITION */}
+    {user.role === 'customer' && (
+      <div
+        onClick={() => { navigate('/customer-dashboard'); setShowDropdown(false); }}
+        style={{ padding: "10px", cursor: "pointer" }}
+      >
+        My Dashboard
+      </div>
+    )}
+
+    <div
+      onClick={handleLogout}
+      style={{ padding: "10px", cursor: "pointer", color: "red" }}
+    >
+      Logout
+    </div>
+  </div>
+)}
           </div>
         ) : (
           <>
