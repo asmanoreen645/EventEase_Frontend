@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useBooking } from "./Components/BookingContext";
-import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js"; // CHANGE: naya import - Stripe hooks aur CardElement
+import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import "./BookingDetails.css";
 import "./Payment.css";
 import API from './api/axiosConfig';
@@ -9,7 +9,6 @@ import API from './api/axiosConfig';
 const PLATFORM_FEE = 600;
 const ADVANCE_PERCENT = 0.3;
 
-// naya object - CardElement ki styling 
 const cardElementOptions = {
   style: {
     base: {
@@ -22,10 +21,15 @@ const cardElementOptions = {
   },
 };
 
+// NAYA: check karta hai ke id asal MongoDB ObjectId hai ya dummy number
+function isValidObjectId(id) {
+  return typeof id === "string" && /^[0-9a-fA-F]{24}$/.test(id);
+}
+
 function Payment() {
   const navigate = useNavigate();
-  const stripe = useStripe();       
-  const elements = useElements();  
+  const stripe = useStripe();
+  const elements = useElements();
   const {
     vendor,
     bookingDetails,
@@ -34,10 +38,9 @@ function Payment() {
   } = useBooking();
 
   const [cardName, setCardName] = useState("");
-  // cardNumber, expiry, cvc states HATA DIYE - Stripe CardElement khud ye manage karta hai
   const [billingAddress, setBillingAddress] = useState("");
   const [loading, setLoading] = useState(false);
-  const [cardError, setCardError] = useState(""); //  - Stripe ka error message dikhane ke liye
+  const [cardError, setCardError] = useState("");
 
   if (!vendor || !bookingDetails || !selectedPackage) {
     return (
@@ -57,10 +60,10 @@ function Payment() {
 
   const handlePay = async (e) => {
     e.preventDefault();
-    setCardError(""); 
-    console.log("selectedPackage check:", selectedPackage); 
+    setCardError("");
+    console.log("selectedPackage check:", selectedPackage);
     console.log("DEBUG vendor object:", vendor);
-  console.log("DEBUG vendor keys:", vendor ? Object.keys(vendor) : "vendor is null/undefined");
+    console.log("DEBUG vendor keys:", vendor ? Object.keys(vendor) : "vendor is null/undefined");
 
     const userId = localStorage.getItem("userId");
     if (!userId) {
@@ -77,13 +80,11 @@ function Payment() {
       return;
     }
 
-    // ab sirf cardName aur billingAddress check ho rahe hain (card number/cvc Stripe khud validate karega)
     if (!cardName || !billingAddress) {
       alert("Fill cardholder name and billing address.");
       return;
     }
 
-    //  - Stripe.js abhi load ho raha ho to rukna
     if (!stripe || !elements) {
       alert("Payment system loading, thori dair rukein.");
       return;
@@ -92,29 +93,39 @@ function Payment() {
     try {
       setLoading(true);
 
-      // ===== STEP 1: Booking create kar0 =====
-      const bookingData = {
-      vendorId: vendor._id || vendor.id || vendor.UserId || vendor.vendorId,
-      packageDetails: selectedPackage,
-      eventDate: bookingDetails.eventDate,
-        totalAmount: totalPrice,
-        billingAddress: billingAddress, 
-        userId: userId
-};
-      console.log("Sending Payload to Backend:", bookingData); // Debugging ke liye check kar sakti
-      const bookingResponse = await API.post('/api/bookings/book', bookingData);
-      console.log("Booking Response:", bookingResponse.data);
+      // ===== STEP 1: Booking create karo (dummy ya real check ke sath) =====
+      const rawVendorId = vendor._id || vendor.id || vendor.UserId || vendor.vendorId;
+      const isDummy = !isValidObjectId(String(rawVendorId));
 
-      if (!bookingResponse.data.success) {
-        alert("Booking failed! Please try again.");
-        setLoading(false);
-        return;
+      let bookingId;
+
+      if (isDummy) {
+        // Dummy vendor — backend ko call nahi karna, seedha simulate karo
+        console.log("Dummy vendor detected, skipping real booking API call");
+        bookingId = "dummy-" + Date.now();
+      } else {
+        const bookingData = {
+          vendorId: rawVendorId,
+          packageDetails: selectedPackage,
+          eventDate: bookingDetails.eventDate,
+          totalAmount: totalPrice,
+          billingAddress: billingAddress,
+          userId: userId
+        };
+        console.log("Sending Payload to Backend:", bookingData);
+        const bookingResponse = await API.post('/api/bookings/book', bookingData);
+        console.log("Booking Response:", bookingResponse.data);
+
+        if (!bookingResponse.data.success) {
+          alert("Booking failed! Please try again.");
+          setLoading(false);
+          return;
+        }
+
+        bookingId = bookingResponse.data.booking?._id || bookingResponse.data._id;
       }
 
-      // booking response se bookingId nikal rahe hain (payment API ko chahiye)
-      const bookingId = bookingResponse.data.booking?._id || bookingResponse.data._id;
-
-      // ===== STEP 2 Card details ko Stripe token mein convert karo =====
+      // ===== STEP 2: Card details ko Stripe token mein convert karo =====
       const cardElement = elements.getElement(CardElement);
       const { token, error } = await stripe.createToken(cardElement, {
         name: cardName,
@@ -122,7 +133,6 @@ function Payment() {
       });
 
       if (error) {
-        // agar card declined/invalid ho - booking already ban chuki hai, lekin payment nahi hui
         console.error("Stripe token error:", error);
         setCardError(error.message);
         alert("Card error: " + error.message);
@@ -130,28 +140,32 @@ function Payment() {
         return;
       }
 
-      // ===== STEP 3 Backend ko token bhejo, actual charge ho =====
-      try {
-        const chargeResponse = await API.post('/api/payments/charge', {
-          bookingId: bookingId,
-          token: token.id,
-        });
+      // ===== STEP 3: Backend ko token bhejo, actual charge ho (dummy ya real check ke sath) =====
+      if (isDummy) {
+        console.log("Dummy booking — skipping real charge API call");
+      } else {
+        try {
+          const chargeResponse = await API.post('/api/payments/charge', {
+            bookingId: bookingId,
+            token: token.id,
+          });
 
-        console.log("Charge Response:", chargeResponse.data);
+          console.log("Charge Response:", chargeResponse.data);
 
-        if (!chargeResponse.data.success) {
-          alert("Payment failed: " + (chargeResponse.data.message || "Please try again."));
+          if (!chargeResponse.data.success) {
+            alert("Payment failed: " + (chargeResponse.data.message || "Please try again."));
+            setLoading(false);
+            return;
+          }
+        } catch (chargeErr) {
+          console.error("Charge error:", chargeErr);
+          alert(chargeErr.response?.data?.message || "Payment failed! Please try again.");
           setLoading(false);
           return;
         }
-      } catch (chargeErr) {
-        console.error("Charge error:", chargeErr);
-        alert(chargeErr.response?.data?.message || "Payment failed! Please try again.");
-        setLoading(false);
-        return;
       }
 
-      // ===== STEP 4: Notification bhejo (pehle jaisa try-catch, bas ab payment ke baad chalta hai) =====
+      // ===== STEP 4: Notification bhejo =====
       try {
         const userEmail = localStorage.getItem('userEmail');
         await API.post('/api/notifications/send-email', {
@@ -232,12 +246,10 @@ function Payment() {
             <label>Card information</label>
             <div className="card-info-box">
               <span className="card-badge">VISA</span>
-              {/* CHANGE: purane 3 inputs (number, expiry, cvc) hata kar ye single CardElement lagaya - PCI-safe */}
               <div style={{ flex: 1, padding: "10px" }}>
                 <CardElement options={cardElementOptions} />
               </div>
             </div>
-            {/*- Stripe error message yahan dikhega agar card invalid ho */}
             {cardError && (
               <p style={{ color: "#e5424d", fontSize: "13px", marginTop: "4px" }}>{cardError}</p>
             )}
@@ -269,7 +281,6 @@ function Payment() {
             </div>
           </div>
 
-          {/* disabled condition mein !stripe add kiya - Stripe load hone tak button disabled rahega */}
           <button type="submit" className="btn-pay" disabled={loading || !stripe}>
             {loading ? "Processing..." : `Confirm & Pay PKR ${totalDueToday.toLocaleString()}`}
           </button>
