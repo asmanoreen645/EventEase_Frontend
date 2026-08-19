@@ -367,7 +367,7 @@ export default function VendorProfile() {
 
   const handleBookNow = () => {
     setVendor({
-      id: vendor._id,
+      id: vendor._id || vendor.UserId,
       name: vendor.name,
       category: getCategoryFromType(vendor.type),
       price: vendor.price,
