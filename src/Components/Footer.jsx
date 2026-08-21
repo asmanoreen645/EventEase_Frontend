@@ -31,7 +31,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="ee-footer-bottom">
-        <p>© 2024 EVENTEASE. CURATING EXCELLENCE IN EVERY DETAIL</p>
+         <p>&copy; {new Date().getFullYear()} EventEase. All rights reserved.</p>
         <div className="ee-footer-icons">
           <div className="ee-footer-icon">🌐</div>
           <div className="ee-footer-icon">↗</div>
