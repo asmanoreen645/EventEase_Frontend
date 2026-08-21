@@ -42,6 +42,11 @@
 .ee-nav-links a:hover {
   color: #c9a84c;
 }
+.nav-active {
+  color:#c9a84c ;     
+  font-weight: bold;
+  border-bottom: 2px solid #e0bc60;
+}
 
 .ee-nav-actions {
   display: flex;

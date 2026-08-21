@@ -1,5 +1,6 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { NavLink } from "react-router-dom";
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import { useAuth } from "../Components/AuthContext"; // apna actual path check kar lena
 import "./Navbar.css";
@@ -33,11 +34,19 @@ export default function Navbar() {
     <nav className="ee-nav">
       <div className="ee-logo">Event<span>Ease</span></div>
       <div className="ee-nav-links">
-        <Link to="/">Home</Link>
-        <Link to="/services">Services</Link>
-        <Link to="/vendors">Vendors</Link>
-        <Link to="/about">About Us</Link>
-      </div>
+       <NavLink to="/" className={({ isActive }) => isActive ? "nav-active" : ""}>
+       Home
+        </NavLink>
+        <NavLink to="/services" className={({ isActive }) => isActive ? "nav-active" : ""}>
+        Services
+        </NavLink>
+        <NavLink to="/vendors" className={({ isActive }) => isActive ? "nav-active" : ""}>
+        Vendors
+        </NavLink>
+        <NavLink to="/about" className={({ isActive }) => isActive ? "nav-active" : ""}>
+       About Us
+       </NavLink>
+        </div>
       <div className="ee-nav-actions">
         <NotificationBell />
 
