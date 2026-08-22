@@ -146,9 +146,10 @@ function Payment() {
       } else {
         try {
           const chargeResponse = await API.post('/api/payments/charge', {
-            bookingId: bookingId,
-            token: token.id,
-          });
+         bookingId: bookingId,
+          token: token.id,
+         amount: totalDueToday, // Total due amount backend Stripe charge ke liye pass karein
+});
 
           console.log("Charge Response:", chargeResponse.data);
 
