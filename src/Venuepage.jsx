@@ -1,26 +1,54 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import "./Venuepage.css";
 import { Heart } from "lucide-react";
 import { dummyVenues } from "./Components/VendorsData";
 import API from "./api/axiosConfig";
 
-const VendorsType = ["Photographers", "Caterers", "Decorators"];
+const VendorsType = ["All", "Photographers", "Caterers", "Decorators", "Venues & Marquees"];
 const venueTypes = ["All", "Marquee", "Hotel", "Farmhouse", "Hall", "Convention Centre"];
-const eventTypes = ["Wedding", "Corporate", "Birthday", "Family"];
 
-// Location Data object for dependent dropdowns
+// Pakistani Regional Cascading Data Pipeline
 const locationData = {
-  Pakistan: ["Lahore", "Islamabad", "Karachi", "Mandi Bahauddin"],
-  UAE: ["Dubai", "Abu Dhabi", "Sharjah"],
-  UK: ["London", "Manchester", "Birmingham"]
+  Punjab: ["Mandi Bahauddin", "Lahore", "islamabad","Rawalpindi", "Gujrat", "Faisalabad", "Multan", "Sialkot"],
+  Sindh: ["Karachi", "Hyderabad", "Sukkur"],
+  "Khyber Pakhtunkhwa": ["Peshawar", "Abbottabad"],
+  Balochistan: ["Quetta"],
+  "Islamabad Capital": ["Islamabad"]
 };
 
 export default function Venuepage() {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [animatedVendors, setAnimatedVendors] = useState(0);
   const [animatedRating, setAnimatedRating] = useState(0);
   const [animatedEvents, setAnimatedEvents] = useState(0);
   const [realVendors, setRealVendors] = useState([]);
+
+  // Task 12: URL Query Parameters Sync
+  const [selectedProvince, setSelectedProvince] = useState(searchParams.get("province") || "");
+  const [selectedCity, setSelectedCity] = useState(searchParams.get("city") || "");
+  const [selectedService, setSelectedService] = useState(searchParams.get("category") || "All");
+  const [selectedType, setSelectedType] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(150000);
+  const [minCapacity, setMinCapacity] = useState(0);
+  const [sortBy, setSortBy] = useState("relevance");
+  const [filtersOpen, setFiltersOpen] = useState(true);
+  const [favorites, setFavorites] = useState([]);
+
+  // URL Query Parameters ko real-time read karna (Home Page integration)
+  useEffect(() => {
+    const prov = searchParams.get("province");
+    const cty = searchParams.get("city");
+    const cat = searchParams.get("category");
+
+    if (prov) setSelectedProvince(prov);
+    if (cty) setSelectedCity(cty);
+    if (cat) setSelectedService(cat);
+  }, [searchParams]);
 
   // Fetch real vendors from backend
   useEffect(() => {
@@ -29,23 +57,22 @@ export default function Venuepage() {
         const res = await API.get("/api/vendors/search");
         const backendVendors = res.data.vendors || [];
 
-        // Real vendor data ko card ke expected shape mein map karo
         const mapped = backendVendors.map((v) => ({
-          UserId: v._id,          // real ID (dummy cards bhi isi key ko use karte hain)
+          UserId: v._id,
           _id: v._id,
           name: v.businessName || "Unnamed Vendor",
-          image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&q=80", 
+          image: v.coverImage || "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&q=80",
           type: v.category || "Decorators",
-          rating: v.rating || 0,
-          reviews: v.totalReviews || 0,
-          location: v.location?.city || "Location not set",
+          rating: v.rating || 4.5,
+          reviews: v.totalReviews || 12,
+          location: v.location?.city || "Mandi Bahauddin",
           description: v.description || "No description provided.",
-          eventTypes: ["Wedding"],   // backend mein abhi ye field nahi, placeholder
-          price: v.price || 0,
-          country: "Pakistan",      // backend mein country field nahi, filter ke liye default
-          city: v.location?.city || "",
+          eventTypes: ["Wedding"],
+          price: v.price || 50000,
+          province: v.location?.province || "Punjab",
+          city: v.location?.city || "Mandi Bahauddin",
           topPick: false,
-          isReal: true,             // taake pehchan sakein ye real vendor hai
+          isReal: true,
         }));
 
         setRealVendors(mapped);
@@ -59,10 +86,10 @@ export default function Venuepage() {
 
   useEffect(() => {
     const targetVendors = dummyVenues.length + realVendors.length;
-    const targetRating = dummyVenues.reduce((sum, v) => sum + (v.rating || 0), 0) / dummyVenues.length;
+    const targetRating = 4.8;
     const targetEvents = 1000;
-    const duration = 1000;
-    const steps = 30;
+    const duration = 800;
+    const steps = 20;
     const interval = duration / steps;
 
     let step = 0;
@@ -78,87 +105,78 @@ export default function Venuepage() {
     return () => clearInterval(timer);
   }, [realVendors]);
 
-  const [selectedType, setSelectedType] = useState("All");
-  // CHANGE: Services filter (Photographers/Caterers/Decorators) ke liye single-select state
-  // (naam fix: pehle "selectedServices" tha jo baaki code mein "selectedService" se mismatch tha)
-  const [selectedService, setSelectedService] = useState("All");
-  // CHANGE: naya state — search-by-name field ke liye
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
-  const [selectedEvents, setSelectedEvents] = useState([]);
-  const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(10000);
-  const [minCapacity, setMinCapacity] = useState(0);
-  const [sortBy, setSortBy] = useState("relevance");
-  const [filtersOpen, setFiltersOpen] = useState(true);
-  const [favorites, setFavorites] = useState([]);
-
-  // CHANGE: toggleEventType (Wedding/Corporate/etc ke liye) rakha hua hai kyunke selectedEvents
-  // abhi bhi array/multi-select hai
-  const toggleEventType = (type) => {
-    setSelectedEvents((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+  const toggleFavorite = (id) => {
+    setFavorites((prev) =>
+      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
     );
   };
 
-  // CHANGE: toggleService function hata diya — ab zaroorat nahi kyunke Services single-select
-  // hai aur pill button seedha setSelectedService call karta hai (neeche JSX mein dekho)
-
-const toggleFavorite = (id) => {
-  setFavorites((prev) =>
-    prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
-  );
-};
-  const handleCountryChange = (e) => {
-    setSelectedCountry(e.target.value);
-    setSelectedCity(""); // Reset city dropdown when country changes
+  const handleProvinceChange = (e) => {
+    setSelectedProvince(e.target.value);
+    setSelectedCity("");
   };
 
-  // Real + Dummy vendors ek sath
   const allVenues = [...realVendors, ...dummyVenues];
 
-  const filteredVenues = allVenues
-    .filter((v) => {
-      // CHANGE: search-by-name check — sab se pehle chalta hai
-      if (
-        searchQuery.trim() &&
-        !v.name?.toLowerCase().includes(searchQuery.trim().toLowerCase())
-      )
-        return false;
-      if (selectedType !== "All" && v.type !== selectedType) return false;
-      // CHANGE: services filter — ab single value (selectedService) ko venue ke "type" field
-      // se case-insensitive compare karta hai
-      if (
-        selectedService !== "All" &&
-        v.type?.toLowerCase() !== selectedService.toLowerCase()
-      )
-        return false;
-      if (selectedCountry && v.country !== selectedCountry) return false;
-      if (selectedCity && v.city !== selectedCity) return false;
-      if (selectedEvents.length > 0 && !selectedEvents.some((e) => v.eventTypes.includes(e)))
-        return false;
-      if (!v.priceLabel && (v.price < minPrice || v.price > maxPrice)) return false;
-      if (minCapacity > 0 && (v.capacity || 0) < minCapacity) return false;
-      return true;
-    })
-    .sort((a, b) => {
-      if (sortBy === "price-low") return a.price - b.price;
-      if (sortBy === "price-high") return b.price - a.price;
-      if (sortBy === "rating") return b.rating - a.rating;
-      return 0;
-    });
+  // Filtering & Sorting Engine
+const filteredVenues = allVenues
+  .filter((v) => {
+    // Search query filter
+    if (
+      searchQuery.trim() &&
+      !v.name?.toLowerCase().includes(searchQuery.trim().toLowerCase())
+    )
+      return false;
 
-  const navigate = useNavigate();
+    // Service category filter
+    if (
+      selectedService !== "All" &&
+      v.type?.toLowerCase() !== selectedService.toLowerCase()
+    )
+      return false;
+
+    // Flexible Location Match (City & Province)
+    if (selectedCity) {
+      const vendorCity = (v.city || v.location || "").toLowerCase();
+      const targetCity = selectedCity.toLowerCase();
+      if (!vendorCity.includes(targetCity)) return false;
+    } else if (selectedProvince) {
+      const vendorProvince = (v.province || v.location || "").toLowerCase();
+      const targetProvince = selectedProvince.toLowerCase();
+      if (!vendorProvince.includes(targetProvince)) return false;
+    }
+
+    // Price filter
+    if (v.price < minPrice || v.price > maxPrice) return false;
+
+    return true;
+  })
+  .sort((a, b) => {
+    if (sortBy === "price-low") return a.price - b.price;
+    if (sortBy === "price-high") return b.price - a.price;
+    if (sortBy === "rating") return b.rating - a.rating;
+    return 0;
+  });
+
+  const handleResetFilters = () => {
+    setSelectedType("All");
+    setSelectedService("All");
+    setSearchQuery("");
+    setSelectedProvince("");
+    setSelectedCity("");
+    setMinPrice(0);
+    setMaxPrice(150000);
+    setMinCapacity(0);
+    setSearchParams({});
+  };
 
   return (
     <div className="vlp-page">
-      {/* Page Header */}
       <div className="vlp-header">
         <div className="vlp-header-inner">
           <div className="vlp-header-content">
-            <h1>Find Your Perfect Venue</h1>
-            <p>{filteredVenues.length} venues available</p>
+            <h1>Find Your Perfect Vendor & Venue</h1>
+            <p>{filteredVenues.length} available vendors in Pakistan</p>
           </div>
           <div className="vlp-header-stats">
             <div className="vlp-stat">
@@ -178,9 +196,7 @@ const toggleFavorite = (id) => {
       </div>
 
       <div className="vlp-body">
-        {/* Sidebar Filters */}
         <aside className={`vlp-sidebar ${filtersOpen ? "open" : "close"}`}>
-
           <div className="vlp-filter-header">
             <h3>Filters</h3>
             <button className="vlp-filter-toggle" onClick={() => setFiltersOpen(!filtersOpen)}>
@@ -188,25 +204,22 @@ const toggleFavorite = (id) => {
             </button>
           </div>
 
-          {/* CHANGE: naya search-by-name input box, Filters header ke turant baad */}
           <div className="vlp-filter-section">
             <input
               type="text"
               className="vlp-search-input"
-              placeholder="Search by name..."
+              placeholder="Search by vendor name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
-          {/* Venue Type */}
           <div className="vlp-filter-section">
-            <h4>Select Services</h4>
+            <h4>Services Category</h4>
             <div className="vlp-pill-group">
               {VendorsType.map((type) => (
                 <button
                   key={type}
-                  // CHANGE: single-select — sirf ek hi service active hogi ek waqt mein
                   className={`vlp-pill ${selectedService === type ? "active" : ""}`}
                   onClick={() => setSelectedService(selectedService === type ? "All" : type)}
                 >
@@ -215,101 +228,56 @@ const toggleFavorite = (id) => {
               ))}
             </div>
           </div>
-          <div className="vlp-filter-section">
-  <h4>Venue Type</h4>
-  <div className="vlp-pill-group">
-    {venueTypes.map((type) => (
-      <button
-        key={type}
-        className={`vlp-pill ${selectedType === type ? "active" : ""}`}
-        onClick={() => setSelectedType(type)}
-      >
-        {type}
-      </button>
-    ))}
-  </div>
-</div>
-          {/* Location Filter Section (Country & City Dropdowns) */}
-        <div className="vlp-filter-section">
-  <h4>Select Country</h4>
-  <select
-    className="vlp-select"
-    value={selectedCountry}
-    onChange={handleCountryChange}
-  >
-    <option value="">All Countries</option>
-    {Object.keys(locationData).map((country) => (
-      <option key={country} value={country}>{country}</option>
-    ))}
-  </select>
 
-  <h4>Select City</h4>
-  <select
-    className="vlp-select"
-    value={selectedCity}
-    onChange={(e) => setSelectedCity(e.target.value)}
-    disabled={!selectedCountry}
-  >
-    <option value="">All Cities</option>
-    {selectedCountry && locationData[selectedCountry].map((city) => (
-      <option key={city} value={city}>{city}</option>
-    ))}
-  </select>
-</div>
-
-          {/* Price Range */}
           <div className="vlp-filter-section">
-  <h4>Price per Head (PKR)</h4>
-  <input
-    type="range"
-    min="0"
-    max="20000"
-    step="500"
-    value={maxPrice}
-    onChange={(e) => setMaxPrice(Number(e.target.value))}
-    className="vlp-slider"
-  />
-  <div className="vlp-price-readout">
-    PKR {minPrice.toLocaleString()} – {maxPrice.toLocaleString()}
-  </div>
-</div>
+            <h4>Select Province</h4>
+            <select
+              className="vlp-select"
+              value={selectedProvince}
+              onChange={handleProvinceChange}
+            >
+              <option value="">All Provinces</option>
+              {Object.keys(locationData).map((province) => (
+                <option key={province} value={province}>{province}</option>
+              ))}
+            </select>
 
-          {/* Capacity */}
-          <div className="vlp-filter-section">
-            <h4>Min Capacity (guests)</h4>
-            <input
-              className="vlp-capacity-input"
-              type="number"
-              value={minCapacity}
-              onChange={(e) => setMinCapacity(Number(e.target.value))}
-              placeholder="e.g. 200"
-            />
+            <h4 style={{ marginTop: '12px' }}>Select City</h4>
+            <select
+              className="vlp-select"
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              disabled={!selectedProvince}
+            >
+              <option value="">{selectedProvince ? "All Cities" : "Select Province First"}</option>
+              {selectedProvince && locationData[selectedProvince].map((city) => (
+                <option key={city} value={city}>{city}</option>
+              ))}
+            </select>
           </div>
 
-          {/* Reset */}
-          <button
-            className="vlp-reset-btn"
-            onClick={() => {
-              setSelectedType("All");
-              // CHANGE: reset par service state (fixed naam) clear ki jaye
-              setSelectedService("All");
-              // CHANGE: reset par search box bhi clear ho
-              setSearchQuery("");
-              setSelectedCountry("");
-              setSelectedCity("");
-              setSelectedEvents([]);
-              setMinPrice(0);
-              setMaxPrice(10000);
-              setMinCapacity(0);
-            }}
-          >
+          <div className="vlp-filter-section">
+            <h4>Max Budget (PKR)</h4>
+            <input
+              type="range"
+              min="10000"
+              max="200000"
+              step="5000"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(Number(e.target.value))}
+              className="vlp-slider"
+            />
+            <div className="vlp-price-readout">
+              Up to PKR {maxPrice.toLocaleString()}
+            </div>
+          </div>
+
+          <button className="vlp-reset-btn" onClick={handleResetFilters}>
             Reset Filters
           </button>
         </aside>
 
-        {/* Results Section */}
         <main className="vlp-results">
-          {/* Sort Bar */}
           <div className="vlp-sort-bar">
             <span>{filteredVenues.length} results found</span>
             <div className="vlp-sort-select">
@@ -323,74 +291,50 @@ const toggleFavorite = (id) => {
             </div>
           </div>
 
-          {/* Venue Cards */}
           <div className="vlp-cards">
             {filteredVenues.length === 0 ? (
               <div className="vlp-no-results">
-  <div className="vlp-no-results-icon">🔍</div>
-  <h3>No venues found</h3>
-  <p>We couldn't find any venues matching your filters. Try adjusting or resetting them.</p>
-  <button
-    className="vlp-reset-btn"
-    style={{ maxWidth: "200px", margin: "16px auto 0" }}
-    onClick={() => {
-      setSelectedType("All");
-      // CHANGE: yahan bhi service state (fixed naam) reset karo
-      setSelectedService("All");
-      // CHANGE: yahan bhi search box reset karo
-      setSearchQuery("");
-      setSelectedCountry("");
-      setSelectedCity("");
-      setSelectedEvents([]);
-      setMinPrice(0);
-      setMaxPrice(10000);
-      setMinCapacity(0);
-    }}
-  >
-    Reset Filters
-  </button>
-</div>
+                <div className="vlp-no-results-icon">🔍</div>
+                <h3>No vendors found</h3>
+                <p>We couldn't find any matching vendors. Try adjusting your region or budget filters.</p>
+                <button
+                  className="vlp-reset-btn"
+                  style={{ maxWidth: "200px", margin: "16px auto 0" }}
+                  onClick={handleResetFilters}
+                >
+                  Reset Filters
+                </button>
+              </div>
             ) : (
               filteredVenues.map((venue) => (
-              <div key={venue._id || venue.UserId} className="vlp-card">
-  <div className="vlp-card-image">
-    <img src={venue.image} alt={venue.name} />
-    {venue.topPick && (
-      <span className="vlp-top-pick">⭐ Top Pick</span>
-    )}
-    <button
-      className={`vlp-fav-btn ${favorites.includes(venue._id || venue.UserId) ? "active" : ""}`}
-      onClick={() => toggleFavorite(venue._id || venue.UserId)}
-      aria-label="Save to favorites"
-    >
-      <Heart size={14} fill={favorites.includes(venue._id || venue.UserId) ? "currentColor" : "none"} />
-    </button>
-    <span className="vlp-venue-type-badge">{venue.type}</span>
-  </div>
+                <div key={venue._id || venue.UserId} className="vlp-card">
+                  <div className="vlp-card-image">
+                    <img src={venue.image} alt={venue.name} />
+                    <button
+                      className={`vlp-fav-btn ${favorites.includes(venue._id || venue.UserId) ? "active" : ""}`}
+                      onClick={() => toggleFavorite(venue._id || venue.UserId)}
+                    >
+                      <Heart size={14} fill={favorites.includes(venue._id || venue.UserId) ? "currentColor" : "none"} />
+                    </button>
+                    <span className="vlp-venue-type-badge">{venue.type}</span>
+                  </div>
                   <div className="vlp-card-info">
                     <div className="vlp-card-top">
                       <h3>{venue.name}</h3>
                       <div className="vlp-rating">
                         <span className="vlp-star">★</span>
                         <span>{venue.rating}</span>
-                        <span className="vlp-reviews">({venue.reviews} reviews)</span>
+                        <span className="vlp-reviews">({venue.reviews})</span>
                       </div>
                     </div>
                     <p className="vlp-location">
-                      <span className="material-symbols-outlined">location_on</span>
-                      {venue.location}
+                      📍 {venue.city}, {venue.province}
                     </p>
                     <p className="vlp-description">{venue.description}</p>
-                    <div className="vlp-card-tags">
-                      {venue.eventTypes.map((t) => (
-                        <span key={t} className="vlp-tag">{t}</span>
-                      ))}
-                    </div>
                     <div className="vlp-card-footer">
                       <div className="vlp-price">
                         <span className="vlp-price-label">Starting from</span>
-                        <span className="vlp-price-value">PKR {venue.price.toLocaleString()}{venue.priceLabel ? "" : "/head"}
-                          </span>
+                        <span className="vlp-price-value">PKR {venue.price.toLocaleString()}</span>
                       </div>
                       <button
                         className="vlp-details-btn"

@@ -127,7 +127,7 @@ function VendorHeader({ vendor, navigate, onBookNow }) {
         <div className="vendor-header__cta">
           <button className="btn-chat" onClick={() => navigate(`/chat/${vendor._id}`)}> Chat with Vendor </button>
           <button className="btn-book" onClick={onBookNow}>Book Now</button>
-          <button className="btn-deposit">Pay Deposit</button>
+          <button className="btn-deposit" onClick={onBookNow}>Pay Deposit</button>
         </div>
       </div>
     </div>
@@ -345,16 +345,15 @@ export default function VendorProfile() {
       }
 
       // Step 2: Real mein nahi mila, to dummy list mein dhoondo (id number ho to)
-      const numericId = Number(id);
-      const foundDummy = !isNaN(numericId)
-        ? dummyVenues.find((v) => v.UserId === numericId)
-        : null;
+      const foundDummy = dummyVenues.find(
+     (v) => String(v._id) === String(id) || String(v.UserId) === String(id)
+     );
 
       if (foundDummy) {
-        setVendorData(foundDummy);
-      } else {
+       setVendorData(foundDummy);
+       } else {
         setError("Vendor not found");
-      }
+       }
 
       setLoading(false);
     };
