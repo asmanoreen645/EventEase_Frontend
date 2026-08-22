@@ -1,144 +1,89 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import API from "./api/axiosConfig";
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 
-export default function VendorRegister() {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    businessName: "",
-    email: "",
-    password: "",
-    city: "",
-    address: "",
-    description: "",
-    businessType: "Decorator" // Default fallback category
+const VendorRegister = () => {
+  const [documents, setDocuments] = useState({
+    cnicFront: null,
+    businessLicense: null,
   });
-  const [files, setFiles] = useState([]);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const [docErrors, setDocErrors] = useState({
+    cnicFront: '',
+    businessLicense: '',
+  });
 
-  const handleFileChange = (e) => {
-    setFiles(e.target.files);
-  };
+  // Allowed Config: Max 5MB & Specific File Types
+  const MAX_FILE_SIZE_MB = 5;
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErrorMessage("");
-    setSuccessMessage("");
+  // File Select Handler with Limits Check
+  const handleFileChange = (e, docType) => {
+    const file = e.target.files[0];
 
-    // 1. Current logged in user fetch karein (taake req.body.userId khali na jaye)
-    const currentUser = JSON.parse(localStorage.getItem("user")) || {};
-    const userId = currentUser.id || currentUser._id || "64b0f1a2c3d4e5f6a7b8c9d0"; // Temporary standard fallback ID
+    if (!file) return;
 
-    // 2. Multi-part form-data container banana
-    const data = new FormData();
-    data.append("userId", userId); 
-    data.append("businessName", formData.businessName);
-    data.append("email", formData.email);
-    data.append("password", formData.password);
-    data.append("businessType", formData.businessType);
-    data.append("city", formData.city);
-    data.append("address", formData.address);
-    data.append("description", formData.description);
-
-    // Append document file if selected
-    if (files.length > 0) {
-      data.append("documents", files[0]);
-    } else {
-      data.append("documents", "mock-cloud-path.png");
+    // 1. Check File Type (JPG, PNG, PDF Only)
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      const typeError = 'Only JPG, PNG, and PDF formats are allowed!';
+      setDocErrors((prev) => ({ ...prev, [docType]: typeError }));
+      setDocuments((prev) => ({ ...prev, [docType]: null }));
+      toast.error(typeError);
+      e.target.value = ''; // Input clear kar dein
+      return;
     }
 
-    try {
-      // Direct network path matching vendorController configuration
-      const response = await API.post("/api/vendors/register", data, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      if (response.data.success) {
-        setSuccessMessage("Vendor Request Submitted Successfully! Pending Admin Approval.");
-        setTimeout(() => {
-          navigate("/admin"); // Live redirect to update the moderation list panel
-        }, 2500);
-      } else {
-        setErrorMessage(response.data.message || "Registration failed.");
-      }
-    } catch (err) {
-      console.error("Registration error:", err);
-      // Fallback response handling if middleware hits dry blocks
-      if (err.response?.status === 500 || err.response?.data) {
-        setSuccessMessage("Vendor Application Form Processed Successfully!");
-        setTimeout(() => {
-          navigate("/admin");
-        }, 2500);
-      } else {
-        setErrorMessage(err.response?.data?.message || "Connection connection failed.");
-      }
+    // 2. Check File Size (Max 5MB)
+    const fileSizeMB = file.size / (1024 * 1024);
+    if (fileSizeMB > MAX_FILE_SIZE_MB) {
+      const sizeError = `File size (${fileSizeMB.toFixed(1)}MB) exceeds the 5MB limit!`;
+      setDocErrors((prev) => ({ ...prev, [docType]: sizeError }));
+      setDocuments((prev) => ({ ...prev, [docType]: null }));
+      toast.error(sizeError);
+      e.target.value = ''; // Input clear kar dein
+      return;
     }
+
+    // Validation Pass (No Errors)
+    setDocErrors((prev) => ({ ...prev, [docType]: '' }));
+    setDocuments((prev) => ({ ...prev, [docType]: file }));
+    toast.success(`${file.name} selected successfully!`);
   };
 
   return (
-    <div className="vendor-register-container" style={{ padding: "40px", maxWidth: "600px", margin: "0 auto" }}>
-      <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Become a Vendor on EventEase</h2>
-      
-      {errorMessage && <div style={{ color: "red", backgroundColor: "#ffebee", padding: "10px", borderRadius: "4px", marginBottom: "15px", textAlign: "center" }}>{errorMessage}</div>}
-      {successMessage && <div style={{ color: "green", backgroundColor: "#e8f5e9", padding: "10px", borderRadius: "4px", marginBottom: "15px", textAlign: "center" }}>{successMessage}</div>}
+    <div className="vendor-form">
+      <h2>Vendor Verification Documents</h2>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-        <div>
-          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>Business Name:</label>
-          <input type="text" name="businessName" value={formData.businessName} onChange={handleChange} required style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }} />
-        </div>
+      {/* 1. CNIC Front Input */}
+      <div className="input-group" style={{ marginBottom: '20px' }}>
+        <label>CNIC / ID Card (Max 5MB - JPG, PNG, PDF)</label>
+        <input 
+          type="file" 
+          accept=".jpg,.jpeg,.png,.pdf"
+          onChange={(e) => handleFileChange(e, 'cnicFront')}
+        />
+        {docErrors.cnicFront && (
+          <p style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
+            {docErrors.cnicFront}
+          </p>
+        )}
+      </div>
 
-        <div>
-          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>Email Address:</label>
-          <input type="email" name="email" value={formData.email} onChange={handleChange} required style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }} />
-        </div>
-
-        <div>
-          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>Password:</label>
-          <input type="password" name="password" value={formData.password} onChange={handleChange} required style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }} />
-        </div>
-
-        <div>
-          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>Business Category:</label>
-          <select name="businessType" value={formData.businessType} onChange={handleChange} style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }}>
-            <option value="Decorator">Decorator</option>
-            <option value="Caterer">Caterer</option>
-            <option value="Photographer">Photographer</option>
-            <option value="Sound System">Sound System</option>
-          </select>
-        </div>
-
-        <div>
-          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>City:</label>
-          <input type="text" name="city" value={formData.city} onChange={handleChange} required style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }} />
-        </div>
-
-        <div>
-          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>Address:</label>
-          <input type="text" name="address" value={formData.address} onChange={handleChange} required style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }} />
-        </div>
-
-        <div>
-          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>Description:</label>
-          <textarea name="description" value={formData.description} onChange={handleChange} required style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc", height: "100px" }} />
-        </div>
-
-        <div>
-          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>Documents (CNIC / Business Proof):</label>
-          <input type="file" onChange={handleFileChange} style={{ width: "100%", padding: "10px" }} />
-        </div>
-
-        <button type="submit" style={{ backgroundColor: "#6200ea", color: "white", padding: "12px", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", fontSize: "16px", marginTop: "10px" }}>
-          Submit Registration
-        </button>
-      </form>
+      {/* 2. Business License Input */}
+      <div className="input-group" style={{ marginBottom: '20px' }}>
+        <label>Business License / Document (Max 5MB - JPG, PNG, PDF)</label>
+        <input 
+          type="file" 
+          accept=".jpg,.jpeg,.png,.pdf"
+          onChange={(e) => handleFileChange(e, 'businessLicense')}
+        />
+        {docErrors.businessLicense && (
+          <p style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
+            {docErrors.businessLicense}
+          </p>
+        )}
+      </div>
     </div>
   );
-}
+};
+
+export default VendorRegister;
