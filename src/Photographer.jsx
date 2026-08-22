@@ -391,12 +391,12 @@ export default function VendorProfile() {
             <VendorCalendar vendor={vendor} />
           </div>
 
-          <div style={{ flex: 1, minWidth: "300px" }}>
-            <h3 style={{ marginBottom: "10px", color: "#888", fontSize: "14px" }}>
-              VENDOR LOCATION
-            </h3>
-            <VendorMap />
-          </div>
+          <div style={{ flex: 1, minWidth: "300px", height: "300px", position: "relative" }}>
+         <h3 style={{ marginBottom: "10px", color: "#888", fontSize: "14px" }}>
+          VENDOR LOCATION
+         </h3>
+         <VendorMap />
+         </div>
         </div>
 
         <RatingSection vendorId={vendor._id} />
