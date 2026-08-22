@@ -4,6 +4,7 @@ import API from './api/axiosConfig';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from './Components/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
+import toast from 'react-hot-toast';
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -22,13 +23,50 @@ const Signup = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  // Task 26: Live Password Strength Gauge Logic
+  const getPasswordStrength = (pass) => {
+    let score = 0;
+    if (!pass) return { score: 0, label: '', color: '#e0e0e0', width: '0%' };
+    
+    if (pass.length >= 6) score++;
+    if (pass.length >= 10) score++;
+    if (/[A-Z]/.test(pass)) score++;
+    if (/[0-9]/.test(pass)) score++;
+    if (/[^A-Za-z0-9]/.test(pass)) score++;
+
+    switch (score) {
+      case 1:
+      case 2:
+        return { score, label: 'Weak', color: '#ff4d4f', width: '33%' };
+      case 3:
+      case 4:
+        return { score, label: 'Medium', color: '#faad14', width: '66%' };
+      case 5:
+        return { score, label: 'Strong', color: '#52c41a', width: '100%' };
+      default:
+        return { score: 0, label: 'Too Short', color: '#ff4d4f', width: '15%' };
+    }
+  };
+
+  const strength = getPasswordStrength(password);
+
   // Handlers for Initial Form Submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
     if (!name.trim() || !email.trim() || !password.trim()) {
-      return setError('Please fill in all fields.');
+      const msg = 'Please fill in all fields.';
+      setError(msg);
+      toast.error(msg);
+      return;
+    }
+
+    if (password.length < 6) {
+      const msg = 'Password must be at least 6 characters.';
+      setError(msg);
+      toast.error(msg);
+      return;
     }
 
     setLoading(true);
@@ -42,14 +80,17 @@ const Signup = () => {
       });
 
       if (response.data.success) {
+        toast.success("OTP sent to your email!");
         setShowOtpModal(true);
       }
       
     } catch (err) {
       console.log("FULL ERROR:", err);
-      setError(err.response?.data?.message || 'Signup failed. Please try again.');
+      const errMsg = err.response?.data?.message || 'Signup failed. Please try again.';
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
-      if (loading) setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -59,7 +100,10 @@ const Signup = () => {
     setError('');
 
     if (!otp.trim()) {
-      return setError('Please enter the OTP code.');
+      const msg = 'Please enter the OTP code.';
+      setError(msg);
+      toast.error(msg);
+      return;
     }
 
     setOtpLoading(true);
@@ -72,6 +116,7 @@ const Signup = () => {
 
       const { token, user } = response.data;
       login(user, token);
+      toast.success("Account verified successfully!");
 
       if (user.role === 'vendor') {
         navigate('/vendor-register');
@@ -81,7 +126,9 @@ const Signup = () => {
 
     } catch (err) {
       console.log("OTP VERIFY ERROR:", err);
-      setError(err.response?.data?.message || 'OTP Verification Failed.');
+      const errMsg = err.response?.data?.message || 'OTP Verification Failed.';
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
       setOtpLoading(false);
     }
@@ -96,6 +143,7 @@ const Signup = () => {
 
       const { token, user } = response.data;
       login(user, token);
+      toast.success("Signed in with Google!");
 
       if (user.role === 'vendor') {
         navigate('/vendor-register');
@@ -104,7 +152,9 @@ const Signup = () => {
       }
     } catch (err) {
       console.error("Google Auth Error:", err);
-      setError(err.response?.data?.message || 'Google Auth Failed');
+      const errMsg = err.response?.data?.message || 'Google Auth Failed';
+      setError(errMsg);
+      toast.error(errMsg);
     }
   };
 
@@ -143,22 +193,49 @@ const Signup = () => {
 
               <div className="input-group">
                 <label>PASSWORD</label>
-                <div className="password-wrapper">
+                <div className="password-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    style={{ width: '100%', paddingRight: '45px' }}
                   />
                   <span
                     className="eye-icon"
                     onClick={() => setShowPassword(!showPassword)}
-                    style={{ cursor: 'pointer' }}
+                    style={{ 
+                      position: 'absolute', 
+                      right: '12px', 
+                      cursor: 'pointer',
+                      fontSize: '18px',
+                      userSelect: 'none'
+                    }}
+                    title={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? "👁️‍🗨️" : "👁️"}
                   </span>
                 </div>
+
+                {/*  Live Password Strength Bar */}
+                {password && (
+                  <div style={{ marginTop: '8px' }}>
+                    <div style={{ height: '5px', width: '100%', backgroundColor: '#333', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div 
+                        style={{ 
+                          height: '100%', 
+                          width: strength.width, 
+                          backgroundColor: strength.color, 
+                          transition: 'width 0.3s ease, background-color 0.3s ease' 
+                        }} 
+                      />
+                    </div>
+                    <span style={{ fontSize: '12px', color: strength.color, fontWeight: 'bold', marginTop: '4px', display: 'block' }}>
+                      Strength: {strength.label}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="input-group">
@@ -185,7 +262,10 @@ const Signup = () => {
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
-                onError={() => setError('Google Signup Failed')}
+                onError={() => {
+                  setError('Google Signup Failed');
+                  toast.error('Google Signup Failed');
+                }}
                 useOneTap
               />
             </div>
