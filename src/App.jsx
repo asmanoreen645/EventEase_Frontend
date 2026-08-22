@@ -11,7 +11,6 @@ import Decorators from './Decorators';
 import Photographer from './Photographer';
 import Login from './login';
 import Signup from './Signup';
-//import ForgotPassword from './ForgotPassword';
 import ForgotPassword from './ForgotPassword';
 import VendorRegister from './VendorRegistrationform';
 import VendorDashboard from './VendorDashboard';
@@ -23,11 +22,13 @@ import PackageSelection from "./PackageSelection";
 import Payment from "./Payment";
 import VendorsList from "./VendorsList";
 
+// 🔔 TOAST NOTIFICATION IMPORT 
+import { Toaster } from 'react-hot-toast';
+
 // 💳 STRIPE IMPORTS & ACCURATE INITIALIZATION FIX
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 
-// Fallback Stripe Key ensure karega ke undefined wala red error kabhi mat aaye
 const STRIPE_PUBLISHABLE_KEY = 
   import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 
   process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || 
@@ -70,7 +71,6 @@ function UserLayout() {
         <Route path="details" element={<BookingDetails />} />
         <Route path="package" element={<PackageSelection />} />
         
-        {/* Payment route ko Stripe Elements Wrapper ke sath connect kar diya hai */}
         <Route 
           path="payment" 
           element={
@@ -81,8 +81,6 @@ function UserLayout() {
         />
         
         <Route path="Vendorslist" element={<VendorsList />} />
-        
-        {/* CUSTOMER ROUTE */}
         <Route path="customer-dashboard" element={<CustomerDashboard />} />
       </Routes>
       <Footer />
@@ -94,6 +92,18 @@ function App() {
   return (
     <AuthProvider>
       <HashRouter>
+        {/* Global Toast Notification Container */}
+        <Toaster 
+          position="top-right" 
+          toastOptions={{
+            duration: 3500,
+            style: {
+              background: '#1a1209',
+              color: '#fff',
+              border: '1px solid #b4945a',
+            },
+          }} 
+        />
         <BookingProvider>
           <NotificationProvider>
             <Routes>
