@@ -10,7 +10,7 @@ const heroImages = [
   "https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=1600&q=80",
 ];
 
-// Tasks 7 & 8: Pakistani Regional Cascading Mapping
+
 const provinces = ["Punjab", "Sindh", "Khyber Pakhtunkhwa", "Balochistan", "Islamabad Capital", "Azad Kashmir"];
 
 const citiesByProvince = {
@@ -31,7 +31,6 @@ const services = [
   { label: "Festivals", bg: "#090d1a" },
 ];
 
-// Task 10: Localized Vendor Data Tags
 const vendors = [
   {
     id: "1",
@@ -115,13 +114,15 @@ export default function Home() {
 
   const cities = province ? citiesByProvince[province] || [] : [];
   
-  // Task 9: Search Query Navigation Execution
+  
   const handleSearch = () => {
     const queryParams = new URLSearchParams();
     if (province) queryParams.append("province", province);
     if (city) queryParams.append("city", city);
     
-    navigate(`/vendors?${queryParams.toString()}`);
+    // Smooth navigation with encoded parameters
+    const queryString = queryParams.toString();
+    navigate(queryString ? `/vendors?${queryString}` : '/vendors');
   };
 
   return (
@@ -253,8 +254,8 @@ export default function Home() {
                 <div className="ee-tags">
                   {v.tags.map(t => <span className="ee-tag" key={t}>{t}</span>)}
                 </div>
-                {/* Task 11: Route to vendor details */}
-                <button className="ee-book-btn" onClick={() => navigate(`/vendors`)}> View Details </button>
+                {/* Task 11 Fixed: Routes dynamically using Vendor ID */}
+                <button className="ee-book-btn" onClick={() => navigate(`/vendors/${v.id}`)}> View Details </button>
               </div>
             </div>
           ))}
