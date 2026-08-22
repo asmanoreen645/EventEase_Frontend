@@ -9,16 +9,17 @@ const heroImages = [
   "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1600&q=80",
   "https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=1600&q=80",
 ];
-const countries = ["Pakistan", "United Kingdom", "United States", "UAE", "Saudi Arabia", "India", "Canada", "Australia"];
-const citiesByCountry = {
-  Pakistan: ["Lahore", "Karachi", "Islamabad","MandiBahuaddin", "Faisalabad", "Rawalpindi", "Multan"],
-  "United Kingdom": ["London", "Manchester", "Birmingham", "Edinburgh", "Glasgow"],
-  "United States": ["New York", "Los Angeles", "Chicago", "Houston", "Miami"],
-  UAE: ["Dubai", "Abu Dhabi", "Sharjah", "Ajman"],
-  "Saudi Arabia": ["Riyadh", "Jeddah", "Mecca", "Medina"],
-  India: ["Mumbai", "Delhi", "Bangalore", "Chennai", "Hyderabad"],
-  Canada: ["Toronto", "Vancouver", "Montreal", "Calgary"],
-  Australia: ["Sydney", "Melbourne", "Brisbane", "Perth"],
+
+// Tasks 7 & 8: Pakistani Regional Cascading Mapping
+const provinces = ["Punjab", "Sindh", "Khyber Pakhtunkhwa", "Balochistan", "Islamabad Capital", "Azad Kashmir"];
+
+const citiesByProvince = {
+  Punjab: ["Lahore", "Rawalpindi", "Mandi Bahauddin", "Gujrat", "Faisalabad", "Multan", "Sialkot"],
+  Sindh: ["Karachi", "Hyderabad", "Sukkur", "Larkana"],
+  "Khyber Pakhtunkhwa": ["Peshawar", "Abbottabad", "Mardan"],
+  Balochistan: ["Quetta", "Gwadar"],
+  "Islamabad Capital": ["Islamabad"],
+  "Azad Kashmir": ["Muzaffarabad", "Mirpur"]
 };
 
 const services = [
@@ -30,30 +31,31 @@ const services = [
   { label: "Festivals", bg: "#090d1a" },
 ];
 
+// Task 10: Localized Vendor Data Tags
 const vendors = [
   {
+    id: "1",
     name: "Floral Fantasy Decor",
     sub: "Premium Event Styling & Floral Design",
     rating: 4.9,
-    tags: ["LONDON", "DECORATION"],
+    tags: ["LAHORE", "DECORATION"],
     img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80",
-    link: "/Vendorslist",
   },
   {
+    id: "2",
     name: "Moments Captured",
     sub: "Cinematic Photography & Videography",
     rating: 5.0,
-    tags: ["REMOTE", "MEDIA"],
+    tags: ["ISLAMABAD", "MEDIA"],
     img: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&q=80",
-   link: "/Vendorslist",
   },
   {
-    name: "Grand Marque Venues",
-    sub: "Exclusive Outdoor Venue Solutions",
+    id: "3",
+    name: "Royal Palace Marquee",
+    sub: "Exclusive Wedding & Event Venues",
     rating: 4.8,
-    tags: ["COUNTRYWIDE", "VENUES"],
+    tags: ["MANDI BAHAUDDIN", "VENUES"],
     img: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600&q=80",
-   link: "/Vendorslist",
   },
 ];
 
@@ -92,17 +94,17 @@ const serviceImages = [
 
 export default function Home() {
   const navigate = useNavigate();
-  const [country, setCountry] = useState("");
+  const [province, setProvince] = useState("");
   const [city, setCity] = useState("");
-const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [serviceSlide, setServiceSlide] = useState(0);
 
-useEffect(() => {
-  const timer = setInterval(() => {
-    setCurrentSlide(prev => (prev + 1) % heroImages.length);
-  }, 4000);
-  return () => clearInterval(timer);
-}, []);
-const [serviceSlide, setServiceSlide] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % heroImages.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -110,86 +112,94 @@ const [serviceSlide, setServiceSlide] = useState(0);
     }, 2000);
     return () => clearInterval(timer);
   }, []);
-  const cities = country ? citiesByCountry[country] || [] : [];
+
+  const cities = province ? citiesByProvince[province] || [] : [];
   
+  // Task 9: Search Query Navigation Execution
   const handleSearch = () => {
-    if (!country || !city) {
-      alert("Please select both country and city");
-      return;
-    }
-    navigate(`/vendors?country=${encodeURIComponent(country)}&city=${encodeURIComponent(city)}`);
+    const queryParams = new URLSearchParams();
+    if (province) queryParams.append("province", province);
+    if (city) queryParams.append("city", city);
+    
+    navigate(`/vendors?${queryParams.toString()}`);
   };
 
   return (
     <div className="ee-main-wrapper">
+      {/* HERO SECTION */}
       <section className="ee-hero">
-  <video className="ee-hero-video" autoPlay loop muted playsInline>
-    <source src="/hero-video.mp4" type="video/mp4" />
-  </video>
-  <div className="ee-hero-overlay" />
-  <div className="ee-hero-content">
-     {/* Trust Badge */}
-<div className="trust-badge">
-  <span className="badge-dot"></span>
-  Pakistan's #1 Event Platform
-  <span className="badge-new">NEW</span>
-</div>
-    <h1>Your Dream Event,<br /><em>Just A Click Away</em></h1>
-    <p className="ee-hero-subtitle">Discover top vendors, venues & services for your perfect event</p>
-   
-    <div className="ee-search-bar">
-      <svg className="ee-field-icon" viewBox="0 0 24 24" fill="none" stroke="#b4945a" strokeWidth="2">
-  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-  <circle cx="12" cy="9" r="2.5"/>
-</svg>
-       <div className="ee-field-inner">
-      <span className="ee-field-label">LOCATION</span>
-      <select
-        className="ee-search-select"
-        value={country}
-        onChange={e => { setCountry(e.target.value); setCity(""); }}
-      >
-        <option value="" disabled hidden>Select Country</option>
-        {countries.map(c => <option key={c} value={c}>{c}</option>)}
-      </select>
-      </div>
-      <div className="ee-search-divider" />
-      <svg className="ee-field-icon" viewBox="0 0 24 24" fill="none" stroke="#b4945a" strokeWidth="2">
-  <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
-  <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-</svg>
-       <div className="ee-field-inner">
-      <span className="ee-field-label">CITY</span>
-      <select
-        className="ee-search-select"
-        value={city}
-        onChange={e => setCity(e.target.value)}
-        disabled={!country}
-      >
-        <option value="" disabled hidden>{country ? "Select City" : "Select City"}</option>
-        {cities.map(c => <option key={c} value={c}>{c}</option>)}
-      </select>
-      </div>
-      <button className="ee-search-btn" onClick={handleSearch}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        Search
-      </button>
-    </div>
-    <div className="ee-hero-dots">
-      {heroImages.map((_, i) => (
-        <button
-          key={i}
-          className={`ee-hero-dot ${i === currentSlide ? "active" : ""}`}
-          onClick={() => setCurrentSlide(i)}
-        />
-      ))}
-    </div>
-  </div>
-</section>
+        <video className="ee-hero-video" autoPlay loop muted playsInline>
+          <source src="/hero-video.mp4" type="video/mp4" />
+        </video>
+        <div className="ee-hero-overlay" />
+        <div className="ee-hero-content">
+          <div className="trust-badge">
+            <span className="badge-dot"></span>
+            Pakistan's #1 Event Platform
+            <span className="badge-new">NEW</span>
+          </div>
+          <h1>Your Dream Event,<br /><em>Just A Click Away</em></h1>
+          <p className="ee-hero-subtitle">Discover top vendors, venues & services for your perfect event</p>
+          
+          <div className="ee-search-bar">
+            {/* PROVINCE DROPDOWN */}
+            <svg className="ee-field-icon" viewBox="0 0 24 24" fill="none" stroke="#b4945a" strokeWidth="2">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+              <circle cx="12" cy="9" r="2.5"/>
+            </svg>
+            <div className="ee-field-inner">
+              <span className="ee-field-label">PROVINCE</span>
+              <select
+                className="ee-search-select"
+                value={province}
+                onChange={e => { setProvince(e.target.value); setCity(""); }}
+              >
+                <option value="">All Pakistan</option>
+                {provinces.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
 
-      {/* SERVICES */}
+            <div className="ee-search-divider" />
+
+            {/* CASCADING CITY DROPDOWN */}
+            <svg className="ee-field-icon" viewBox="0 0 24 24" fill="none" stroke="#b4945a" strokeWidth="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <div className="ee-field-inner">
+              <span className="ee-field-label">CITY</span>
+              <select
+                className="ee-search-select"
+                value={city}
+                onChange={e => setCity(e.target.value)}
+                disabled={!province}
+              >
+                <option value="">{province ? "Select City" : "Select Province First"}</option>
+                {cities.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+
+            <button className="ee-search-btn" onClick={handleSearch}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+              Search
+            </button>
+          </div>
+
+          <div className="ee-hero-dots">
+            {heroImages.map((_, i) => (
+              <button
+                key={i}
+                className={`ee-hero-dot ${i === currentSlide ? "active" : ""}`}
+                onClick={() => setCurrentSlide(i)}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SERVICES SECTION */}
       <section className="ee-section">
         <h2 className="ee-section-title">Our Services</h2>
         <div className="ee-section-rule" />
@@ -200,16 +210,20 @@ const [serviceSlide, setServiceSlide] = useState(0);
           width: '100%'
         }}>
           {services.map((s, i) => (
-            <div className="ee-service-card" key={s.label} style={{ width: '100%' }}>
+            <div 
+              className="ee-service-card" 
+              key={s.label} 
+              style={{ width: '100%', cursor: 'pointer' }}
+              onClick={() => navigate(`/vendors?category=${encodeURIComponent(s.label)}`)}
+            >
               <div className="ee-service-img">
                 {serviceImages[i].map((imgUrl, imgIdx) => (
-        <div
-          key={imgIdx}
-          className={`ee-service-img-inner ${imgIdx === serviceSlide % serviceImages[i].length ? "active" : ""}`}
-          style={{ backgroundImage: `url(${imgUrl})` }}
-        />
-      ))}
-                <div className="ee-service-emoji">{s.emoji}</div>
+                  <div
+                    key={imgIdx}
+                    className={`ee-service-img-inner ${imgIdx === serviceSlide % serviceImages[i].length ? "active" : ""}`}
+                    style={{ backgroundImage: `url(${imgUrl})` }}
+                  />
+                ))}
               </div>
               <span className="ee-service-label">{s.label}</span>
             </div>
@@ -217,7 +231,7 @@ const [serviceSlide, setServiceSlide] = useState(0);
         </div>
       </section>
 
-      {/* VENDORS */}
+      {/* FEATURED VENDORS SECTION */}
       <section className="ee-vendors-section">
         <div className="ee-vendors-header">
           <div>
@@ -239,13 +253,13 @@ const [serviceSlide, setServiceSlide] = useState(0);
                 <div className="ee-tags">
                   {v.tags.map(t => <span className="ee-tag" key={t}>{t}</span>)}
                 </div>
-                <button className="ee-book-btn" onClick={() => navigate('/vendors')}> View Details </button>
+                {/* Task 11: Route to vendor details */}
+                <button className="ee-book-btn" onClick={() => navigate(`/vendors`)}> View Details </button>
               </div>
             </div>
           ))}
         </div>
       </section>      
-        
     </div>
   );
 }
