@@ -139,6 +139,7 @@ const Signup = () => {
     try {
       const response = await API.post('/api/auth/google', {
         token: credentialResponse.credential
+         role: role 
       });
 
       const { token, user } = response.data;
