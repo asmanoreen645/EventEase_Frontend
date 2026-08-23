@@ -138,7 +138,7 @@ const Signup = () => {
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       const response = await API.post('/api/auth/google', {
-        token: credentialResponse.credential
+        token: credentialResponse.credential,
          role: role 
       });
 
