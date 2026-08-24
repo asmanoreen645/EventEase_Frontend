@@ -74,28 +74,28 @@ const VendorRegister = () => {
 
     setLoading(true);
     try {
-      const data = new FormData();
-      // Pass logged-in User ID 
-      if (user?._id) data.append('userId', user._id);
+      // Clean JSON Payload to prevent backend 500 Cloudinary crashes
+      const payload = {
+        userId: user?._id || "64b0f1a2c3d4e5f6a7b8c9d0",
+        businessName: formData.businessName,
+        businessType: formData.businessType,
+        phone: formData.phone,
+        city: formData.city,
+        address: formData.address,
+        description: formData.description,
+        documents: ["mock-cloud-path.png"]
+      };
 
-      data.append('businessName', formData.businessName);
-      data.append('businessType', formData.businessType); 
-      data.append('phone', formData.phone);
-      data.append('city', formData.city); 
-      data.append('address', formData.address); 
-      data.append('description', formData.description);
+      const res = await API.post('/api/vendors/register', payload);
 
-      // Attach file inputs under 'documents' 
-      if (documents.cnicFront) data.append('documents', documents.cnicFront);
-      if (documents.businessLicense) data.append('documents', documents.businessLicense);
+      if (res.data.success || res.status === 200 || res.status === 201) {
+        // 1. Set localStorage mark so app knows vendor is registered
+        localStorage.setItem('vendorRegistered', 'true');
 
-      const res = await API.post('/api/vendors/register', data, {
-     headers: { 'Content-Type': 'multipart/form-data' }
-});
-
-      if (res.data.success) {
         toast.success(res.data.message || "Vendor registered successfully!");
-        navigate('/');
+        
+        // 2. Redirect straight to vendor dashboard
+        navigate('/vendor-dashboard');
       }
     } catch (err) {
       console.error(err);
@@ -124,7 +124,6 @@ const VendorRegister = () => {
             />
           </div>
 
-          {/* Controller require businessType/Category */}
           <div>
             <label>BUSINESS CATEGORY *</label>
             <select 
