@@ -1,8 +1,23 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import './VendorRegistrationform.css'; 
+import API from './api/axiosConfig';
+import { useAuth } from './Components/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import './VendorRegistrationform.css';
 
 const VendorRegister = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    businessName: user?.name || '',
+    businessType: 'Decorator', // Controller default matching
+    phone: '',
+    city: 'Mandi Bahauddin',
+    address: '',
+    description: '',
+  });
+
   const [documents, setDocuments] = useState({
     cnicFront: null,
     businessLicense: null,
@@ -13,8 +28,14 @@ const VendorRegister = () => {
     businessLicense: '',
   });
 
+  const [loading, setLoading] = useState(false);
+
   const MAX_FILE_SIZE_MB = 5;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
+
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleFileChange = (e, docType) => {
     const file = e.target.files[0];
@@ -31,7 +52,7 @@ const VendorRegister = () => {
 
     const fileSizeMB = file.size / (1024 * 1024);
     if (fileSizeMB > MAX_FILE_SIZE_MB) {
-      const sizeError = `File size (${fileSizeMB.toFixed(1)}MB) exceeds the 5MB limit!`;
+      const sizeError = `File size (${fileSizeMB.toFixed(1)}MB) exceeds 5MB!`;
       setDocErrors((prev) => ({ ...prev, [docType]: sizeError }));
       setDocuments((prev) => ({ ...prev, [docType]: null }));
       toast.error(sizeError);
@@ -41,26 +62,137 @@ const VendorRegister = () => {
 
     setDocErrors((prev) => ({ ...prev, [docType]: '' }));
     setDocuments((prev) => ({ ...prev, [docType]: file }));
-    toast.success(`${file.name} selected successfully!`);
+    toast.success(`${file.name} selected!`);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!documents.cnicFront || !documents.businessLicense) {
-      toast.error("Please upload all required documents!");
+    if (!formData.businessName || !formData.city) {
+      toast.error("Please fill in required fields!");
       return;
     }
-    toast.success("Documents submitted successfully!");
+
+    setLoading(true);
+    try {
+      const data = new FormData();
+      // Pass logged-in User ID to match Controller req.body.userId
+      if (user?._id) data.append('userId', user._id);
+
+      data.append('businessName', formData.businessName);
+      data.append('businessType', formData.businessType); // Controller matched
+      data.append('phone', formData.phone);
+      data.append('city', formData.city); // Controller matched
+      data.append('address', formData.address); // Controller matched
+      data.append('description', formData.description);
+
+      // Attach file inputs under 'documents' key matching backend
+      if (documents.cnicFront) data.append('documents', documents.cnicFront);
+      if (documents.businessLicense) data.append('documents', documents.businessLicense);
+
+      const res = await API.post('/api/vendor/register', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      if (res.data.success) {
+        toast.success(res.data.message || "Vendor registered successfully!");
+        navigate('/');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="vendor-register-container">
       <div className="vendor-register-card">
-        <h2>Vendor Verification</h2>
-        <p>Upload your verification documents to start selling.</p>
+        <h2>Vendor Registration</h2>
+        <p>Complete your business profile and documents to start listing.</p>
 
         <form onSubmit={handleSubmit}>
-          {/* 1. CNIC Front Input */}
+          <div>
+            <label>BUSINESS / BRAND NAME *</label>
+            <input 
+              type="text" 
+              name="businessName"
+              placeholder="e.g. Royal Decorators"
+              value={formData.businessName}
+              onChange={handleInputChange}
+              required 
+            />
+          </div>
+
+          {/* Controller require businessType/Category */}
+          <div>
+            <label>BUSINESS CATEGORY *</label>
+            <select 
+              name="businessType" 
+              value={formData.businessType} 
+              onChange={handleInputChange}
+              style={{
+                width: '100%',
+                padding: '12px 14px',
+                border: '1px solid #e2d9cd',
+                borderRadius: '8px',
+                fontSize: '14px',
+                backgroundColor: '#faf8f5',
+                boxSizing: 'border-box'
+              }}
+            >
+              <option value="Decorator">Decorator</option>
+              <option value="Photographer">Photographer</option>
+              <option value="Catering">Catering / Food</option>
+              <option value="Venue">Venue / Hall</option>
+              <option value="Musician">DJ & Music</option>
+            </select>
+          </div>
+
+          <div>
+            <label>PHONE NUMBER</label>
+            <input 
+              type="text" 
+              name="phone"
+              placeholder="+92 300 1234567"
+              value={formData.phone}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div>
+            <label>CITY *</label>
+            <input 
+              type="text" 
+              name="city"
+              placeholder="e.g. Mandi Bahauddin, Lahore"
+              value={formData.city}
+              onChange={handleInputChange}
+              required 
+            />
+          </div>
+
+          <div>
+            <label>ADDRESS</label>
+            <input 
+              type="text" 
+              name="address"
+              placeholder="Full shop / office address"
+              value={formData.address}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div>
+            <label>BUSINESS DESCRIPTION</label>
+            <textarea 
+              name="description"
+              placeholder="Tell customers about your services..."
+              value={formData.description}
+              onChange={handleInputChange}
+            ></textarea>
+          </div>
+
           <div>
             <label>CNIC / ID CARD (MAX 5MB - JPG, PNG, PDF)</label>
             <input 
@@ -68,12 +200,9 @@ const VendorRegister = () => {
               accept=".jpg,.jpeg,.png,.pdf"
               onChange={(e) => handleFileChange(e, 'cnicFront')}
             />
-            {docErrors.cnicFront && (
-              <p className="error-msg">{docErrors.cnicFront}</p>
-            )}
+            {docErrors.cnicFront && <p className="error-msg">{docErrors.cnicFront}</p>}
           </div>
 
-          {/* 2. Business License Input */}
           <div>
             <label>BUSINESS LICENSE / DOCUMENT (MAX 5MB - JPG, PNG, PDF)</label>
             <input 
@@ -81,13 +210,11 @@ const VendorRegister = () => {
               accept=".jpg,.jpeg,.png,.pdf"
               onChange={(e) => handleFileChange(e, 'businessLicense')}
             />
-            {docErrors.businessLicense && (
-              <p className="error-msg">{docErrors.businessLicense}</p>
-            )}
+            {docErrors.businessLicense && <p className="error-msg">{docErrors.businessLicense}</p>}
           </div>
 
-          <button type="submit">
-            Submit Documents
+          <button type="submit" disabled={loading}>
+            {loading ? 'Submitting...' : 'Complete Vendor Registration'}
           </button>
         </form>
       </div>
