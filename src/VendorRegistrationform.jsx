@@ -11,7 +11,7 @@ const VendorRegister = () => {
 
   const [formData, setFormData] = useState({
     businessName: user?.name || '',
-    businessType: 'Decorator', // Controller default matching
+    businessType: 'Decorator', 
     phone: '',
     city: 'Mandi Bahauddin',
     address: '',
@@ -75,7 +75,7 @@ const VendorRegister = () => {
     setLoading(true);
     try {
       const data = new FormData();
-      // Pass logged-in User ID to match Controller req.body.userId
+      // Pass logged-in User ID 
       if (user?._id) data.append('userId', user._id);
 
       data.append('businessName', formData.businessName);
@@ -85,7 +85,7 @@ const VendorRegister = () => {
       data.append('address', formData.address); // Controller matched
       data.append('description', formData.description);
 
-      // Attach file inputs under 'documents' key matching backend
+      // Attach file inputs under 'documents' 
       if (documents.cnicFront) data.append('documents', documents.cnicFront);
       if (documents.businessLicense) data.append('documents', documents.businessLicense);
 
