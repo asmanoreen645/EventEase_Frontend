@@ -26,10 +26,16 @@ export default function Venuepage() {
   const [animatedEvents, setAnimatedEvents] = useState(0);
   const [realVendors, setRealVendors] = useState([]);
 
-  // Task 12: URL Query Parameters Sync
+  // URL Query Parameters Sync 
   const [selectedProvince, setSelectedProvince] = useState(searchParams.get("province") || "");
   const [selectedCity, setSelectedCity] = useState(searchParams.get("city") || "");
-  const [selectedService, setSelectedService] = useState(searchParams.get("category") || "All");
+  const selectedService = searchParams.get("category") || "All";
+  const setSelectedService = (val) => {
+    const params = new URLSearchParams(searchParams);
+    if (val === "All") params.delete("category");
+    else params.set("category", val);
+    setSearchParams(params);
+  };
   const [selectedType, setSelectedType] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [minPrice, setMinPrice] = useState(0);
@@ -39,15 +45,13 @@ export default function Venuepage() {
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [favorites, setFavorites] = useState([]);
 
-  // URL Query Parameters ko real-time read karna (Home Page integration)
+  // URL Query Parameters ko real-time read karna (Home Page integration) — province/city ke liye
   useEffect(() => {
     const prov = searchParams.get("province");
     const cty = searchParams.get("city");
-    const cat = searchParams.get("category");
 
     if (prov) setSelectedProvince(prov);
     if (cty) setSelectedCity(cty);
-    if (cat) setSelectedService(cat);
   }, [searchParams]);
 
   // Fetch real vendors from backend
@@ -129,11 +133,18 @@ const filteredVenues = allVenues
       return false;
 
     // Service category filter
-    if (
+    if (selectedService === "Venues & Marquees") {
+
+      const isVenueType = venueTypes
+        .slice(1) // "All" ko chhod kar
+        .some((t) => t.toLowerCase() === v.type?.toLowerCase());
+      if (!isVenueType) return false;
+    } else if (
       selectedService !== "All" &&
       v.type?.toLowerCase() !== selectedService.toLowerCase()
-    )
+    ) {
       return false;
+    }
 
     // Flexible Location Match (City & Province)
     if (selectedCity) {

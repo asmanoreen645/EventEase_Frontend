@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import "./Footer.css";
 
 export default function Footer() {
@@ -13,21 +14,21 @@ export default function Footer() {
         </div>
         <div className="ee-footer-col">
           <h4>Explore</h4>
-          <a href="#">Vendors</a>
-          <a href="#">Venues</a>
-          <a href="#">Portfolio</a>
+          <Link to="/">Home</Link>
+          <Link to="/vendors">Vendors</Link>
+          <Link to={`/vendors?category=${encodeURIComponent("Venues & Marquees")}`}>Venues</Link>
         </div>
         <div className="ee-footer-col">
           <h4>Company</h4>
-          <a href="#">About Us</a>
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Service</a>
+          <Link to="/about">About Us</Link>
+          <Link to="/privacy-policy">Privacy Policy</Link>
+          <Link to="/terms-of-service">Terms of Service</Link>
         </div>
         <div className="ee-footer-col">
           <h4>Support</h4>
-          <a href="#">Contact</a>
-          <a href="#">FAQ</a>
-          <a href="#">Community</a>
+          <Link to="/contact">Contact</Link>
+          <Link to="/faq">FAQ</Link>
+          <Link to="/community">Community</Link>
         </div>
       </div>
       <div className="ee-footer-bottom">
