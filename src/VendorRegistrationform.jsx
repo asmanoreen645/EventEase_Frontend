@@ -79,10 +79,10 @@ const VendorRegister = () => {
       if (user?._id) data.append('userId', user._id);
 
       data.append('businessName', formData.businessName);
-      data.append('businessType', formData.businessType); // Controller matched
+      data.append('businessType', formData.businessType); 
       data.append('phone', formData.phone);
-      data.append('city', formData.city); // Controller matched
-      data.append('address', formData.address); // Controller matched
+      data.append('city', formData.city); 
+      data.append('address', formData.address); 
       data.append('description', formData.description);
 
       // Attach file inputs under 'documents' 
