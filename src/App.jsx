@@ -21,6 +21,8 @@ import BookingDetails from "./BookingDetails";
 import PackageSelection from "./PackageSelection";
 import Payment from "./Payment";
 import VendorsList from "./VendorsList";
+import PrivacyPolicy from "./PrivacyPolicy.jsx";
+import TermsOfService from "./TermsOfService.jsx";
 
 // 🔔 TOAST NOTIFICATION IMPORT 
 import { Toaster } from 'react-hot-toast';
@@ -49,6 +51,7 @@ import UserManagement from "./Components/UserManagement";
 import ChatLogs from "./Components/ChatLogs";
 import AdminProfile from "./Components/AdminProfile";
 
+
 function UserLayout() {
   return (
     <>
@@ -70,6 +73,8 @@ function UserLayout() {
         <Route path="chat/:vendorId" element={<ChatPage />} />
         <Route path="details" element={<BookingDetails />} />
         <Route path="package" element={<PackageSelection />} />
+        <Route path="privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="terms-of-service" element={<TermsOfService />} />
         
         <Route 
           path="payment" 
