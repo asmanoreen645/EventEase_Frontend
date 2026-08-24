@@ -181,7 +181,7 @@ export default function Vendors() {
   </div>
 </section>
 {/* FAQ */}
-<section className="faq-section">
+<section id="faq-section" className="faq-section">
   <h2>Frequently Asked</h2>
   <details className="faq-item">
     <summary>How do I book a vendor?</summary>

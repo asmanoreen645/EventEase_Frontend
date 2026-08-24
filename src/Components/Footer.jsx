@@ -1,7 +1,32 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import "./Footer.css";
 
 export default function Footer() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleFaqClick = (e) => {
+    e.preventDefault();
+
+    const scrollToFaq = () => {
+      const element = document.getElementById("faq-section");
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    };
+
+    // Agar hum pehle se /services page par hain
+    if (location.pathname === "/services") {
+      scrollToFaq();
+    } else {
+      // Agar kisi aur page par hain, pehle navigate karein phir scroll karein
+      navigate("/services");
+      setTimeout(() => {
+        scrollToFaq();
+      }, 300);
+    }
+  };
+
   return (
     <footer className="ee-footer">
       <div className="ee-footer-grid">
@@ -27,12 +52,17 @@ export default function Footer() {
         <div className="ee-footer-col">
           <h4>Support</h4>
           <Link to="/contact">Contact Us</Link>
-          <Link to="/faq">FAQ</Link>
-          <Link to="/community">Community</Link>
+          
+          {/*  Updated FAQ Link with Smooth Scroll */}
+          <a href="#faq-section" onClick={handleFaqClick}>
+            FAQ
+          </a>
+          
+          {/* <Link to="/community">Community</Link> */}
         </div>
       </div>
       <div className="ee-footer-bottom">
-         <p>&copy; {new Date().getFullYear()} EventEase. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} EventEase. All rights reserved.</p>
         <div className="ee-footer-icons">
           <div className="ee-footer-icon">🌐</div>
           <div className="ee-footer-icon">↗</div>
