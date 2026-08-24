@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import './VendorRegister.css'; 
+import './VendorRegisterationform.css'; 
 
 const VendorRegister = () => {
   const [documents, setDocuments] = useState({
