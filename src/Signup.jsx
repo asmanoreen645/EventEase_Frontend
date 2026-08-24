@@ -146,7 +146,7 @@ const Signup = () => {
       login(user, token);
       toast.success("Signed in with Google!");
 
-      if (user.role === 'vendor') {
+      if (user?.role?.toLowerCase() === 'vendor') {
         navigate('/vendor-register');
       } else {
         navigate('/');
