@@ -23,6 +23,7 @@ import Payment from "./Payment";
 import VendorsList from "./VendorsList";
 import PrivacyPolicy from "./PrivacyPolicy.jsx";
 import TermsOfService from "./TermsOfService.jsx";
+import Contact from './Contact';
 
 // 🔔 TOAST NOTIFICATION IMPORT 
 import { Toaster } from 'react-hot-toast';
@@ -75,6 +76,7 @@ function UserLayout() {
         <Route path="package" element={<PackageSelection />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
         <Route path="terms-of-service" element={<TermsOfService />} />
+        <Route path="contact" element={<Contact />} />
         
         <Route 
           path="payment" 

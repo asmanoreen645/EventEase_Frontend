@@ -26,7 +26,7 @@ export default function Footer() {
         </div>
         <div className="ee-footer-col">
           <h4>Support</h4>
-          <Link to="/contact">Contact</Link>
+          <Link to="/contact">Contact Us</Link>
           <Link to="/faq">FAQ</Link>
           <Link to="/community">Community</Link>
         </div>
