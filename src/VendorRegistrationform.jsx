@@ -87,6 +87,7 @@ const VendorRegister = () => {
       };
 
       const res = await API.post('/api/vendors/register', payload);
+      console.log("SERVER RESPONSE:", res.data);
 
       if (res.data.success || res.status === 200 || res.status === 201) {
         // 1. Set localStorage mark so app knows vendor is registered
