@@ -89,9 +89,9 @@ const VendorRegister = () => {
       if (documents.cnicFront) data.append('documents', documents.cnicFront);
       if (documents.businessLicense) data.append('documents', documents.businessLicense);
 
-      const res = await API.post('/api/vendor/register', data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const res = await API.post('/api/vendors/register', data, {
+     headers: { 'Content-Type': 'multipart/form-data' }
+});
 
       if (res.data.success) {
         toast.success(res.data.message || "Vendor registered successfully!");
