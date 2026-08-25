@@ -200,17 +200,22 @@ function ServicesSection({ services }) {
 }
 
 // ─── RATING SECTION ────────────────────────────────────────────────────────────
+import { useState } from "react";
+import API from "./api/axiosConfig";
+
 function isValidObjectId(id) {
   return typeof id === "string" && /^[0-9a-fA-F]{24}$/.test(id);
 }
 
-function RatingSection({ vendorId }) {
+// 💡 onRatingSuccess prop add kiya hai taake parent profile par rating live update ho sake
+export default function RatingSection({ vendorId, onRatingSuccess }) {
   const [userRating, setUserRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const isDummy = !isValidObjectId(vendorId);
+  // Check agar ID string "vendor1" / integer numeric hai ya valid Mongo ID
+  const isDummy = !isValidObjectId(vendorId) || String(vendorId).startsWith("vendor");
 
   const handleRating = async (stars) => {
     const customerId = localStorage.getItem("userId");
@@ -221,19 +226,33 @@ function RatingSection({ vendorId }) {
     }
 
     if (isDummy) {
-      alert("Ye demo vendor hai, real rating sirf asli vendors par kaam karegi.");
+      // 🧪 Demo Vendor Logic: Local UI update taake testing/demo smoothly chal sake
+      setUserRating(stars);
+      setRatingSubmitted(true);
+      if (onRatingSuccess) onRatingSuccess(stars);
+      alert(`Demo Rating: Aap ne ${stars} stars diye! ⭐`);
       return;
     }
 
     try {
       setLoading(true);
-      await API.post("/api/ratings/give-rating", {
+      
+      // 🌐 Real Vendor API Call
+      const res = await API.post("/api/ratings/give-rating", {
         vendorId,
         customerId,
         stars,
       });
+
       setUserRating(stars);
       setRatingSubmitted(true);
+
+      // Parent component ko new rating pass karein taake header UI refresh ho jaye
+      if (onRatingSuccess) {
+        const updatedRating = res.data?.newRating || stars;
+        onRatingSuccess(updatedRating);
+      }
+
       alert("Rating submit ho gayi! Shukriya! ⭐");
     } catch (err) {
       console.error("Rating error:", err.response?.data || err.message);
@@ -246,21 +265,37 @@ function RatingSection({ vendorId }) {
   };
 
   return (
-    <div style={{
-      padding: "24px",
-      background: "#fff",
-      borderRadius: "12px",
-      marginTop: "20px",
-      border: "1px solid #e5e7eb",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.06)"
-    }}>
-      <h3 style={{ marginBottom: "6px", color: "#1e293b", fontSize: "16px", fontWeight: 600 }}>
+    <div
+      style={{
+        padding: "24px",
+        background: "#fff",
+        borderRadius: "12px",
+        marginTop: "20px",
+        border: "1px solid #e5e7eb",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+      }}
+    >
+      <h3
+        style={{
+          marginBottom: "6px",
+          color: "#1e293b",
+          fontSize: "16px",
+          fontWeight: 600,
+        }}
+      >
         Rate this Vendor
       </h3>
 
       {isDummy && (
-        <p style={{ marginBottom: "10px", color: "#b45309", fontSize: "12px", fontStyle: "italic" }}>
-          (Demo vendor — real rating sirf live vendors ke liye available hai)
+        <p
+          style={{
+            marginBottom: "10px",
+            color: "#b45309",
+            fontSize: "12px",
+            fontStyle: "italic",
+          }}
+        >
+          (Demo mode active — test rating UI)
         </p>
       )}
 
@@ -286,7 +321,8 @@ function RatingSection({ vendorId }) {
               style={{
                 fontSize: "36px",
                 cursor: loading ? "not-allowed" : "pointer",
-                color: star <= (hoveredRating || userRating) ? "#f59e0b" : "#d1d5db",
+                color:
+                  star <= (hoveredRating || userRating) ? "#f59e0b" : "#d1d5db",
                 transition: "color 0.15s",
               }}
             >
@@ -298,7 +334,6 @@ function RatingSection({ vendorId }) {
     </div>
   );
 }
-
 // ─── MAIN PAGE ─────────────────────────────────────────────────────────────────
 function getCategoryFromType(type) {
   const t = (type || "").toLowerCase();
@@ -404,7 +439,11 @@ setLoading(false);
          </div>
         </div>
 
-        <RatingSection vendorId={vendor._id} />
+        <RatingSection 
+        vendorId={vendor._id} 
+        onRatingSuccess={(newRating) => {
+         setVendorData((prev) => ({ ...prev, rating: newRating }));
+         }}/>
       </main>
     </>
   );
