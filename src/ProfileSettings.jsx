@@ -1,22 +1,26 @@
 import { useState, useEffect } from 'react';
 import axios from './api/axiosConfig';
 import { useAuth } from './Components/AuthContext';
+import './ProfileSettings.css'; 
 
 const ProfileSettings = () => {
+  // AuthContext se current logged-in user ka data aur update function
   const { user, updateUser } = useAuth();
 
+  // Form ke input fields ki state
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     profileImage: ''
   });
-  const [imageFile, setImageFile] = useState(null);
-  const [preview, setPreview] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
 
-  // Current user data se form pre-fill karo
+  const [imageFile, setImageFile] = useState(null);   // nayi select ki hui image file
+  const [preview, setPreview] = useState('');          // image preview URL
+  const [loading, setLoading] = useState(false);       // save button ki loading state
+  const [message, setMessage] = useState({ type: '', text: '' }); // success/error message
+
+  // Page load hote hi form ko current user ki details se bhar do
   useEffect(() => {
     if (user) {
       setFormData({
@@ -29,10 +33,12 @@ const ProfileSettings = () => {
     }
   }, [user]);
 
+  // Text input change hone par formData update karo
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Nayi image select hone par preview dikhao (upload abhi nahi hoti)
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -41,18 +47,20 @@ const ProfileSettings = () => {
     }
   };
 
+  // Image ko Cloudinary par upload karke uska URL wapas lo
   const uploadToCloudinary = async (file) => {
     const data = new FormData();
     data.append('file', file);
     data.append('upload_preset', 'YOUR_UPLOAD_PRESET'); // apna actual preset lagao
     const res = await fetch(
-      'https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload', // apna cloud name lagao
-      { method: 'POST', body: data }
-    );
+  'https://api.cloudinary.com/v1_1/dwe721zn9/image/upload', 
+  { method: 'POST', body: data }
+);
     const result = await res.json();
     return result.secure_url;
   };
 
+  // Form submit hone par backend ko update bhejo
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -61,6 +69,7 @@ const ProfileSettings = () => {
     try {
       let imageUrl = formData.profileImage;
 
+      // Agar nayi image select ki hai, pehle usay upload karo
       if (imageFile) {
         imageUrl = await uploadToCloudinary(imageFile);
       }
@@ -72,11 +81,12 @@ const ProfileSettings = () => {
         profileImage: imageUrl
       };
 
+      // Backend route: PUT /api/auth/profile/update
       const res = await axios.put('/api/auth/profile/update', payload);
 
       if (res.data.success) {
         setMessage({ type: 'success', text: 'Profile updated successfully!' });
-        updateUser(res.data.data); // AuthContext + localStorage dono update ho jayenge
+        updateUser(res.data.data); // Navbar/AuthContext turant refresh ho jayega
       }
     } catch (err) {
       setMessage({
@@ -89,72 +99,71 @@ const ProfileSettings = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow rounded-lg">
-      <h2 className="text-xl font-semibold mb-4">Profile Settings</h2>
+    <div className="ee-profile-page">
+      <div className="ee-profile-card">
+        <h2 className="ee-profile-title">Profile Settings</h2>
 
-      {message.text && (
-        <div className={`mb-4 p-2 rounded text-sm ${
-          message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-        }`}>
-          {message.text}
-        </div>
-      )}
+        {/* Success/Error message */}
+        {message.text && (
+          <div className={`ee-profile-message ${message.type === 'success' ? 'ee-msg-success' : 'ee-msg-error'}`}>
+            {message.text}
+          </div>
+        )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex justify-center">
-          <label className="cursor-pointer">
-            <img
-              src={preview || '/default-avatar.png'}
-              alt="Profile"
-              className="w-24 h-24 rounded-full object-cover border"
+        <form onSubmit={handleSubmit} className="ee-profile-form">
+          {/* Profile picture upload */}
+          <div className="ee-profile-avatar-wrap">
+            <label className="ee-profile-avatar-label">
+              <img
+                src={preview || '/default-avatar.png'}
+                alt="Profile"
+                className="ee-profile-avatar-img"
+              />
+              <span className="ee-profile-avatar-overlay">Change</span>
+              <input type="file" accept="image/*" onChange={handleImageChange} className="ee-hidden-input" />
+            </label>
+          </div>
+
+          {/* Name field */}
+          <div className="ee-profile-field">
+            <label>Name</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
             />
-            <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
-          </label>
-        </div>
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium">Name</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className="w-full border rounded p-2"
-            required
-          />
-        </div>
+          {/* Email field */}
+          <div className="ee-profile-field">
+            <label>Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full border rounded p-2"
-            required
-          />
-        </div>
+          {/* Phone field */}
+          <div className="ee-profile-field">
+            <label>Phone</label>
+            <input
+              type="text"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+            />
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium">Phone</label>
-          <input
-            type="text"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            className="w-full border rounded p-2"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
-        >
-          {loading ? 'Saving...' : 'Save Changes'}
-        </button>
-      </form>
+          <button type="submit" className="ee-profile-save-btn" disabled={loading}>
+            {loading ? 'Saving...' : 'Save Changes'}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
