@@ -1,6 +1,8 @@
 import './About.css';
+import { useNavigate } from 'react-router-dom';
 
 export default function AboutPage() {
+  const navigate = useNavigate();
   return (
     <div className="ee-about-container">
       {/* 1. HERO BANNER */}
@@ -113,6 +115,15 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+      
+      {/* 5. CTA BANNER */}
+      <div className="ee-cta-banner">
+        <h2>Ready to plan your dream event?</h2>
+        <p>Join thousands already planning with EventEase.</p>
+        <button className="ee-cta-btn" onClick={() => navigate("/signup")}>
+          Sign Up Free
+        </button>
+      </div>
     </div>
   );
 }

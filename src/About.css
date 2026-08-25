@@ -167,3 +167,43 @@
     grid-template-columns: 1fr;
   }
 }
+/* --- CTA Banner --- */
+.ee-cta-banner {
+  margin: 50px 8%;
+  padding: 50px 40px;
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  border-radius: 16px;
+  text-align: center;
+}
+.ee-cta-banner h2 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+.ee-cta-banner p {
+  font-size: 15px;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 24px;
+}
+.ee-cta-btn {
+  background: #ffffff;
+  color: #d97706;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.ee-cta-btn:hover {
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .ee-cta-banner {
+    margin: 30px 4%;
+    padding: 35px 20px;
+  }
+}
