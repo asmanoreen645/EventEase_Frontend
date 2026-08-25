@@ -125,10 +125,12 @@ function VendorHeader({ vendor, navigate, onBookNow }) {
         </div>
 
         <div className="vendor-header__cta">
-          <button className="btn-chat" onClick={() => navigate(`/chat/${vendor._id}`)}> Chat with Vendor </button>
-          <button className="btn-book" onClick={onBookNow}>Book Now</button>
-          <button className="btn-deposit" onClick={onBookNow}>Pay Deposit</button>
-        </div>
+        <button className="btn-chat" onClick={() => navigate(`/chat/${vendor._id || vendor.UserId || vendor.id}`)}>
+          Chat with Vendor
+         </button>
+         <button className="btn-book" onClick={onBookNow}>Book Now</button>
+         <button className="btn-deposit" onClick={onBookNow}>Pay Deposit</button>
+         </div>
       </div>
     </div>
   );
@@ -349,13 +351,16 @@ export default function VendorProfile() {
      (v) => String(v._id) === String(id) || String(v.UserId) === String(id)
      );
 
-      if (foundDummy) {
-       setVendorData(foundDummy);
+     if (foundDummy) {
+       setVendorData({
+        ...foundDummy,
+         _id: foundDummy._id || foundDummy.UserId || foundDummy.id
+       });
        } else {
-        setError("Vendor not found");
-       }
+         setError("Vendor not found");
+}
 
-      setLoading(false);
+setLoading(false);
     };
 
     fetchVendor();
