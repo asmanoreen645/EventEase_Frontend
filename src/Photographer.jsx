@@ -61,11 +61,9 @@ const services = [
   },
 ];
 
-// ─── VENDOR HEADER ─────────────────────────────────────────────────────────────
 function VendorHeader({ vendor, navigate, onBookNow }) {
   return (
     <div className="vendor-header">
-      {/* Avatar */}
       <div className="vendor-header__avatar">
         <div
           className="vendor-header__avatar-img"
@@ -89,7 +87,6 @@ function VendorHeader({ vendor, navigate, onBookNow }) {
         <div className="vendor-header__avatar-label">{vendor.avatarLabel}</div>
       </div>
 
-      {/* Info */}
       <div className="vendor-header__info">
         <div className="vendor-header__name-row">
           <h1 className="vendor-header__name">{vendor.name}</h1>
@@ -149,7 +146,6 @@ function VendorHeader({ vendor, navigate, onBookNow }) {
   );
 }
 
-// ─── PORTFOLIO SECTION ─────────────────────────────────────────────────────────
 function PortfolioSection({ items }) {
   return (
     <section className="portfolio-section">
@@ -196,7 +192,6 @@ function PortfolioSection({ items }) {
   );
 }
 
-// ─── SERVICES SECTION ──────────────────────────────────────────────────────────
 function ServicesSection({ services }) {
   return (
     <section className="services-section">
@@ -216,7 +211,6 @@ function ServicesSection({ services }) {
   );
 }
 
-// ─── RATING SECTION ────────────────────────────────────────────────────────────
 function isValidObjectId(id) {
   return typeof id === "string" && /^[0-9a-fA-F]{24}$/.test(id);
 }
@@ -346,7 +340,6 @@ function RatingSection({ vendorId, onRatingSuccess }) {
   );
 }
 
-// ─── MAIN PAGE ─────────────────────────────────────────────────────────────────
 function getCategoryFromType(type) {
   const t = (type || "").toLowerCase();
   if (t.includes("photo")) return "photographer";
