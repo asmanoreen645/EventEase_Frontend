@@ -32,10 +32,10 @@ import { Toaster } from 'react-hot-toast';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 
+// VITE COMPATIBLE STRIPE KEY FETCH
 const STRIPE_PUBLISHABLE_KEY = 
-  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 
-  process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || 
-  "pk_test_51PxxxxxxDummyStripeKeyForTestingOnly000000";
+  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY) || 
+  "pk_test_51TfIPH2Qsc3XtoFFnrgZWahVv3JeWWgxZXK9XG9TKX1xq0ySaQMXKyo4gk8kYRiiHFrW1iwDzJUublQ3kIUrxKfi00aY6qsqaD";
 
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
@@ -52,7 +52,6 @@ import UserManagement from "./Components/UserManagement";
 import ChatLogs from "./Components/ChatLogs";
 import AdminProfile from "./Components/AdminProfile";
 
-
 function UserLayout() {
   return (
     <>
@@ -65,7 +64,6 @@ function UserLayout() {
         <Route path="photographer" element={<Photographer />} />
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
-
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="vendor-register" element={<VendorRegister />} />
         <Route path="vendor-dashboard" element={<VendorDashboard />} />
