@@ -3,7 +3,6 @@ import { createContext, useContext, useState } from "react";
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  // App load hote hi localStorage check karo - agar pehle se login hai to state set kar do
   const [user, setUser] = useState(() => {
     const token = localStorage.getItem("token");
     if (!token) return null;
@@ -12,15 +11,16 @@ export function AuthProvider({ children }) {
       id: localStorage.getItem("userId"),
       email: localStorage.getItem("userEmail"),
       role: localStorage.getItem("role"),
+      name: localStorage.getItem("userName"),
     };
   });
 
-  // Login.jsx isko call karega successful login k baad
   const login = (userData, token) => {
     localStorage.setItem("token", token);
     localStorage.setItem("userId", userData.id);
     localStorage.setItem("role", userData.role);
     localStorage.setItem("userEmail", userData.email);
+    localStorage.setItem("userName", userData.name);
     setUser(userData);
   };
 
@@ -29,12 +29,21 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("userId");
     localStorage.removeItem("role");
     localStorage.removeItem("userEmail");
+    localStorage.removeItem("userName");
     localStorage.removeItem("vendorRegistered");
     setUser(null);
   };
 
+  // 👇 YE NAYA FUNCTION HAI — ProfileSettings ke save ke baad ye call hota hai
+  const updateUser = (updatedFields) => {
+    const newUser = { ...user, ...updatedFields };
+    localStorage.setItem("userName", newUser.name);
+    localStorage.setItem("userEmail", newUser.email);
+    setUser(newUser);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

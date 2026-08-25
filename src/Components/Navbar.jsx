@@ -51,12 +51,12 @@ export default function Navbar() {
         {user ? (
           <div style={{ position: "relative" }} ref={dropdownRef}>
             <div className="ee-user-trigger" onClick={() => setShowDropdown(!showDropdown)}>
-              {/* Task 1: Avatar / Image */}
+              {/* : Avatar / Image */}
               <div className="ee-avatar-circle">
                 {user.avatar ? <img src={user.avatar} alt="Avatar" /> : avatarLetter}
               </div>
 
-              {/* Task 1: Dynamic Role Badge */}
+              {/* : Dynamic Role Badge */}
               <span className={`ee-role-badge badge-${user.role || 'customer'}`}>
                 {user.role || 'customer'}
               </span>
@@ -74,14 +74,14 @@ export default function Navbar() {
                   Profile Settings
                 </div>
 
-                {/* Task 2: Customer Navigation */}
+                {/* : Customer Navigation */}
                 {user.role === 'customer' && (
                   <div className="ee-dropdown-item" onClick={() => { navigate('/customer-dashboard'); setShowDropdown(false); }}>
-                    My Bookings
+                    My dashboard
                   </div>
                 )}
 
-                {/* Task 2: Conditional Vendor Navigation */}
+                {/* : Conditional Vendor Navigation */}
                 {user.role === 'vendor' && (
                   <>
                     <div className="ee-dropdown-item" onClick={() => { navigate('/vendor-profile'); setShowDropdown(false); }}>
