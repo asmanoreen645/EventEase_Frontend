@@ -1,5 +1,4 @@
-import { useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useBooking } from "./Components/BookingContext";
 import { dummyVenues } from "./Components/VendorsData";
@@ -7,7 +6,6 @@ import VendorCalendar from "./Components/VendorCalendar";
 import VendorMap from "./Components/VendorMap";
 import API from "./api/axiosConfig";
 import "./Photographer.css";
-
 
 const portfolioItems = [
   {
@@ -63,11 +61,9 @@ const services = [
   },
 ];
 
-// ─── VENDOR HEADER ─────────────────────────────────────────────────────────────
 function VendorHeader({ vendor, navigate, onBookNow }) {
   return (
     <div className="vendor-header">
-      {/* Avatar */}
       <div className="vendor-header__avatar">
         <div
           className="vendor-header__avatar-img"
@@ -91,12 +87,14 @@ function VendorHeader({ vendor, navigate, onBookNow }) {
         <div className="vendor-header__avatar-label">{vendor.avatarLabel}</div>
       </div>
 
-      {/* Info */}
       <div className="vendor-header__info">
         <div className="vendor-header__name-row">
           <h1 className="vendor-header__name">{vendor.name}</h1>
           <div className="vendor-header__rating">
-            <span className="material-symbols-outlined star" style={{ fontVariationSettings: "'FILL' 1" }}>
+            <span
+              className="material-symbols-outlined star"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
               star
             </span>
             <span>{Number(vendor.rating || 0).toFixed(1)} Rating</span>
@@ -117,7 +115,10 @@ function VendorHeader({ vendor, navigate, onBookNow }) {
             {vendor.email}
           </div>
           <div className="vendor-header__location">
-            <span className="material-symbols-outlined" style={{ fontSize: 17, color: "#6b7280" }}>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 17, color: "#6b7280" }}
+            >
               location_on
             </span>
             {vendor.location}
@@ -125,18 +126,26 @@ function VendorHeader({ vendor, navigate, onBookNow }) {
         </div>
 
         <div className="vendor-header__cta">
-        <button className="btn-chat" onClick={() => navigate(`/chat/${vendor._id || vendor.UserId || vendor.id}`)}>
-          Chat with Vendor
-         </button>
-         <button className="btn-book" onClick={onBookNow}>Book Now</button>
-         <button className="btn-deposit" onClick={onBookNow}>Pay Deposit</button>
-         </div>
+          <button
+            className="btn-chat"
+            onClick={() =>
+              navigate(`/chat/${vendor._id || vendor.UserId || vendor.id}`)
+            }
+          >
+            Chat with Vendor
+          </button>
+          <button className="btn-book" onClick={onBookNow}>
+            Book Now
+          </button>
+          <button className="btn-deposit" onClick={onBookNow}>
+            Pay Deposit
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-// ─── PORTFOLIO SECTION ─────────────────────────────────────────────────────────
 function PortfolioSection({ items }) {
   return (
     <section className="portfolio-section">
@@ -147,7 +156,9 @@ function PortfolioSection({ items }) {
         </div>
         <a href="#" className="section-header__link">
           View All
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_right_alt</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+            arrow_right_alt
+          </span>
         </a>
       </div>
 
@@ -155,7 +166,9 @@ function PortfolioSection({ items }) {
         {items.map((item) => (
           <div
             key={item.UserId}
-            className={`portfolio-item${item.featured ? " portfolio-item--featured" : ""}`}
+            className={`portfolio-item${
+              item.featured ? " portfolio-item--featured" : ""
+            }`}
           >
             <img
               src={item.img}
@@ -179,7 +192,6 @@ function PortfolioSection({ items }) {
   );
 }
 
-// ─── SERVICES SECTION ──────────────────────────────────────────────────────────
 function ServicesSection({ services }) {
   return (
     <section className="services-section">
@@ -199,18 +211,18 @@ function ServicesSection({ services }) {
   );
 }
 
-// ─── RATING SECTION ────────────────────────────────────────────────────────────
 function isValidObjectId(id) {
   return typeof id === "string" && /^[0-9a-fA-F]{24}$/.test(id);
 }
 
-function RatingSection({ vendorId }) {
+function RatingSection({ vendorId, onRatingSuccess }) {
   const [userRating, setUserRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const isDummy = !isValidObjectId(vendorId);
+  const isDummy =
+    !isValidObjectId(vendorId) || String(vendorId).startsWith("vendor");
 
   const handleRating = async (stars) => {
     const customerId = localStorage.getItem("userId");
@@ -221,24 +233,36 @@ function RatingSection({ vendorId }) {
     }
 
     if (isDummy) {
-      alert("Ye demo vendor hai, real rating sirf asli vendors par kaam karegi.");
+      setUserRating(stars);
+      setRatingSubmitted(true);
+      if (onRatingSuccess) onRatingSuccess(stars);
+      alert(`Demo Rating: Aap ne ${stars} stars diye! ⭐`);
       return;
     }
 
     try {
       setLoading(true);
-      await API.post("/api/ratings/give-rating", {
+
+      const res = await API.post("/api/ratings/give-rating", {
         vendorId,
         customerId,
         stars,
       });
+
       setUserRating(stars);
       setRatingSubmitted(true);
+
+      if (onRatingSuccess) {
+        const updatedRating = res.data?.newRating || stars;
+        onRatingSuccess(updatedRating);
+      }
+
       alert("Rating submit ho gayi! Shukriya! ⭐");
     } catch (err) {
       console.error("Rating error:", err.response?.data || err.message);
       alert(
-        err.response?.data?.message || "Rating submit nahi hui. Dobara try karo."
+        err.response?.data?.message ||
+          "Rating submit nahi hui. Dobara try karo."
       );
     } finally {
       setLoading(false);
@@ -246,21 +270,37 @@ function RatingSection({ vendorId }) {
   };
 
   return (
-    <div style={{
-      padding: "24px",
-      background: "#fff",
-      borderRadius: "12px",
-      marginTop: "20px",
-      border: "1px solid #e5e7eb",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.06)"
-    }}>
-      <h3 style={{ marginBottom: "6px", color: "#1e293b", fontSize: "16px", fontWeight: 600 }}>
+    <div
+      style={{
+        padding: "24px",
+        background: "#fff",
+        borderRadius: "12px",
+        marginTop: "20px",
+        border: "1px solid #e5e7eb",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+      }}
+    >
+      <h3
+        style={{
+          marginBottom: "6px",
+          color: "#1e293b",
+          fontSize: "16px",
+          fontWeight: 600,
+        }}
+      >
         Rate this Vendor
       </h3>
 
       {isDummy && (
-        <p style={{ marginBottom: "10px", color: "#b45309", fontSize: "12px", fontStyle: "italic" }}>
-          (Demo vendor — real rating sirf live vendors ke liye available hai)
+        <p
+          style={{
+            marginBottom: "10px",
+            color: "#b45309",
+            fontSize: "12px",
+            fontStyle: "italic",
+          }}
+        >
+          (Demo mode active — test rating UI)
         </p>
       )}
 
@@ -286,7 +326,8 @@ function RatingSection({ vendorId }) {
               style={{
                 fontSize: "36px",
                 cursor: loading ? "not-allowed" : "pointer",
-                color: star <= (hoveredRating || userRating) ? "#f59e0b" : "#d1d5db",
+                color:
+                  star <= (hoveredRating || userRating) ? "#f59e0b" : "#d1d5db",
                 transition: "color 0.15s",
               }}
             >
@@ -299,12 +340,11 @@ function RatingSection({ vendorId }) {
   );
 }
 
-// ─── MAIN PAGE ─────────────────────────────────────────────────────────────────
 function getCategoryFromType(type) {
   const t = (type || "").toLowerCase();
   if (t.includes("photo")) return "photographer";
   if (t.includes("decor")) return "decorator";
-  return "venue"; // Marquee, Hotel, Farmhouse, Hall, Convention Centre, Caterers
+  return "venue";
 }
 
 export default function VendorProfile() {
@@ -321,7 +361,6 @@ export default function VendorProfile() {
       setLoading(true);
       setError(null);
 
-      // Step 1: Pehle real backend vendors mein dhoondo
       try {
         const res = await API.get("/api/vendors/search");
         const allVendors = res.data.vendors || [];
@@ -346,21 +385,20 @@ export default function VendorProfile() {
         console.error("Real vendor fetch error:", err);
       }
 
-      // Step 2: Real mein nahi mila, to dummy list mein dhoondo (id number ho to)
       const foundDummy = dummyVenues.find(
-     (v) => String(v._id) === String(id) || String(v.UserId) === String(id)
-     );
+        (v) => String(v._id) === String(id) || String(v.UserId) === String(id)
+      );
 
-     if (foundDummy) {
-       setVendorData({
-        ...foundDummy,
-         _id: foundDummy._id || foundDummy.UserId || foundDummy.id
-       });
-       } else {
-         setError("Vendor not found");
-}
+      if (foundDummy) {
+        setVendorData({
+          ...foundDummy,
+          _id: foundDummy._id || foundDummy.UserId || foundDummy.id,
+        });
+      } else {
+        setError("Vendor not found");
+      }
 
-setLoading(false);
+      setLoading(false);
     };
 
     fetchVendor();
@@ -381,30 +419,58 @@ setLoading(false);
 
   return (
     <>
-      {/* Material Symbols Font */}
       <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet"
       />
 
       <main className="vendor-page">
-        <VendorHeader vendor={vendor} navigate={navigate} onBookNow={handleBookNow} />
+        <VendorHeader
+          vendor={vendor}
+          navigate={navigate}
+          onBookNow={handleBookNow}
+        />
         <PortfolioSection items={portfolioItems} />
         <ServicesSection services={services} />
-        <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginTop: "20px" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "20px",
+            flexWrap: "wrap",
+            marginTop: "20px",
+          }}
+        >
           <div>
             <VendorCalendar vendor={vendor} />
           </div>
 
-          <div style={{ flex: 1, minWidth: "300px", height: "300px", position: "relative" }}>
-         <h3 style={{ marginBottom: "10px", color: "#888", fontSize: "14px" }}>
-          VENDOR LOCATION
-         </h3>
-         <VendorMap />
-         </div>
+          <div
+            style={{
+              flex: 1,
+              minWidth: "300px",
+              height: "300px",
+              position: "relative",
+            }}
+          >
+            <h3
+              style={{
+                marginBottom: "10px",
+                color: "#888",
+                fontSize: "14px",
+              }}
+            >
+              VENDOR LOCATION
+            </h3>
+            <VendorMap />
+          </div>
         </div>
 
-        <RatingSection vendorId={vendor._id} />
+        <RatingSection
+          vendorId={vendor._id}
+          onRatingSuccess={(newRating) => {
+            setVendorData((prev) => ({ ...prev, rating: newRating }));
+          }}
+        />
       </main>
     </>
   );

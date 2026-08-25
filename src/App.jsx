@@ -24,6 +24,7 @@ import VendorsList from "./VendorsList";
 import PrivacyPolicy from "./PrivacyPolicy.jsx";
 import TermsOfService from "./TermsOfService.jsx";
 import Contact from './Contact';
+import ProfileSettings from './ProfileSettings';
 
 // 🔔 TOAST NOTIFICATION IMPORT 
 import { Toaster } from 'react-hot-toast';
@@ -75,6 +76,7 @@ function UserLayout() {
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
         <Route path="terms-of-service" element={<TermsOfService />} />
         <Route path="contact" element={<Contact />} />
+        <Route path="/profile-settings" element={<ProfileSettings />} />
         
         <Route 
           path="payment" 

@@ -4,13 +4,40 @@ import { io } from "socket.io-client";
 import "./ChatPage.css";
 import API from "./api/axiosConfig";
 
+// 📦 React Icons 
+import {
+  MdCameraAlt,
+  MdRestaurant,
+  MdDeck,
+  MdStorefront,
+  MdSearch,
+  MdCall,
+  MdMoreVert,
+  MdLocationOn,
+  MdAttachFile,
+  MdSend,
+  MdPerson,
+} from "react-icons/md";
+
 // 🔧 Backend base URL - socket connection isi se banegi
 const SOCKET_URL = "https://eventease-backend-693s.onrender.com";
 
+// Helper Function: Category ke according icon render karne ke liye
+const getCategoryIcon = (type) => {
+  switch (type) {
+    case "photo":
+      return <MdCameraAlt size={22} />;
+    case "cat":
+      return <MdRestaurant size={22} />;
+    case "dec":
+      return <MdDeck size={22} />;
+    default:
+      return <MdStorefront size={22} />;
+  }
+};
+
 // ==========================================
 // 🎭 DUMMY FALLBACK DATA
-// Jab tak real /api/vendors route backend pe live nahi hota,
-// ye data show hoga taake UI test/demo ho sake.
 // ==========================================
 const dummyConversations = [
   {
@@ -18,7 +45,7 @@ const dummyConversations = [
     vendorId: "vendor1",
     name: "Moon Photography",
     type: "photo",
-    icon: "photo_camera",
+    avatar: "https://ui-avatars.com/api/?name=Moon+Photography&background=random&color=fff",
     location: "Lahore",
     price: "PKR 10,000",
     verified: true,
@@ -29,7 +56,7 @@ const dummyConversations = [
     vendorId: "vendor2",
     name: "Hanif Rajput Decor",
     type: "dec",
-    icon: "yard",
+    avatar: "https://ui-avatars.com/api/?name=Hanif+Rajput&background=random&color=fff",
     location: "Karachi",
     price: "PKR 10,000",
     verified: true,
@@ -40,7 +67,7 @@ const dummyConversations = [
     vendorId: "vendor3",
     name: "Zaiqa Catering",
     type: "cat",
-    icon: "restaurant",
+    avatar: "https://ui-avatars.com/api/?name=Zaiqa+Catering&background=random&color=fff",
     location: "Lahore",
     price: "PKR 5,000",
     verified: false,
@@ -62,12 +89,12 @@ export default function ChatPage() {
   const [search, setSearch] = useState("");
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [loadingVendors, setLoadingVendors] = useState(true);
-  const [usingDummy, setUsingDummy] = useState(false); // 🔧 real vs dummy track karne ke liye
+  const [usingDummy, setUsingDummy] = useState(false);
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
 
   // ==========================================
-  // 0️⃣ LOGIN CHECK — bina login koi is page tak na pohanche
+  // 0️⃣ LOGIN CHECK
   // ==========================================
   useEffect(() => {
     if (!userId || !token) {
@@ -76,45 +103,44 @@ export default function ChatPage() {
   }, [userId, token, navigate]);
 
   // ==========================================
-  // 1️⃣ FETCH VENDORS — real API try karo, fail ho tw dummy pe fallback
+  // 1️⃣ FETCH VENDORS
   // ==========================================
   useEffect(() => {
     const fetchVendors = async () => {
       setLoadingVendors(true);
       try {
-        // Backend route: GET /api/vendors (getAllVendors)
-       const res = await API.get("/api/vendors/search");
+        const res = await API.get("/api/vendors/search");
         const vendorList = res.data.vendors || res.data.data || res.data;
 
         if (!Array.isArray(vendorList) || vendorList.length === 0) {
           throw new Error("Empty or invalid vendor list");
         }
 
-        // Real vendor data ko sidebar ke structure mein map karen
-        // ⚠️ Field names apne VendorProfile schema ke mutabiq check/adjust karen
-        const formatted = vendorList.map((v) => ({
-  id: v._id,
-  vendorId: v._id,
-  name: v.businessName || "Unnamed Vendor",
-  type: (v.category || "").toLowerCase().includes("photo")
-    ? "photo"
-    : (v.category || "").toLowerCase().includes("cater")
-    ? "cat"
-    : (v.category || "").toLowerCase().includes("decor")
-    ? "dec"
-    : "other",
-  icon: (v.category || "").toLowerCase().includes("photo")
-    ? "photo_camera"
-    : (v.category || "").toLowerCase().includes("cater")
-    ? "restaurant"
-    : (v.category || "").toLowerCase().includes("decor")
-    ? "yard"
-    : "storefront",
-  location: v.location?.city || "N/A",
-  price: "Contact for price",
-  verified: v.isVerified === true,
-  online: false,
-}));
+        const formatted = vendorList.map((v) => {
+          const vName = v.businessName || "Unnamed Vendor";
+          // Image fallback agar backend pe image missing ho
+          const autoAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            vName
+          )}&background=random&color=fff`;
+
+          return {
+            id: v._id,
+            vendorId: v._id,
+            name: vName,
+            avatar: v.profileImage || v.coverImage || autoAvatar,
+            type: (v.category || "").toLowerCase().includes("photo")
+              ? "photo"
+              : (v.category || "").toLowerCase().includes("cater")
+              ? "cat"
+              : (v.category || "").toLowerCase().includes("decor")
+              ? "dec"
+              : "other",
+            location: v.location?.city || "N/A",
+            price: "Contact for price",
+            verified: v.isVerified === true,
+            online: false,
+          };
+        });
 
         setConversations(formatted);
         setUsingDummy(false);
@@ -129,7 +155,6 @@ export default function ChatPage() {
           }
         }
       } catch (err) {
-        // 🔧 Real backend abhi ready/live nahi — dummy data pe fallback
         console.warn(
           "Real vendors load nahi hue, dummy data use ho raha hai:",
           err.message
@@ -153,9 +178,8 @@ export default function ChatPage() {
 
     fetchVendors();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // sirf ek dafa mount pe chalega
+  }, []);
 
-  // Jab URL ka vendorId change ho (dusre vendor pe click), activeConvo update karen
   useEffect(() => {
     if (!vendorId || conversations.length === 0) return;
     const match = conversations.find((c) => c.vendorId === vendorId);
@@ -172,7 +196,6 @@ export default function ChatPage() {
     const fetchMessages = async () => {
       setLoadingMessages(true);
       try {
-        // Backend route: GET /api/chat/room/:room
         const response = await API.get(`/api/chat/room/${room}`);
         if (response.data.success) {
           setMessages(response.data.messages);
@@ -198,7 +221,7 @@ export default function ChatPage() {
   }, [room]);
 
   // ==========================================
-  // 3️⃣ SOCKET.IO CONNECTION (real-time messaging)
+  // 3️⃣ SOCKET.IO CONNECTION
   // ==========================================
   useEffect(() => {
     if (!room || !userId) return;
@@ -211,7 +234,6 @@ export default function ChatPage() {
     socket.emit("join_room", room);
 
     socket.on("receive_message", (data) => {
-      // apna hi bheja hua message dobara add na ho, isliye check
       setMessages((prev) => {
         const alreadyExists = prev.some((m) => m._id === data._id);
         if (alreadyExists) return prev;
@@ -228,13 +250,12 @@ export default function ChatPage() {
     };
   }, [room, userId]);
 
-  // naya message aane par auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   // ==========================================
-  // 4️⃣ SEND MESSAGE (Socket emit + DB backup save)
+  // 4️⃣ SEND MESSAGE
   // ==========================================
   const sendMessage = async () => {
     if (!inputText.trim() || !room) return;
@@ -250,10 +271,8 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, newMsg]);
     setInputText("");
 
-    // real-time deliver karne ke liye socket emit
     socketRef.current?.emit("send_message", newMsg);
 
-    // DB mein permanently save karne ke liye REST backup call
     try {
       await API.post("/api/chat/save", {
         room,
@@ -273,7 +292,6 @@ export default function ChatPage() {
     c.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Vendors load hone tak loading state
   if (loadingVendors) {
     return (
       <div className="cp-page" style={{ textAlign: "center", padding: "60px" }}>
@@ -302,8 +320,13 @@ export default function ChatPage() {
               {usingDummy && " (Demo data)"}
             </span>
           </div>
-          <div className="cp-search">
-            <span className="material-symbols-outlined">search</span>
+
+          {/* SEARCH BAR WITH REACT ICON */}
+          <div
+            className="cp-search"
+            style={{ display: "flex", alignItems: "center", gap: "8px" }}
+          >
+            <MdSearch size={20} color="#6b7280" />
             <input
               type="text"
               placeholder="Search vendors..."
@@ -311,6 +334,7 @@ export default function ChatPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+
           <div className="cp-convo-list">
             {filtered.map((c) => (
               <div
@@ -323,10 +347,29 @@ export default function ChatPage() {
                   navigate(`/chat/${c.vendorId}`);
                 }}
               >
-                <div className={`cp-avatar cp-avatar-${c.type}`}>
-                  <span className="material-symbols-outlined">{c.icon}</span>
+                {/* VENDOR PROFILE AVATAR */}
+                <div
+                  className="cp-avatar"
+                  style={{
+                    position: "relative",
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                  }}
+                >
+                  <img
+                    src={c.avatar}
+                    alt={c.name}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
                   {c.online && <div className="cp-online-dot"></div>}
                 </div>
+
                 <div className="cp-convo-info">
                   <div className="cp-convo-name">{c.name}</div>
                   <div className="cp-convo-preview">{c.location}</div>
@@ -340,14 +383,30 @@ export default function ChatPage() {
         <main className="cp-chat-main">
           {/* CHAT HEADER */}
           <div className="cp-chat-header">
-            <div className={`cp-avatar cp-avatar-${activeConvo.type}`}>
-              <span className="material-symbols-outlined">
-                {activeConvo.icon}
-              </span>
+            <div
+              className="cp-avatar"
+              style={{
+                position: "relative",
+                width: 42,
+                height: 42,
+                borderRadius: "50%",
+                overflow: "hidden",
+              }}
+            >
+              <img
+                src={activeConvo.avatar}
+                alt={activeConvo.name}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+              />
               {activeConvo.online && <div className="cp-online-dot"></div>}
             </div>
+
             <div className="cp-chat-header-info">
-              <p>
+              <p style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 {activeConvo.name}
                 {activeConvo.verified && (
                   <span className="cp-verified-badge">Verified Pro</span>
@@ -357,18 +416,25 @@ export default function ChatPage() {
                 {activeConvo.online ? "Online" : "Offline"}
               </span>
             </div>
-            <div className="cp-chat-header-actions">
-              <span className="material-symbols-outlined">call</span>
-              <span className="material-symbols-outlined">more_vert</span>
+
+            {/* HEADER ACTION ICONS */}
+            <div
+              className="cp-chat-header-actions"
+              style={{ display: "flex", gap: "12px", cursor: "pointer" }}
+            >
+              <MdCall size={22} color="#4b5563" />
+              <MdMoreVert size={22} color="#4b5563" />
             </div>
           </div>
 
           {/* VENDOR STRIP */}
-          <div className="cp-vendor-strip">
-            <span className="material-symbols-outlined">location_on</span>
+          <div
+            className="cp-vendor-strip"
+            style={{ display: "flex", alignItems: "center", gap: "6px" }}
+          >
+            <MdLocationOn size={18} color="#6b7280" />
             <span>
-              {activeConvo.name} · {activeConvo.location} ·{" "}
-              {activeConvo.price}
+              {activeConvo.name} · {activeConvo.location} · {activeConvo.price}
             </span>
             <button
               className="cp-strip-book"
@@ -399,15 +465,16 @@ export default function ChatPage() {
             {messages.map((msg) => {
               const isMe = msg.sender === userId || msg.sender?._id === userId;
               return (
-                <div key={msg._id} className={`cp-msg-row ${isMe ? "mine" : ""}`}>
-                  <div
-                    className={`cp-msg-av ${
-                      isMe ? "me" : `cp-avatar-${activeConvo.type}`
-                    }`}
-                  >
-                    <span className="material-symbols-outlined">
-                      {isMe ? "person" : activeConvo.icon}
-                    </span>
+                <div
+                  key={msg._id}
+                  className={`cp-msg-row ${isMe ? "mine" : ""}`}
+                >
+                  <div className={`cp-msg-av ${isMe ? "me" : ""}`}>
+                    {isMe ? (
+                      <MdPerson size={20} color="#fff" />
+                    ) : (
+                      getCategoryIcon(activeConvo.type)
+                    )}
                   </div>
                   <div className={`cp-msg-col ${isMe ? "mine" : ""}`}>
                     <div className={`cp-bubble ${isMe ? "mine" : "vendor"}`}>
@@ -426,10 +493,17 @@ export default function ChatPage() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* INPUT */}
+          {/* INPUT AREA */}
           <div className="cp-input-area">
-            <div className="cp-attach">
-              <span className="material-symbols-outlined">attach_file</span>
+            <div
+              className="cp-attach"
+              style={{
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <MdAttachFile size={22} color="#6b7280" />
             </div>
             <input
               type="text"
@@ -438,8 +512,16 @@ export default function ChatPage() {
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKey}
             />
-            <button className="cp-send-btn" onClick={sendMessage}>
-              <span className="material-symbols-outlined">send</span>
+            <button
+              className="cp-send-btn"
+              onClick={sendMessage}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <MdSend size={18} color="#fff" />
             </button>
           </div>
         </main>
