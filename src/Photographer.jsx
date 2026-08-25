@@ -1,5 +1,4 @@
-import { useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useBooking } from "./Components/BookingContext";
 import { dummyVenues } from "./Components/VendorsData";
@@ -7,7 +6,6 @@ import VendorCalendar from "./Components/VendorCalendar";
 import VendorMap from "./Components/VendorMap";
 import API from "./api/axiosConfig";
 import "./Photographer.css";
-
 
 const portfolioItems = [
   {
@@ -96,7 +94,10 @@ function VendorHeader({ vendor, navigate, onBookNow }) {
         <div className="vendor-header__name-row">
           <h1 className="vendor-header__name">{vendor.name}</h1>
           <div className="vendor-header__rating">
-            <span className="material-symbols-outlined star" style={{ fontVariationSettings: "'FILL' 1" }}>
+            <span
+              className="material-symbols-outlined star"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
               star
             </span>
             <span>{Number(vendor.rating || 0).toFixed(1)} Rating</span>
@@ -117,7 +118,10 @@ function VendorHeader({ vendor, navigate, onBookNow }) {
             {vendor.email}
           </div>
           <div className="vendor-header__location">
-            <span className="material-symbols-outlined" style={{ fontSize: 17, color: "#6b7280" }}>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 17, color: "#6b7280" }}
+            >
               location_on
             </span>
             {vendor.location}
@@ -125,12 +129,21 @@ function VendorHeader({ vendor, navigate, onBookNow }) {
         </div>
 
         <div className="vendor-header__cta">
-        <button className="btn-chat" onClick={() => navigate(`/chat/${vendor._id || vendor.UserId || vendor.id}`)}>
-          Chat with Vendor
-         </button>
-         <button className="btn-book" onClick={onBookNow}>Book Now</button>
-         <button className="btn-deposit" onClick={onBookNow}>Pay Deposit</button>
-         </div>
+          <button
+            className="btn-chat"
+            onClick={() =>
+              navigate(`/chat/${vendor._id || vendor.UserId || vendor.id}`)
+            }
+          >
+            Chat with Vendor
+          </button>
+          <button className="btn-book" onClick={onBookNow}>
+            Book Now
+          </button>
+          <button className="btn-deposit" onClick={onBookNow}>
+            Pay Deposit
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -147,7 +160,9 @@ function PortfolioSection({ items }) {
         </div>
         <a href="#" className="section-header__link">
           View All
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_right_alt</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+            arrow_right_alt
+          </span>
         </a>
       </div>
 
@@ -155,7 +170,9 @@ function PortfolioSection({ items }) {
         {items.map((item) => (
           <div
             key={item.UserId}
-            className={`portfolio-item${item.featured ? " portfolio-item--featured" : ""}`}
+            className={`portfolio-item${
+              item.featured ? " portfolio-item--featured" : ""
+            }`}
           >
             <img
               src={item.img}
@@ -200,22 +217,18 @@ function ServicesSection({ services }) {
 }
 
 // ─── RATING SECTION ────────────────────────────────────────────────────────────
-import { useState } from "react";
-import API from "./api/axiosConfig";
-
 function isValidObjectId(id) {
   return typeof id === "string" && /^[0-9a-fA-F]{24}$/.test(id);
 }
 
-// 💡 onRatingSuccess prop add kiya hai taake parent profile par rating live update ho sake
-export function RatingSection({ vendorId, onRatingSuccess }) {
+function RatingSection({ vendorId, onRatingSuccess }) {
   const [userRating, setUserRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Check agar ID string "vendor1" / integer numeric hai ya valid Mongo ID
-  const isDummy = !isValidObjectId(vendorId) || String(vendorId).startsWith("vendor");
+  const isDummy =
+    !isValidObjectId(vendorId) || String(vendorId).startsWith("vendor");
 
   const handleRating = async (stars) => {
     const customerId = localStorage.getItem("userId");
@@ -226,7 +239,6 @@ export function RatingSection({ vendorId, onRatingSuccess }) {
     }
 
     if (isDummy) {
-      // 🧪 Demo Vendor Logic: Local UI update taake testing/demo smoothly chal sake
       setUserRating(stars);
       setRatingSubmitted(true);
       if (onRatingSuccess) onRatingSuccess(stars);
@@ -236,8 +248,7 @@ export function RatingSection({ vendorId, onRatingSuccess }) {
 
     try {
       setLoading(true);
-      
-      // 🌐 Real Vendor API Call
+
       const res = await API.post("/api/ratings/give-rating", {
         vendorId,
         customerId,
@@ -247,7 +258,6 @@ export function RatingSection({ vendorId, onRatingSuccess }) {
       setUserRating(stars);
       setRatingSubmitted(true);
 
-      // Parent component ko new rating pass karein taake header UI refresh ho jaye
       if (onRatingSuccess) {
         const updatedRating = res.data?.newRating || stars;
         onRatingSuccess(updatedRating);
@@ -257,7 +267,8 @@ export function RatingSection({ vendorId, onRatingSuccess }) {
     } catch (err) {
       console.error("Rating error:", err.response?.data || err.message);
       alert(
-        err.response?.data?.message || "Rating submit nahi hui. Dobara try karo."
+        err.response?.data?.message ||
+          "Rating submit nahi hui. Dobara try karo."
       );
     } finally {
       setLoading(false);
@@ -334,12 +345,13 @@ export function RatingSection({ vendorId, onRatingSuccess }) {
     </div>
   );
 }
+
 // ─── MAIN PAGE ─────────────────────────────────────────────────────────────────
 function getCategoryFromType(type) {
   const t = (type || "").toLowerCase();
   if (t.includes("photo")) return "photographer";
   if (t.includes("decor")) return "decorator";
-  return "venue"; // Marquee, Hotel, Farmhouse, Hall, Convention Centre, Caterers
+  return "venue";
 }
 
 export default function VendorProfile() {
@@ -356,7 +368,6 @@ export default function VendorProfile() {
       setLoading(true);
       setError(null);
 
-      // Step 1: Pehle real backend vendors mein dhoondo
       try {
         const res = await API.get("/api/vendors/search");
         const allVendors = res.data.vendors || [];
@@ -381,21 +392,20 @@ export default function VendorProfile() {
         console.error("Real vendor fetch error:", err);
       }
 
-      // Step 2: Real mein nahi mila, to dummy list mein dhoondo (id number ho to)
       const foundDummy = dummyVenues.find(
-     (v) => String(v._id) === String(id) || String(v.UserId) === String(id)
-     );
+        (v) => String(v._id) === String(id) || String(v.UserId) === String(id)
+      );
 
-     if (foundDummy) {
-       setVendorData({
-        ...foundDummy,
-         _id: foundDummy._id || foundDummy.UserId || foundDummy.id
-       });
-       } else {
-         setError("Vendor not found");
-}
+      if (foundDummy) {
+        setVendorData({
+          ...foundDummy,
+          _id: foundDummy._id || foundDummy.UserId || foundDummy.id,
+        });
+      } else {
+        setError("Vendor not found");
+      }
 
-setLoading(false);
+      setLoading(false);
     };
 
     fetchVendor();
@@ -416,34 +426,58 @@ setLoading(false);
 
   return (
     <>
-      {/* Material Symbols Font */}
       <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet"
       />
 
       <main className="vendor-page">
-        <VendorHeader vendor={vendor} navigate={navigate} onBookNow={handleBookNow} />
+        <VendorHeader
+          vendor={vendor}
+          navigate={navigate}
+          onBookNow={handleBookNow}
+        />
         <PortfolioSection items={portfolioItems} />
         <ServicesSection services={services} />
-        <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginTop: "20px" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "20px",
+            flexWrap: "wrap",
+            marginTop: "20px",
+          }}
+        >
           <div>
             <VendorCalendar vendor={vendor} />
           </div>
 
-          <div style={{ flex: 1, minWidth: "300px", height: "300px", position: "relative" }}>
-         <h3 style={{ marginBottom: "10px", color: "#888", fontSize: "14px" }}>
-          VENDOR LOCATION
-         </h3>
-         <VendorMap />
-         </div>
+          <div
+            style={{
+              flex: 1,
+              minWidth: "300px",
+              height: "300px",
+              position: "relative",
+            }}
+          >
+            <h3
+              style={{
+                marginBottom: "10px",
+                color: "#888",
+                fontSize: "14px",
+              }}
+            >
+              VENDOR LOCATION
+            </h3>
+            <VendorMap />
+          </div>
         </div>
 
-        <RatingSection 
-        vendorId={vendor._id} 
-        onRatingSuccess={(newRating) => {
-         setVendorData((prev) => ({ ...prev, rating: newRating }));
-         }}/>
+        <RatingSection
+          vendorId={vendor._id}
+          onRatingSuccess={(newRating) => {
+            setVendorData((prev) => ({ ...prev, rating: newRating }));
+          }}
+        />
       </main>
     </>
   );
