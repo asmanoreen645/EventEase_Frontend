@@ -76,7 +76,7 @@ function UserLayout() {
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
         <Route path="terms-of-service" element={<TermsOfService />} />
         <Route path="contact" element={<Contact />} />
-        <Route path="/profile-settings" element={<ProfileSettings />} />
+        <Route path="/profile" element={<ProfileSettings />} />
         
         <Route 
           path="payment" 
