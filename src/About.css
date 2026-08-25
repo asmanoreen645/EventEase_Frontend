@@ -207,3 +207,34 @@
     padding: 35px 20px;
   }
 }
+/* --- Stats Bar --- */
+.ee-stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  padding: 40px 8%;
+  background: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+}
+.ee-stat-item {
+  text-align: center;
+}
+.ee-stat-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: #8b5e34;
+  margin: 0;
+}
+.ee-stat-label {
+  font-size: 14px;
+  color: #666666;
+  margin: 6px 0 0;
+}
+
+@media (max-width: 768px) {
+  .ee-stats-bar {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    padding: 30px 4%;
+  }
+}

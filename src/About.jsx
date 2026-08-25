@@ -13,6 +13,25 @@ export default function AboutPage() {
         </div>
       </header>
 
+      {/* Stats Bar */}
+      <div className="ee-stats-bar">
+        <div className="ee-stat-item">
+          <p className="ee-stat-number">500+</p>
+          <p className="ee-stat-label">Events Planned</p>
+        </div>
+        <div className="ee-stat-item">
+          <p className="ee-stat-number">50+</p>
+          <p className="ee-stat-label">Venues Partnered</p>
+        </div>
+        <div className="ee-stat-item">
+          <p className="ee-stat-number">10k+</p>
+          <p className="ee-stat-label">Happy Users</p>
+        </div>
+        <div className="ee-stat-item">
+          <p className="ee-stat-number">4.8</p>
+          <p className="ee-stat-label">Average Rating</p>
+        </div>
+      </div>
       {/* 2. MISSION & VISION SECTION */}
       <section className="ee-content-section">
         <h2 className="ee-section-title">Our Mission & Vision</h2>
