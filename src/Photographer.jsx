@@ -208,7 +208,7 @@ function isValidObjectId(id) {
 }
 
 // 💡 onRatingSuccess prop add kiya hai taake parent profile par rating live update ho sake
-export default function RatingSection({ vendorId, onRatingSuccess }) {
+export function RatingSection({ vendorId, onRatingSuccess }) {
   const [userRating, setUserRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
