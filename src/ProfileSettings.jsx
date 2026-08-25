@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from './api/axiosConfig';
 import { useAuth } from './Components/AuthContext';
-import './ProfileSettings.css'; 
+import './ProfileSettings.css';
 
 const ProfileSettings = () => {
   // AuthContext se current logged-in user ka data aur update function
@@ -47,17 +47,18 @@ const ProfileSettings = () => {
     }
   };
 
-  // Image ko Cloudinary par upload karke uska URL wapas lo
-  const uploadToCloudinary = async (file) => {
+  // Image upload - filhal sirf vendor ke liye backend route available hai
+  const uploadProfileImage = async (file) => {
     const data = new FormData();
-    data.append('file', file);
-    data.append('upload_preset', 'YOUR_UPLOAD_PRESET'); // apna actual preset lagao
-    const res = await fetch(
-  'https://api.cloudinary.com/v1_1/dwe721zn9/image/upload', 
-  { method: 'POST', body: data }
-);
-    const result = await res.json();
-    return result.secure_url;
+    data.append('profilePicture', file); // Ayesha ne yehi key name confirm kiya hai
+
+    const res = await axios.put(
+      `/api/vendors/profile/upload-image/${user.id}`,
+      data,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+
+    return res.data.imageUrl; // backend response mein yehi field aata hai
   };
 
   // Form submit hone par backend ko update bhejo
@@ -69,9 +70,9 @@ const ProfileSettings = () => {
     try {
       let imageUrl = formData.profileImage;
 
-      // Agar nayi image select ki hai, pehle usay upload karo
-      if (imageFile) {
-        imageUrl = await uploadToCloudinary(imageFile);
+      // Sirf vendor ke liye image upload chalega (customer ke paas box hi nahi hai)
+      if (imageFile && user.role === 'vendor') {
+        imageUrl = await uploadProfileImage(imageFile);
       }
 
       const payload = {
@@ -81,7 +82,7 @@ const ProfileSettings = () => {
         profileImage: imageUrl
       };
 
-      // Backend route: PUT /api/auth/profile/update
+      // Baaki fields (name/email/phone) is API se save hoti hain - customer aur vendor dono ke liye
       const res = await axios.put('/api/auth/profile/update', payload);
 
       if (res.data.success) {
@@ -103,7 +104,6 @@ const ProfileSettings = () => {
       <div className="ee-profile-card">
         <h2 className="ee-profile-title">Profile Settings</h2>
 
-        {/* Success/Error message */}
         {message.text && (
           <div className={`ee-profile-message ${message.type === 'success' ? 'ee-msg-success' : 'ee-msg-error'}`}>
             {message.text}
@@ -111,20 +111,21 @@ const ProfileSettings = () => {
         )}
 
         <form onSubmit={handleSubmit} className="ee-profile-form">
-          {/* Profile picture upload */}
-          <div className="ee-profile-avatar-wrap">
-            <label className="ee-profile-avatar-label">
-              <img
-                src={preview || '/default-avatar.png'}
-                alt="Profile"
-                className="ee-profile-avatar-img"
-              />
-              <span className="ee-profile-avatar-overlay">Change</span>
-              <input type="file" accept="image/*" onChange={handleImageChange} className="ee-hidden-input" />
-            </label>
-          </div>
+          {/* Profile picture upload - sirf vendor ko dikhega */}
+          {user?.role === 'vendor' && (
+            <div className="ee-profile-avatar-wrap">
+              <label className="ee-profile-avatar-label">
+                <img
+                  src={preview || '/default-avatar.png'}
+                  alt="Profile"
+                  className="ee-profile-avatar-img"
+                />
+                <span className="ee-profile-avatar-overlay">Change</span>
+                <input type="file" accept="image/*" onChange={handleImageChange} className="ee-hidden-input" />
+              </label>
+            </div>
+          )}
 
-          {/* Name field */}
           <div className="ee-profile-field">
             <label>Name</label>
             <input
@@ -136,7 +137,6 @@ const ProfileSettings = () => {
             />
           </div>
 
-          {/* Email field */}
           <div className="ee-profile-field">
             <label>Email</label>
             <input
@@ -148,7 +148,6 @@ const ProfileSettings = () => {
             />
           </div>
 
-          {/* Phone field */}
           <div className="ee-profile-field">
             <label>Phone</label>
             <input
