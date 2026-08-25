@@ -1,8 +1,41 @@
 import './About.css';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 
 export default function AboutPage() {
   const navigate = useNavigate();
+    const [counts, setCounts] = useState({ events: 0, venues: 0, users: 0, rating: 0 });
+  const statsRef = useRef(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    const targets = { events: 500, venues: 50, users: 10, rating: 4.8 };
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !hasAnimated.current) {
+          hasAnimated.current = true;
+          const duration = 1500;
+          const steps = 40;
+          const stepTime = duration / steps;
+          let step = 0;
+          const timer = setInterval(() => {
+            step++;
+            const progress = step / steps;
+            setCounts({
+              events: Math.round(targets.events * progress),
+              venues: Math.round(targets.venues * progress),
+              users: Math.round(targets.users * progress),
+              rating: parseFloat((targets.rating * progress).toFixed(1)),
+            });
+            if (step >= steps) clearInterval(timer);
+          }, stepTime);
+        }
+      },
+      { threshold: 0.3 }
+    );
+    if (statsRef.current) observer.observe(statsRef.current);
+    return () => observer.disconnect();
+  }, []);
   return (
     <div className="ee-about-container">
       {/* 1. HERO BANNER */}
@@ -13,22 +46,22 @@ export default function AboutPage() {
         </div>
       </header>
 
-      {/* Stats Bar */}
-      <div className="ee-stats-bar">
+            {/* Stats Bar */}
+      <div className="ee-stats-bar" ref={statsRef}>
         <div className="ee-stat-item">
-          <p className="ee-stat-number">500+</p>
+          <p className="ee-stat-number">{counts.events}+</p>
           <p className="ee-stat-label">Events Planned</p>
         </div>
         <div className="ee-stat-item">
-          <p className="ee-stat-number">50+</p>
+          <p className="ee-stat-number">{counts.venues}+</p>
           <p className="ee-stat-label">Venues Partnered</p>
         </div>
         <div className="ee-stat-item">
-          <p className="ee-stat-number">10k+</p>
+          <p className="ee-stat-number">{counts.users}k+</p>
           <p className="ee-stat-label">Happy Users</p>
         </div>
         <div className="ee-stat-item">
-          <p className="ee-stat-number">4.8</p>
+          <p className="ee-stat-number">{counts.rating}</p>
           <p className="ee-stat-label">Average Rating</p>
         </div>
       </div>
