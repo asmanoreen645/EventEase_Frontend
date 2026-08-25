@@ -70,9 +70,9 @@ export default function Navbar() {
                   <p className="ee-dropdown-email">{user.email}</p>
                 </div>
 
-                <div className="ee-dropdown-item" onClick={() => { navigate('/profile'); setShowDropdown(false); }}>
-                  Profile Settings
-                </div>
+                <div className="ee-dropdown-item" onClick={() => { navigate('/profile-settings'); setShowDropdown(false); }}>
+               Profile Settings
+               </div>
 
                 {/* : Customer Navigation */}
                 {user.role === 'customer' && (
