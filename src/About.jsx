@@ -1,6 +1,7 @@
 import './About.css';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
+import { Target, Eye } from 'lucide-react';
 
 export default function AboutPage() {
   const navigate = useNavigate();
@@ -70,7 +71,9 @@ export default function AboutPage() {
         <h2 className="ee-section-title">Our Mission & Vision</h2>
         <div className="ee-mission-vision-grid">
           <div className="ee-mv-card">
-            <div className="ee-card-icon-wrapper mission-icon"></div>
+            <div className="ee-card-icon-wrapper mission-icon">
+  <Target size={26} color="#8b5e34" />
+</div>
             <h3>Our Mission</h3>
             <p>
               To seamlessly blend technology and celebration, making dream events an accessible 
@@ -78,7 +81,9 @@ export default function AboutPage() {
             </p>
           </div>
           <div className="ee-mv-card">
-            <div className="ee-card-icon-wrapper vision-icon"></div>
+            <div className="ee-card-icon-wrapper vision-icon">
+  <Eye size={26} color="#8b5e34" />
+</div>
             <h3>Our Vision</h3>
             <p>
               To become the world's leading platform for virtual event planning, transforming 

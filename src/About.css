@@ -72,7 +72,13 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.02);
 }
 .ee-card-icon-wrapper {
-  font-size: 24px;
+  width: 52px;
+  height: 52px;
+  background: #fdf3e7;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 15px;
 }
 .ee-mv-card h3 {
