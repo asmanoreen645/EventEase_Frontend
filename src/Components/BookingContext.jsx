@@ -41,6 +41,7 @@ export function BookingProvider({ children }) {
 }
 
 // Custom hook - har page mein isi se context access karenge
+// eslint-disable-next-line react-refresh/only-export-components
 export function useBooking() {
   return useContext(BookingContext);
 }

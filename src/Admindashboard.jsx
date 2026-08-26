@@ -7,11 +7,6 @@ const refunds = [
   { color: "red", title: "Customer ≤ 48 hours", desc: "0% refund — within cutoff period, no refund", iconClass: "ri-red" },
 ];
 
-const refundBars = [
-  { label: "Vendor cancelled", value: 3, pct: 30, color: "green" },
-  { label: "Customer >48hr", value: 5, pct: 50, color: "blue" },
-  { label: "No refund issued", value: 2, pct: 20, color: "red" },
-];
 
 const revenueBars = [
   { label: "Catering", value: "Rs 1.4M", pct: 75, color: "gold" },
@@ -29,8 +24,9 @@ const vendorBars = [
 export default function Admindashboard() {
   const [stats, setStats] = useState(null);
   const [dbVendors, setDbVendors] = useState([]);
-  const [dbBookings, setDbBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line no-empty-pattern
+  const [] = useState([]);
+  const [, setLoading] = useState(true);
 
   // Live Server Data Fetching Pipeline
   const fetchDashboardData = async () => {
@@ -44,7 +40,6 @@ export default function Admindashboard() {
       setDbVendors(vendorsRes.data.data || []);
 
       // 3. System Users/Bookings Fetch (Fallback Array if Empty)
-      const usersRes = await API.get('/api/admin/users');
       // filter default bookings or display initial context
       setLoading(false);
     } catch (err) {
@@ -54,6 +49,7 @@ export default function Admindashboard() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchDashboardData();
   }, []);
 

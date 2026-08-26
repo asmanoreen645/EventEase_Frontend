@@ -33,12 +33,6 @@ const DecoratorIcon = () => (
   </svg>
 );
 
-const SearchIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-    <circle cx="11" cy="11" r="8"/>
-    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-  </svg>
-);
 
 // ===== DATA =====
 const heroImages = [
@@ -71,7 +65,7 @@ const categories = [
 // ===== COMPONENT =====
 export default function Vendors() {
   const navigate = useNavigate();
-  const [activeSlide, setActiveSlide] = useState(0);
+  const [, setActiveSlide] = useState(0);
   const [heroSlide, setHeroSlide] = useState(0);
 
   useEffect(() => {
@@ -82,7 +76,6 @@ export default function Vendors() {
   }, []);
   const [search, setSearch] = useState("");
 
-  const visible = [0, 1, 2].map((i) => events[(activeSlide + i) % events.length]);
 
   useEffect(() => {
     const timer = setInterval(() => {

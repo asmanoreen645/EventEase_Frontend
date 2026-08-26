@@ -44,6 +44,7 @@ export default function AdminLayout() {
   // URL badalne par header ka title automatic update karne ke liye
   useEffect(() => {
     const currentPath = location.pathname;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (currentPath.includes("/vendors")) setPageTitle("Vendor Verification");
     else if (currentPath.includes("/bookings")) setPageTitle("Transactional Bookings");
     else if (currentPath.includes("/payouts")) setPageTitle("Financial Payouts");

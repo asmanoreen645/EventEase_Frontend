@@ -23,6 +23,7 @@ const ProfileSettings = () => {
   // Page load hote hi form ko current user ki details se bhar do
   useEffect(() => {
     if (user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         name: user.name || '',
         email: user.email || '',

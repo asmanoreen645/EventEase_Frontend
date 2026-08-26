@@ -18,7 +18,7 @@ const VendorRegister = () => {
     description: '',
   });
 
-  const [documents, setDocuments] = useState({
+  const [, setDocuments] = useState({
     cnicFront: null,
     businessLicense: null,
   });
