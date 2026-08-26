@@ -15,7 +15,7 @@ import ForgotPassword from './ForgotPassword';
 import VendorRegister from './VendorRegistrationform';
 import VendorDashboard from './VendorDashboard';
 import About from './About';
-import VendorProfile from "./Components/VendorProfile"; 
+import VendorProfile from "./VendorProfile"; 
 import ChatPage from "./ChatPage";
 import BookingDetails from "./BookingDetails";
 import PackageSelection from "./PackageSelection";
@@ -26,10 +26,7 @@ import TermsOfService from "./TermsOfService.jsx";
 import Contact from './Contact';
 import ProfileSettings from './ProfileSettings';
 
-// TOAST NOTIFICATION IMPORT 
 import { Toaster } from 'react-hot-toast';
-
-// STRIPE IMPORTS
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 
@@ -39,10 +36,7 @@ const STRIPE_PUBLISHABLE_KEY =
 
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
-// CUSTOMER DASHBOARD IMPORT
 import CustomerDashboard from "./Components/CustomerDashboard"; 
-
-// ADMIN IMPORTS
 import AdminLayout from "./Components/AdminLayout";
 import AdminDashboard from "./Admindashboard";
 import VendorApproval from "./Components/VendorApproval";
@@ -95,7 +89,7 @@ function UserLayout() {
   );
 }
 
-function App() {
+export default function App() {
   return (
     <AuthProvider>
       <HashRouter>
@@ -136,5 +130,3 @@ function App() {
     </AuthProvider>
   );
 }
-
-export default App;

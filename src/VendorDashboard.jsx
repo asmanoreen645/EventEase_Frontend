@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "./api/axiosConfig";
 import "./VendorDashboard.css";
@@ -159,33 +159,33 @@ export default function VendorDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const vendorName = localStorage.getItem("vendorName") || "Vendor Panel";
-  const vendorId = localStorage.getItem("userId") || "";
+  const vendorId = localStorage.getItem("userId") || localStorage.getItem("vendorId") || "";
   const initials = vendorName.charAt(0).toUpperCase();
 
-  const fetchVendorBookings = useCallback(async () => {
-    if (!vendorId) return;
-    setLoading(true);
-    try {
-      const response = await API.get(`/api/bookings/vendor/${vendorId}`);
-      if (response.data && response.data.success) {
-        setBookings(response.data.data);
-      }
-    } catch (err) {
-      console.error("Error fetching bookings:", err);
-      setError("Failed to sync bookings data with server.");
-    } finally {
-      setLoading(false);
-    }
-  }, [vendorId]);
-
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    let isMounted = true;
+    const fetchVendorBookings = async () => {
+      if (!vendorId) return;
+      setLoading(true);
+      try {
+        const response = await API.get(`/api/bookings/vendor/${vendorId}`);
+        if (isMounted && response.data && response.data.success) {
+          setBookings(response.data.data || []);
+        }
+      } catch (err) {
+        console.error("Error fetching bookings:", err);
+        if (isMounted) setBookings([]);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
     fetchVendorBookings();
-  }, [fetchVendorBookings]);
+    return () => { isMounted = false; };
+  }, [vendorId]);
 
   const handleAcceptBooking = async (bookingId) => {
     try {
@@ -216,8 +216,7 @@ export default function VendorDashboard() {
   };
 
   const renderTab = () => {
-    if (loading) return <div style={{ padding: "20px", textAlign: "center" }}>Syncing Workspace with Cloud Engines...</div>;
-    if (error) return <div style={{ color: "red", padding: "20px" }}>{error}</div>;
+    if (loading) return <div style={{ padding: "20px", textAlign: "center" }}>Syncing Workspace...</div>;
 
     switch (activeTab) {
       case "overview": 
