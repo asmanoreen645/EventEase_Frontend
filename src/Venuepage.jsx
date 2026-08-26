@@ -10,11 +10,13 @@ const venueTypes = ["All", "Marquee", "Hotel", "Farmhouse", "Hall", "Convention 
 
 // Pakistani Regional Cascading Data Pipeline
 const locationData = {
-  Punjab: ["Mandi Bahauddin", "Lahore", "islamabad","Rawalpindi", "Gujrat", "Faisalabad", "Multan", "Sialkot"],
-  Sindh: ["Karachi", "Hyderabad", "Sukkur"],
-  "Khyber Pakhtunkhwa": ["Peshawar", "Abbottabad"],
-  Balochistan: ["Quetta"],
-  "Islamabad Capital": ["Islamabad"]
+  Pakistan: {
+    Punjab: ["Mandi Bahauddin", "Lahore", "islamabad", "Rawalpindi", "Gujrat", "Faisalabad", "Multan", "Sialkot"],
+    Sindh: ["Karachi", "Hyderabad", "Sukkur"],
+    "Khyber Pakhtunkhwa": ["Peshawar", "Abbottabad"],
+    Balochistan: ["Quetta"],
+    "Islamabad Capital": ["Islamabad"]
+  }
 };
 
 export default function Venuepage() {
@@ -27,15 +29,18 @@ export default function Venuepage() {
   const [realVendors, setRealVendors] = useState([]);
 
   // URL Query Parameters Sync 
+  const [selectedCountry, setSelectedCountry] = useState(searchParams.get("country") || "Pakistan");
   const [selectedProvince, setSelectedProvince] = useState(searchParams.get("province") || "");
   const [selectedCity, setSelectedCity] = useState(searchParams.get("city") || "");
   const selectedService = searchParams.get("category") || "All";
+
   const setSelectedService = (val) => {
     const params = new URLSearchParams(searchParams);
     if (val === "All") params.delete("category");
     else params.set("category", val);
     setSearchParams(params);
   };
+
   const [, setSelectedType] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [minPrice, setMinPrice] = useState(0);
@@ -45,12 +50,14 @@ export default function Venuepage() {
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [favorites, setFavorites] = useState([]);
 
-  // URL Query Parameters ko real-time read karna (Home Page integration) — province/city ke liye
+  // URL Query Parameters ko real-time read karna
   useEffect(() => {
+    const cntry = searchParams.get("country");
     const prov = searchParams.get("province");
     const cty = searchParams.get("city");
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (cntry) setSelectedCountry(cntry);
     if (prov) setSelectedProvince(prov);
     if (cty) setSelectedCity(cty);
   }, [searchParams]);
@@ -59,7 +66,7 @@ export default function Venuepage() {
   useEffect(() => {
     const fetchRealVendors = async () => {
       try {
-        const countryParam = searchParams.get("country") || "Pakistan";
+        const countryParam = searchParams.get("country") || selectedCountry || "";
         const provParam = searchParams.get("province") || selectedProvince || "";
         const cityParam = searchParams.get("city") || selectedCity || "";
 
@@ -99,7 +106,7 @@ export default function Venuepage() {
     };
 
     fetchRealVendors();
-  }, [searchParams, selectedProvince, selectedCity]);
+  }, [searchParams, selectedCountry, selectedProvince, selectedCity]);
 
   useEffect(() => {
     const targetVendors = dummyVenues.length + realVendors.length;
@@ -128,6 +135,12 @@ export default function Venuepage() {
     );
   };
 
+  const handleCountryChange = (e) => {
+    setSelectedCountry(e.target.value);
+    setSelectedProvince("");
+    setSelectedCity("");
+  };
+
   const handleProvinceChange = (e) => {
     setSelectedProvince(e.target.value);
     setSelectedCity("");
@@ -138,17 +151,15 @@ export default function Venuepage() {
   // Filtering & Sorting Engine
   const filteredVenues = allVenues
     .filter((v) => {
-      // Search query filter
       if (
         searchQuery.trim() &&
         !v.name?.toLowerCase().includes(searchQuery.trim().toLowerCase())
       )
         return false;
 
-      // Service category filter
       if (selectedService === "Venues & Marquees") {
         const isVenueType = venueTypes
-          .slice(1) // "All" ko chhod kar
+          .slice(1)
           .some((t) => t.toLowerCase() === v.type?.toLowerCase());
         if (!isVenueType) return false;
       } else if (
@@ -158,7 +169,6 @@ export default function Venuepage() {
         return false;
       }
 
-      // Flexible Location Match (City & Province)
       if (selectedCity) {
         const vendorCity = (v.city || v.location || "").toLowerCase();
         const targetCity = selectedCity.toLowerCase();
@@ -169,7 +179,6 @@ export default function Venuepage() {
         if (!vendorProvince.includes(targetProvince)) return false;
       }
 
-      // Price filter
       if (v.price < minPrice || v.price > maxPrice) return false;
 
       return true;
@@ -185,6 +194,7 @@ export default function Venuepage() {
     setSelectedType("All");
     setSelectedService("All");
     setSearchQuery("");
+    setSelectedCountry("Pakistan");
     setSelectedProvince("");
     setSelectedCity("");
     setMinPrice(0);
@@ -253,14 +263,27 @@ export default function Venuepage() {
           </div>
 
           <div className="vlp-filter-section">
-            <h4>Select Province</h4>
+            <h4>Select Country</h4>
+            <select
+              className="vlp-select"
+              value={selectedCountry}
+              onChange={handleCountryChange}
+            >
+              <option value="">All Countries</option>
+              {Object.keys(locationData).map((country) => (
+                <option key={country} value={country}>{country}</option>
+              ))}
+            </select>
+
+            <h4 style={{ marginTop: '12px' }}>Select Province</h4>
             <select
               className="vlp-select"
               value={selectedProvince}
               onChange={handleProvinceChange}
+              disabled={!selectedCountry}
             >
-              <option value="">All Provinces</option>
-              {Object.keys(locationData).map((province) => (
+              <option value="">{selectedCountry ? "All Provinces" : "Select Country First"}</option>
+              {selectedCountry && locationData[selectedCountry] && Object.keys(locationData[selectedCountry]).map((province) => (
                 <option key={province} value={province}>{province}</option>
               ))}
             </select>
@@ -273,7 +296,7 @@ export default function Venuepage() {
               disabled={!selectedProvince}
             >
               <option value="">{selectedProvince ? "All Cities" : "Select Province First"}</option>
-              {selectedProvince && locationData[selectedProvince].map((city) => (
+              {selectedCountry && selectedProvince && locationData[selectedCountry]?.[selectedProvince]?.map((city) => (
                 <option key={city} value={city}>{city}</option>
               ))}
             </select>

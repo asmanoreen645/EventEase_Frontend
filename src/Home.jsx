@@ -10,8 +10,11 @@ const heroImages = [
   "https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=1600&q=80",
 ];
 
+const countries = ["Pakistan"];
 
-const provinces = ["Punjab", "Sindh", "Khyber Pakhtunkhwa", "Balochistan", "Islamabad Capital", "Azad Kashmir"];
+const provincesByCountry = {
+  Pakistan: ["Punjab", "Sindh", "Khyber Pakhtunkhwa", "Balochistan", "Islamabad Capital", "Azad Kashmir"]
+};
 
 const citiesByProvince = {
   Punjab: ["Lahore", "Rawalpindi", "Mandi Bahauddin", "Gujrat", "Faisalabad", "Multan", "Sialkot"],
@@ -93,6 +96,7 @@ const serviceImages = [
 
 export default function Home() {
   const navigate = useNavigate();
+  const [country, setCountry] = useState("Pakistan");
   const [province, setProvince] = useState("");
   const [city, setCity] = useState("");
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -112,15 +116,15 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  const cities = province ? citiesByProvince[province] || [] : [];
-  
+  const availableProvinces = country ? provincesByCountry[country] || [] : [];
+  const availableCities = province ? citiesByProvince[province] || [] : [];
   
   const handleSearch = () => {
     const queryParams = new URLSearchParams();
+    if (country) queryParams.append("country", country);
     if (province) queryParams.append("province", province);
     if (city) queryParams.append("city", city);
     
-    // Smooth navigation with encoded parameters
     const queryString = queryParams.toString();
     navigate(queryString ? `/vendors?${queryString}` : '/vendors');
   };
@@ -143,6 +147,24 @@ export default function Home() {
           <p className="ee-hero-subtitle">Discover top vendors, venues & services for your perfect event</p>
           
           <div className="ee-search-bar">
+            {/* COUNTRY DROPDOWN */}
+            <svg className="ee-field-icon" viewBox="0 0 24 24" fill="none" stroke="#b4945a" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            <div className="ee-field-inner">
+              <span className="ee-field-label">COUNTRY</span>
+              <select
+                className="ee-search-select"
+                value={country}
+                onChange={e => { setCountry(e.target.value); setProvince(""); setCity(""); }}
+              >
+                <option value="">All Countries</option>
+                {countries.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+
+            <div className="ee-search-divider" />
+
             {/* PROVINCE DROPDOWN */}
             <svg className="ee-field-icon" viewBox="0 0 24 24" fill="none" stroke="#b4945a" strokeWidth="2">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
@@ -154,9 +176,10 @@ export default function Home() {
                 className="ee-search-select"
                 value={province}
                 onChange={e => { setProvince(e.target.value); setCity(""); }}
+                disabled={!country}
               >
-                <option value="">All Pakistan</option>
-                {provinces.map(p => <option key={p} value={p}>{p}</option>)}
+                <option value="">{country ? "All Provinces" : "Select Country First"}</option>
+                {availableProvinces.map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
 
@@ -176,7 +199,7 @@ export default function Home() {
                 disabled={!province}
               >
                 <option value="">{province ? "Select City" : "Select Province First"}</option>
-                {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
 
@@ -254,7 +277,6 @@ export default function Home() {
                 <div className="ee-tags">
                   {v.tags.map(t => <span className="ee-tag" key={t}>{t}</span>)}
                 </div>
-                {/* Task 11 Fixed: Routes dynamically using Vendor ID */}
                 <button className="ee-book-btn" onClick={() => navigate(`/vendors/${v.id}`)}> View Details </button>
               </div>
             </div>
