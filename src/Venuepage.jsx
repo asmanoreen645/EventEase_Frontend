@@ -36,11 +36,11 @@ export default function Venuepage() {
     else params.set("category", val);
     setSearchParams(params);
   };
-  const [selectedType, setSelectedType] = useState("All");
+  const [, setSelectedType] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(150000);
-  const [minCapacity, setMinCapacity] = useState(0);
+  const [, setMinCapacity] = useState(0);
   const [sortBy, setSortBy] = useState("relevance");
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [favorites, setFavorites] = useState([]);
@@ -50,15 +50,28 @@ export default function Venuepage() {
     const prov = searchParams.get("province");
     const cty = searchParams.get("city");
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (prov) setSelectedProvince(prov);
     if (cty) setSelectedCity(cty);
   }, [searchParams]);
 
-  // Fetch real vendors from backend
+  // Fetch real vendors from backend (Teeno Parameters: Country, State/Province, City)
   useEffect(() => {
     const fetchRealVendors = async () => {
       try {
-        const res = await API.get("/api/vendors/search");
+        const countryParam = searchParams.get("country") || "Pakistan";
+        const provParam = searchParams.get("province") || selectedProvince || "";
+        const cityParam = searchParams.get("city") || selectedCity || "";
+
+        const queryParams = new URLSearchParams();
+        if (countryParam) queryParams.append("country", countryParam);
+        if (provParam) queryParams.append("state", provParam);
+        if (cityParam) queryParams.append("city", cityParam);
+
+        const queryString = queryParams.toString();
+        const endpoint = queryString ? `/api/vendors/search?${queryString}` : "/api/vendors/search";
+
+        const res = await API.get(endpoint);
         const backendVendors = res.data.vendors || [];
 
         const mapped = backendVendors.map((v) => ({
@@ -73,7 +86,7 @@ export default function Venuepage() {
           description: v.description || "No description provided.",
           eventTypes: ["Wedding"],
           price: v.price || 50000,
-          province: v.location?.province || "Punjab",
+          province: v.location?.state || v.location?.province || "Punjab",
           city: v.location?.city || "Mandi Bahauddin",
           topPick: false,
           isReal: true,
@@ -86,7 +99,7 @@ export default function Venuepage() {
     };
 
     fetchRealVendors();
-  }, []);
+  }, [searchParams, selectedProvince, selectedCity]);
 
   useEffect(() => {
     const targetVendors = dummyVenues.length + realVendors.length;
@@ -123,51 +136,50 @@ export default function Venuepage() {
   const allVenues = [...realVendors, ...dummyVenues];
 
   // Filtering & Sorting Engine
-const filteredVenues = allVenues
-  .filter((v) => {
-    // Search query filter
-    if (
-      searchQuery.trim() &&
-      !v.name?.toLowerCase().includes(searchQuery.trim().toLowerCase())
-    )
-      return false;
+  const filteredVenues = allVenues
+    .filter((v) => {
+      // Search query filter
+      if (
+        searchQuery.trim() &&
+        !v.name?.toLowerCase().includes(searchQuery.trim().toLowerCase())
+      )
+        return false;
 
-    // Service category filter
-    if (selectedService === "Venues & Marquees") {
+      // Service category filter
+      if (selectedService === "Venues & Marquees") {
+        const isVenueType = venueTypes
+          .slice(1) // "All" ko chhod kar
+          .some((t) => t.toLowerCase() === v.type?.toLowerCase());
+        if (!isVenueType) return false;
+      } else if (
+        selectedService !== "All" &&
+        v.type?.toLowerCase() !== selectedService.toLowerCase()
+      ) {
+        return false;
+      }
 
-      const isVenueType = venueTypes
-        .slice(1) // "All" ko chhod kar
-        .some((t) => t.toLowerCase() === v.type?.toLowerCase());
-      if (!isVenueType) return false;
-    } else if (
-      selectedService !== "All" &&
-      v.type?.toLowerCase() !== selectedService.toLowerCase()
-    ) {
-      return false;
-    }
+      // Flexible Location Match (City & Province)
+      if (selectedCity) {
+        const vendorCity = (v.city || v.location || "").toLowerCase();
+        const targetCity = selectedCity.toLowerCase();
+        if (!vendorCity.includes(targetCity)) return false;
+      } else if (selectedProvince) {
+        const vendorProvince = (v.province || v.location || "").toLowerCase();
+        const targetProvince = selectedProvince.toLowerCase();
+        if (!vendorProvince.includes(targetProvince)) return false;
+      }
 
-    // Flexible Location Match (City & Province)
-    if (selectedCity) {
-      const vendorCity = (v.city || v.location || "").toLowerCase();
-      const targetCity = selectedCity.toLowerCase();
-      if (!vendorCity.includes(targetCity)) return false;
-    } else if (selectedProvince) {
-      const vendorProvince = (v.province || v.location || "").toLowerCase();
-      const targetProvince = selectedProvince.toLowerCase();
-      if (!vendorProvince.includes(targetProvince)) return false;
-    }
+      // Price filter
+      if (v.price < minPrice || v.price > maxPrice) return false;
 
-    // Price filter
-    if (v.price < minPrice || v.price > maxPrice) return false;
-
-    return true;
-  })
-  .sort((a, b) => {
-    if (sortBy === "price-low") return a.price - b.price;
-    if (sortBy === "price-high") return b.price - a.price;
-    if (sortBy === "rating") return b.rating - a.rating;
-    return 0;
-  });
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === "price-low") return a.price - b.price;
+      if (sortBy === "price-high") return b.price - a.price;
+      if (sortBy === "rating") return b.rating - a.rating;
+      return 0;
+    });
 
   const handleResetFilters = () => {
     setSelectedType("All");
