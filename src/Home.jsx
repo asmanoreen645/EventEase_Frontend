@@ -10,20 +10,38 @@ const heroImages = [
   "https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=1600&q=80",
 ];
 
-const countries = ["Pakistan"];
-
-const provincesByCountry = {
-  Pakistan: ["Punjab", "Sindh", "Khyber Pakhtunkhwa", "Balochistan", "Islamabad Capital", "Azad Kashmir"]
+// Expanded Multi-Country Location Dataset
+const locationData = {
+  Pakistan: {
+    Punjab: ["Lahore", "Rawalpindi", "Mandi Bahauddin", "Gujrat", "Faisalabad", "Multan", "Sialkot"],
+    Sindh: ["Karachi", "Hyderabad", "Sukkur", "Larkana"],
+    "Khyber Pakhtunkhwa": ["Peshawar", "Abbottabad", "Mardan"],
+    Balochistan: ["Quetta", "Gwadar"],
+    "Islamabad Capital": ["Islamabad"],
+    "Azad Kashmir": ["Muzaffarabad", "Mirpur"]
+  },
+  UAE: {
+    Dubai: ["Dubai Marina", "Downtown Dubai", "Deira", "Jumeirah"],
+    "Abu Dhabi": ["Abu Dhabi City", "Al Ain"],
+    Sharjah: ["Sharjah City", "Al Majaz"]
+  },
+  India: {
+    Maharashtra: ["Mumbai", "Pune", "Nagpur"],
+    Delhi: ["New Delhi", "North Delhi"],
+    Punjab: ["Amritsar", "Ludhiana", "Chandigarh"]
+  },
+  UK: {
+    England: ["London", "Manchester", "Birmingham"],
+    Scotland: ["Edinburgh", "Glasgow"]
+  },
+  USA: {
+    California: ["Los Angeles", "San Francisco", "San Diego"],
+    "New York": ["New York City", "Buffalo"],
+    Texas: ["Houston", "Dallas", "Austin"]
+  }
 };
 
-const citiesByProvince = {
-  Punjab: ["Lahore", "Rawalpindi", "Mandi Bahauddin", "Gujrat", "Faisalabad", "Multan", "Sialkot"],
-  Sindh: ["Karachi", "Hyderabad", "Sukkur", "Larkana"],
-  "Khyber Pakhtunkhwa": ["Peshawar", "Abbottabad", "Mardan"],
-  Balochistan: ["Quetta", "Gwadar"],
-  "Islamabad Capital": ["Islamabad"],
-  "Azad Kashmir": ["Muzaffarabad", "Mirpur"]
-};
+const countries = Object.keys(locationData);
 
 const services = [
   { label: "Weddings", bg: "#1a1209" },
@@ -116,9 +134,9 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  const availableProvinces = country ? provincesByCountry[country] || [] : [];
-  const availableCities = province ? citiesByProvince[province] || [] : [];
-  
+  const availableProvinces = country && locationData[country] ? Object.keys(locationData[country]) : [];
+  const availableCities = country && province && locationData[country]?.[province] ? locationData[country][province] : [];
+
   const handleSearch = () => {
     const queryParams = new URLSearchParams();
     if (country) queryParams.append("country", country);
@@ -140,7 +158,7 @@ export default function Home() {
         <div className="ee-hero-content">
           <div className="trust-badge">
             <span className="badge-dot"></span>
-            Pakistan's #1 Event Platform
+            Global Event Platform
             <span className="badge-new">NEW</span>
           </div>
           <h1>Your Dream Event,<br /><em>Just A Click Away</em></h1>
@@ -165,27 +183,27 @@ export default function Home() {
 
             <div className="ee-search-divider" />
 
-            {/* PROVINCE DROPDOWN */}
+            {/* PROVINCE / STATE DROPDOWN */}
             <svg className="ee-field-icon" viewBox="0 0 24 24" fill="none" stroke="#b4945a" strokeWidth="2">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
               <circle cx="12" cy="9" r="2.5"/>
             </svg>
             <div className="ee-field-inner">
-              <span className="ee-field-label">PROVINCE</span>
+              <span className="ee-field-label">PROVINCE / STATE</span>
               <select
                 className="ee-search-select"
                 value={province}
                 onChange={e => { setProvince(e.target.value); setCity(""); }}
                 disabled={!country}
               >
-                <option value="">{country ? "All Provinces" : "Select Country First"}</option>
+                <option value="">{country ? "All States/Provinces" : "Select Country First"}</option>
                 {availableProvinces.map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
 
             <div className="ee-search-divider" />
 
-            {/* CASCADING CITY DROPDOWN */}
+            {/* CITY DROPDOWN */}
             <svg className="ee-field-icon" viewBox="0 0 24 24" fill="none" stroke="#b4945a" strokeWidth="2">
               <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
               <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
@@ -198,7 +216,7 @@ export default function Home() {
                 onChange={e => setCity(e.target.value)}
                 disabled={!province}
               >
-                <option value="">{province ? "Select City" : "Select Province First"}</option>
+                <option value="">{province ? "Select City" : "Select State/Province First"}</option>
                 {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>

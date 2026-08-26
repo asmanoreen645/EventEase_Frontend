@@ -8,14 +8,34 @@ import API from "./api/axiosConfig";
 const VendorsType = ["All", "Photographers", "Caterers", "Decorators", "Venues & Marquees"];
 const venueTypes = ["All", "Marquee", "Hotel", "Farmhouse", "Hall", "Convention Centre"];
 
-// Pakistani Regional Cascading Data Pipeline
+// Multi-Country Cascading Location Structure
 const locationData = {
   Pakistan: {
-    Punjab: ["Mandi Bahauddin", "Lahore", "islamabad", "Rawalpindi", "Gujrat", "Faisalabad", "Multan", "Sialkot"],
-    Sindh: ["Karachi", "Hyderabad", "Sukkur"],
-    "Khyber Pakhtunkhwa": ["Peshawar", "Abbottabad"],
-    Balochistan: ["Quetta"],
-    "Islamabad Capital": ["Islamabad"]
+    Punjab: ["Lahore", "Rawalpindi", "Mandi Bahauddin", "Gujrat", "Faisalabad", "Multan", "Sialkot"],
+    Sindh: ["Karachi", "Hyderabad", "Sukkur", "Larkana"],
+    "Khyber Pakhtunkhwa": ["Peshawar", "Abbottabad", "Mardan"],
+    Balochistan: ["Quetta", "Gwadar"],
+    "Islamabad Capital": ["Islamabad"],
+    "Azad Kashmir": ["Muzaffarabad", "Mirpur"]
+  },
+  UAE: {
+    Dubai: ["Dubai Marina", "Downtown Dubai", "Deira", "Jumeirah"],
+    "Abu Dhabi": ["Abu Dhabi City", "Al Ain"],
+    Sharjah: ["Sharjah City", "Al Majaz"]
+  },
+  India: {
+    Maharashtra: ["Mumbai", "Pune", "Nagpur"],
+    Delhi: ["New Delhi", "North Delhi"],
+    Punjab: ["Amritsar", "Ludhiana", "Chandigarh"]
+  },
+  UK: {
+    England: ["London", "Manchester", "Birmingham"],
+    Scotland: ["Edinburgh", "Glasgow"]
+  },
+  USA: {
+    California: ["Los Angeles", "San Francisco", "San Diego"],
+    "New York": ["New York City", "Buffalo"],
+    Texas: ["Houston", "Dallas", "Austin"]
   }
 };
 
@@ -28,7 +48,6 @@ export default function Venuepage() {
   const [animatedEvents, setAnimatedEvents] = useState(0);
   const [realVendors, setRealVendors] = useState([]);
 
-  // URL Query Parameters Sync 
   const [selectedCountry, setSelectedCountry] = useState(searchParams.get("country") || "Pakistan");
   const [selectedProvince, setSelectedProvince] = useState(searchParams.get("province") || "");
   const [selectedCity, setSelectedCity] = useState(searchParams.get("city") || "");
@@ -50,7 +69,6 @@ export default function Venuepage() {
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [favorites, setFavorites] = useState([]);
 
-  // URL Query Parameters ko real-time read karna
   useEffect(() => {
     const cntry = searchParams.get("country");
     const prov = searchParams.get("province");
@@ -62,7 +80,6 @@ export default function Venuepage() {
     if (cty) setSelectedCity(cty);
   }, [searchParams]);
 
-  // Fetch real vendors from backend (Teeno Parameters: Country, State/Province, City)
   useEffect(() => {
     const fetchRealVendors = async () => {
       try {
@@ -93,6 +110,7 @@ export default function Venuepage() {
           description: v.description || "No description provided.",
           eventTypes: ["Wedding"],
           price: v.price || 50000,
+          country: v.location?.country || "Pakistan",
           province: v.location?.state || v.location?.province || "Punjab",
           city: v.location?.city || "Mandi Bahauddin",
           topPick: false,
@@ -148,7 +166,6 @@ export default function Venuepage() {
 
   const allVenues = [...realVendors, ...dummyVenues];
 
-  // Filtering & Sorting Engine
   const filteredVenues = allVenues
     .filter((v) => {
       if (
@@ -167,6 +184,11 @@ export default function Venuepage() {
         v.type?.toLowerCase() !== selectedService.toLowerCase()
       ) {
         return false;
+      }
+
+      if (selectedCountry) {
+        const vendorCountry = (v.country || "Pakistan").toLowerCase();
+        if (vendorCountry !== selectedCountry.toLowerCase()) return false;
       }
 
       if (selectedCity) {
@@ -194,7 +216,7 @@ export default function Venuepage() {
     setSelectedType("All");
     setSelectedService("All");
     setSearchQuery("");
-    setSelectedCountry("Pakistan");
+    setSelectedCountry("");
     setSelectedProvince("");
     setSelectedCity("");
     setMinPrice(0);
@@ -209,7 +231,7 @@ export default function Venuepage() {
         <div className="vlp-header-inner">
           <div className="vlp-header-content">
             <h1>Find Your Perfect Vendor & Venue</h1>
-            <p>{filteredVenues.length} available vendors in Pakistan</p>
+            <p>{filteredVenues.length} available vendors worldwide</p>
           </div>
           <div className="vlp-header-stats">
             <div className="vlp-stat">
@@ -275,14 +297,14 @@ export default function Venuepage() {
               ))}
             </select>
 
-            <h4 style={{ marginTop: '12px' }}>Select Province</h4>
+            <h4 style={{ marginTop: '12px' }}>Select State/Province</h4>
             <select
               className="vlp-select"
               value={selectedProvince}
               onChange={handleProvinceChange}
               disabled={!selectedCountry}
             >
-              <option value="">{selectedCountry ? "All Provinces" : "Select Country First"}</option>
+              <option value="">{selectedCountry ? "All States/Provinces" : "Select Country First"}</option>
               {selectedCountry && locationData[selectedCountry] && Object.keys(locationData[selectedCountry]).map((province) => (
                 <option key={province} value={province}>{province}</option>
               ))}
@@ -295,7 +317,7 @@ export default function Venuepage() {
               onChange={(e) => setSelectedCity(e.target.value)}
               disabled={!selectedProvince}
             >
-              <option value="">{selectedProvince ? "All Cities" : "Select Province First"}</option>
+              <option value="">{selectedProvince ? "All Cities" : "Select State/Province First"}</option>
               {selectedCountry && selectedProvince && locationData[selectedCountry]?.[selectedProvince]?.map((city) => (
                 <option key={city} value={city}>{city}</option>
               ))}
