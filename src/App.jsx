@@ -4,6 +4,8 @@ import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
 import { NotificationProvider } from "./Components/NotificationContext";
 import { AuthProvider } from "./Components/AuthContext";
+
+// Customer & Public Pages
 import Home from './Home';
 import Services from './Services';
 import Venuepage from './Venuepage';
@@ -13,7 +15,6 @@ import Login from './login';
 import Signup from './Signup';
 import ForgotPassword from './ForgotPassword';
 import VendorRegister from './VendorRegistrationform';
-import VendorDashboard from './VendorDashboard';
 import About from './About';
 import VendorProfile from "./Components/VendorProfile"; 
 import ChatPage from "./ChatPage";
@@ -25,6 +26,20 @@ import PrivacyPolicy from "./PrivacyPolicy.jsx";
 import TermsOfService from "./TermsOfService.jsx";
 import Contact from './Contact';
 import ProfileSettings from './ProfileSettings';
+import CustomerDashboard from "./Components/CustomerDashboard"; 
+
+// Vendor Dedicated Portal
+import VendorDashboard from './VendorDashboard';
+
+// Admin Portal Components
+import AdminLayout from "./Components/AdminLayout";
+import AdminDashboard from "./Admindashboard";
+import VendorApproval from "./Components/VendorApproval";
+import AllBookings from "./Components/AllBookings";
+import Payouts from "./Components/Payouts";
+import UserManagement from "./Components/UserManagement";
+import ChatLogs from "./Components/ChatLogs";
+import AdminProfile from "./Components/AdminProfile";
 
 import { Toaster } from 'react-hot-toast';
 import { loadStripe } from '@stripe/stripe-js';
@@ -36,16 +51,7 @@ const STRIPE_PUBLISHABLE_KEY =
 
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
-import CustomerDashboard from "./Components/CustomerDashboard"; 
-import AdminLayout from "./Components/AdminLayout";
-import AdminDashboard from "./Admindashboard";
-import VendorApproval from "./Components/VendorApproval";
-import AllBookings from "./Components/AllBookings";
-import Payouts from "./Components/Payouts";
-import UserManagement from "./Components/UserManagement";
-import ChatLogs from "./Components/ChatLogs";
-import AdminProfile from "./Components/AdminProfile";
-
+// 1. CUSTOMER / PUBLIC LAYOUT (Website Header + Footer)
 function UserLayout() {
   return (
     <>
@@ -58,20 +64,24 @@ function UserLayout() {
         <Route path="photographer" element={<Photographer />} />
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="forgot-password" element={<ForgotPassword />} />
         <Route path="vendor-register" element={<VendorRegister />} />
-        <Route path="vendor-dashboard" element={<VendorDashboard />} />
-        <Route path="vendor-profile" element={<VendorDashboard />} />
         <Route path="about" element={<About />} />
+        
+        {/* PUBLIC VENDOR PROFILE (Fixed: Uses VendorProfile component) */}
         <Route path="vendors/:id" element={<VendorProfile />} />
+        
         <Route path="chat/:vendorId" element={<ChatPage />} />
         <Route path="details" element={<BookingDetails />} />
         <Route path="package" element={<PackageSelection />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
         <Route path="terms-of-service" element={<TermsOfService />} />
         <Route path="contact" element={<Contact />} />
-        <Route path="/profile-settings" element={<ProfileSettings />} />
         
+        {/* Customer Specific Settings & Dashboard */}
+        <Route path="profile-settings" element={<ProfileSettings />} />
+        <Route path="customer-dashboard" element={<CustomerDashboard />} />
+
         <Route 
           path="payment" 
           element={
@@ -80,15 +90,14 @@ function UserLayout() {
             </Elements>
           } 
         />
-        
         <Route path="Vendorslist" element={<VendorsList />} />
-        <Route path="customer-dashboard" element={<CustomerDashboard />} />
       </Routes>
       <Footer />
     </>
   );
 }
 
+// MAIN APP ROUTER
 export default function App() {
   return (
     <AuthProvider>
@@ -107,6 +116,8 @@ export default function App() {
         <BookingProvider>
           <NotificationProvider>
             <Routes>
+              
+              {/* 2. ADMIN PORTAL (Sidebar + Separate Header) */}
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="dashboard" element={<AdminDashboard />} />
@@ -119,10 +130,16 @@ export default function App() {
                 <Route path="disputes" element={<ChatLogs />} />
                 <Route path="alerts" element={<ChatLogs />} />
                 <Route path="commission" element={<AdminDashboard />} />
-                <Route path="settings" element={<AdminDashboard />} />
+                <Route path="settings" element={<AdminProfile />} />
                 <Route path="profile" element={<AdminProfile />} />
               </Route>
+
+              {/* 3. VENDOR DASHBOARD PORTAL */}
+              <Route path="/vendor-dashboard" element={<VendorDashboard />} />
+
+              {/* 4. PUBLIC & CUSTOMER SITE */}
               <Route path="/*" element={<UserLayout />} />
+
             </Routes>
           </NotificationProvider>
         </BookingProvider>
