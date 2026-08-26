@@ -173,7 +173,52 @@ export default function AboutPage() {
         </div>
       </section>
       
-      {/* 5. CTA BANNER */}
+      {/* 5. TESTIMONIALS SECTION */}
+      <section className="ee-content-section">
+        <h2 className="ee-section-title">What People Say</h2>
+        <div className="ee-testimonials-grid">
+          <div className="ee-testimonial-card">
+            <div className="ee-testimonial-stars">★★★★★</div>
+            <p className="ee-testimonial-text">
+              "Booked our whole wedding venue without a single site visit. Saved us weeks of running around."
+            </p>
+            <div className="ee-testimonial-author">
+              <div className="ee-testimonial-avatar">SA</div>
+              <div>
+                <p className="ee-testimonial-name">Sara Ahmed</p>
+                <p className="ee-testimonial-role">Bride, Lahore</p>
+              </div>
+            </div>
+          </div>
+          <div className="ee-testimonial-card">
+            <div className="ee-testimonial-stars">★★★★★</div>
+            <p className="ee-testimonial-text">
+              "The vendor marketplace made comparing caterers so easy. Loved the 360° tours."
+            </p>
+            <div className="ee-testimonial-author">
+              <div className="ee-testimonial-avatar">BK</div>
+              <div>
+                <p className="ee-testimonial-name">Bilal Khan</p>
+                <p className="ee-testimonial-role">Event Organizer</p>
+              </div>
+            </div>
+          </div>
+          <div className="ee-testimonial-card">
+            <div className="ee-testimonial-stars">★★★★★</div>
+            <p className="ee-testimonial-text">
+              "Planned my daughter's birthday in a single afternoon. Everything was in one place."
+            </p>
+            <div className="ee-testimonial-author">
+              <div className="ee-testimonial-avatar">ZF</div>
+              <div>
+                <p className="ee-testimonial-name">Zara Fatima</p>
+                <p className="ee-testimonial-role">Parent</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      {/* 6. CTA BANNER */}
       <div className="ee-cta-banner">
         <h2>Ready to plan your dream event?</h2>
         <p>Join thousands already planning with EventEase.</p>
