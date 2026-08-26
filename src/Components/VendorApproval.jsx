@@ -1,4 +1,4 @@
-// src/Components/VendorApproval.jsx
+ 
 import { useState, useEffect } from 'react';
 import API from '../api/axiosConfig';
 
@@ -11,25 +11,33 @@ export default function VendorApproval() {
     setLoading(true);
     setError(null);
     try {
-      // Backend api endpoint for unapproved vendors
+      // 1. Try Primary Admin Pending Route
       const res = await API.get('/api/admin/vendors/pending');
-      if (res.data && res.data.success) {
-        setPendingVendors(res.data.data || []);
+      const data = res.data?.data || res.data?.vendors || res.data;
+      
+      if (Array.isArray(data)) {
+        setPendingVendors(data);
       } else {
-        setPendingVendors([]);
+        throw new Error("Invalid response structure");
       }
     } catch (err) {
-      console.error("Error fetching pending vendors:", err);
-      // Fallback: search general vendors list filtered by approval status
+      console.warn("Primary endpoint failed, attempting fallback to general vendors list:", err);
+      
+      // 2. Fallback: Fetch all vendors and filter unapproved ones client-side
       try {
         const fallbackRes = await API.get('/api/vendors');
-        if (fallbackRes.data) {
-          const list = Array.isArray(fallbackRes.data) ? fallbackRes.data : fallbackRes.data.data || [];
-          const unapproved = list.filter(v => v.isApproved === false || v.status === 'pending');
+        const rawList = fallbackRes.data?.data || fallbackRes.data?.vendors || fallbackRes.data;
+        
+        if (Array.isArray(rawList)) {
+          const unapproved = rawList.filter(
+            (v) => v.isApproved === false || v.status === 'pending' || !v.isApproved
+          );
           setPendingVendors(unapproved);
+        } else {
+          setError("Failed to load pending vendors from server.");
         }
-      // eslint-disable-next-line no-unused-vars
       } catch (fallbackErr) {
+        console.error("Fallback failed:", fallbackErr);
         setError("Failed to load pending vendors from server.");
       }
     } finally {
@@ -42,21 +50,21 @@ export default function VendorApproval() {
     fetchPendingVendors();
   }, []);
 
-  async function handleApprove(id) {
+  const handleApprove = async (id) => {
     try {
       await API.put(`/api/admin/vendors/${id}/approve`, { isApproved: true, status: 'approved' });
-      setPendingVendors(prev => prev.filter(v => (v._id || v.id) !== id));
+      setPendingVendors((prev) => prev.filter((v) => (v._id || v.id) !== id));
       alert("Vendor approved successfully!");
     } catch (err) {
       console.error("Error approving vendor:", err);
       alert("Failed to approve vendor.");
     }
-  }
+  };
 
   const handleReject = async (id) => {
     try {
       await API.put(`/api/admin/vendors/${id}/reject`, { isApproved: false, status: 'rejected' });
-      setPendingVendors(prev => prev.filter(v => (v._id || v.id) !== id));
+      setPendingVendors((prev) => prev.filter((v) => (v._id || v.id) !== id));
       alert("Vendor request rejected.");
     } catch (err) {
       console.error("Error rejecting vendor:", err);
@@ -64,36 +72,58 @@ export default function VendorApproval() {
     }
   };
 
-  if (loading) return <div style={{ padding: "30px", color: "#333" }}>Loading pending vendor applications...</div>;
+  if (loading) {
+    return <div style={{ padding: "30px", color: "#4A5568" }}>Loading pending vendor applications...</div>;
+  }
 
   return (
     <div style={{ padding: "20px" }}>
-      <h2>Vendor Verification Console</h2>
-      {error && !pendingVendors.length ? (
-        <div style={{ padding: "20px", color: "#e53e3e", background: "#fff5f5", borderRadius: "8px", marginTop: "15px" }}>
+      <h2 style={{ marginBottom: "20px" }}>Vendor Verification Console</h2>
+      
+      {error && pendingVendors.length === 0 ? (
+        <div style={{ padding: "20px", color: "#E53E3E", background: "#FFF5F5", borderRadius: "8px", border: "1px solid #FEB2B2" }}>
           {error}
         </div>
       ) : pendingVendors.length === 0 ? (
-        <div style={{ padding: "20px", background: "#f7fafc", borderRadius: "8px", marginTop: "15px" }}>
+        <div style={{ padding: "20px", background: "#F7FAFC", borderRadius: "8px", border: "1px solid #E2E8F0" }}>
           No pending vendor approval requests right now.
         </div>
       ) : (
-        <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "15px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
           {pendingVendors.map((vendor) => {
             const id = vendor._id || vendor.id;
             return (
-              <div key={id} style={{ padding: "15px", background: "#fff", border: "1px solid #e2e8f0", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div 
+                key={id} 
+                style={{ 
+                  padding: "15px 20px", 
+                  background: "#FFFFFF", 
+                  border: "1px solid #E2E8F0", 
+                  borderRadius: "8px", 
+                  display: "flex", 
+                  justifyContent: "space-between", 
+                  alignItems: "center" 
+                }}
+              >
                 <div>
-                  <h4 style={{ margin: "0 0 5px 0" }}>{vendor.name || vendor.businessName || "New Vendor"}</h4>
-                  <p style={{ margin: 0, fontSize: "14px", color: "#666" }}>
-                    Email: {vendor.email} | Category: {vendor.category || 'N/A'} | City: {vendor.city || 'N/A'}
+                  <h4 style={{ margin: "0 0 5px 0", color: "#2D3748" }}>
+                    {vendor.name || vendor.businessName || vendor.username || "New Vendor Request"}
+                  </h4>
+                  <p style={{ margin: 0, fontSize: "14px", color: "#718096" }}>
+                    Email: {vendor.email || "N/A"} | Category: {vendor.category || "N/A"} | City: {vendor.city || "N/A"}
                   </p>
                 </div>
                 <div style={{ display: "flex", gap: "10px" }}>
-                  <button onClick={() => handleApprove(id)} style={{ padding: "8px 16px", background: "#38a169", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer" }}>
+                  <button 
+                    onClick={() => handleApprove(id)} 
+                    style={{ padding: "8px 16px", background: "#38A169", color: "#FFF", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "600" }}
+                  >
                     Approve
                   </button>
-                  <button onClick={() => handleReject(id)} style={{ padding: "8px 16px", background: "#e53e3e", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer" }}>
+                  <button 
+                    onClick={() => handleReject(id)} 
+                    style={{ padding: "8px 16px", background: "#E53E3E", color: "#FFF", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "600" }}
+                  >
                     Reject
                   </button>
                 </div>
