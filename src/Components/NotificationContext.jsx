@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 //import API from "../../axiosConfig";
 //import API from "/src/axiosConfig";
 import API from "../api/axiosConfig";
@@ -12,7 +12,7 @@ export const NotificationProvider = ({ children }) => {
   const { user } = useAuth();
 
   // 1. Fetch Notifications from Database
-  // eslint-disable-next-line react-hooks/exhaustive-deps, no-undef
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const fetchNotifications = useCallback(async () => {
     // Check agar user logged in hai aur uski ID ya _id majood hai
     const userId = user?._id || user?.id;
