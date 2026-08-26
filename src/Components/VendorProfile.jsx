@@ -1,10 +1,10 @@
-//import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-// eslint-disable-next-line no-unused-vars
-import React, { useState, useEffect, useCallback } from "react";
 import API from "../api/axiosConfig";
 
 export default function VendorProfile() {
+  const { id } = useParams();
   const [profile, setProfile] = useState({
     businessName: "",
     businessType: "",
@@ -16,47 +16,56 @@ export default function VendorProfile() {
     videos: [],
   });
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
 
-  // 1. Fetch Dynamic Vendor Profile from Database
-  const fetchVendorProfile = async () => {
+  // Dynamic Fetcher: Supports both URL Route Parameter (/vendors/:id) and Auth Profile
+  const fetchVendorProfile = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await API.get("/api/vendors/profile");
-      if (res.data && res.data.success) {
-        setProfile(res.data.vendor);
+      const endpoint = id ? `/api/vendors/${id}` : "/api/vendors/profile";
+      const res = await API.get(endpoint);
+      
+      const vendorData = res.data?.vendor || res.data?.data || res.data;
+      if (vendorData) {
+        setProfile({
+          businessName: vendorData.businessName || vendorData.name || "",
+          businessType: vendorData.businessType || vendorData.category || "",
+          phone: vendorData.phone || vendorData.contact || "",
+          city: vendorData.location?.city || vendorData.city || "",
+          address: vendorData.location?.address || vendorData.address || "",
+          description: vendorData.description || "",
+          images: Array.isArray(vendorData.images) ? vendorData.images : [],
+          videos: Array.isArray(vendorData.videos) ? vendorData.videos : [],
+        });
       }
     } catch (err) {
-      console.error("Error fetching profile:", err);
-      toast.error("Failed to load profile data.");
+      console.error("Error fetching vendor profile:", err);
+      toast.error("Failed to load vendor profile data.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchVendorProfile();
-  }, []);
+  }, [fetchVendorProfile]);
 
-  // 2. Cloudinary Media Upload with Limits (Max 5 Images, Max 3 Videos)
+  // Cloudinary Media Upload Handler (Only active in workspace mode)
   const handleMediaUpload = async (e, type) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
 
-    if (type === "image") {
-      if (profile.images.length + files.length > 5) {
-        toast.error("Upload limit reached! Maximum 5 images allowed.");
-        e.target.value = "";
-        return;
-      }
-    } else if (type === "video") {
-      if (profile.videos.length + files.length > 3) {
-        toast.error("Upload limit reached! Maximum 3 videos allowed.");
-        e.target.value = "";
-        return;
-      }
+    if (type === "image" && profile.images.length + files.length > 5) {
+      toast.error("Maximum 5 images allowed.");
+      e.target.value = "";
+      return;
+    }
+    if (type === "video" && profile.videos.length + files.length > 3) {
+      toast.error("Maximum 3 videos allowed.");
+      e.target.value = "";
+      return;
     }
 
     const formData = new FormData();
@@ -81,65 +90,73 @@ export default function VendorProfile() {
     }
   };
 
-  if (loading) return <div style={{ padding: "20px" }}>Loading Vendor Profile...</div>;
+  if (loading) {
+    return <div style={{ padding: "40px", color: "#fff", textAlign: "center" }}>Loading Profile...</div>;
+  }
 
   return (
-    <div style={{ padding: "24px", background: "#fff", borderRadius: "8px" }}>
-      <h2>Vendor Profile Workspace</h2>
+    <div style={{ maxWidth: "1000px", margin: "40px auto", padding: "24px", background: "#1a1209", borderRadius: "8px", color: "#fff", border: "1px solid #b4945a" }}>
+      <h2 style={{ color: "#b4945a", marginBottom: "20px" }}>Vendor Profile</h2>
       
-      {/* Dynamic Profile Info */}
+      {/* Profile Details */}
       <div style={{ marginBottom: "20px" }}>
-        <h3>{profile.businessName || "Vendor Business Name"}</h3>
+        <h3 style={{ fontSize: "24px", color: "#fff" }}>{profile.businessName || "Vendor Business Name"}</h3>
         <p><strong>Category:</strong> {profile.businessType || "N/A"}</p>
         <p><strong>Location:</strong> {profile.address ? `${profile.address}, ${profile.city}` : profile.city || "N/A"}</p>
         <p><strong>Phone:</strong> {profile.phone || "N/A"}</p>
         <p><strong>Description:</strong> {profile.description || "No description provided."}</p>
       </div>
 
-      <hr style={{ margin: "20px 0" }} />
+      <hr style={{ margin: "20px 0", borderColor: "#333" }} />
 
-      {/* Cloudinary Portfolio Section */}
-      <h3>Media Portfolio Workspace</h3>
+      {/* Media Portfolio */}
+      <h3 style={{ color: "#b4945a" }}>Media Portfolio</h3>
 
-      {/* Image Upload */}
+      {/* Image Gallery & Upload */}
       <div style={{ marginBottom: "20px" }}>
         <h4>Images ({profile.images.length}/5)</h4>
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          disabled={uploading || profile.images.length >= 5}
-          onChange={(e) => handleMediaUpload(e, "image")}
-        />
+        {!id && (
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            disabled={uploading || profile.images.length >= 5}
+            onChange={(e) => handleMediaUpload(e, "image")}
+            style={{ marginBottom: "10px" }}
+          />
+        )}
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "10px" }}>
           {profile.images.map((imgUrl, idx) => (
             <img
               key={idx}
               src={imgUrl}
               alt={`Portfolio ${idx}`}
-              style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "8px" }}
+              style={{ width: "120px", height: "120px", objectFit: "cover", borderRadius: "8px", border: "1px solid #444" }}
             />
           ))}
         </div>
       </div>
 
-      {/* Video Upload */}
+      {/* Video Section */}
       <div style={{ marginBottom: "20px" }}>
         <h4>Videos ({profile.videos.length}/3)</h4>
-        <input
-          type="file"
-          accept="video/*"
-          multiple
-          disabled={uploading || profile.videos.length >= 3}
-          onChange={(e) => handleMediaUpload(e, "video")}
-        />
+        {!id && (
+          <input
+            type="file"
+            accept="video/*"
+            multiple
+            disabled={uploading || profile.videos.length >= 3}
+            onChange={(e) => handleMediaUpload(e, "video")}
+            style={{ marginBottom: "10px" }}
+          />
+        )}
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "10px" }}>
           {profile.videos.map((vidUrl, idx) => (
             <video
               key={idx}
               src={vidUrl}
               controls
-              style={{ width: "180px", height: "100px", borderRadius: "8px" }}
+              style={{ width: "200px", height: "120px", borderRadius: "8px", border: "1px solid #444" }}
             />
           ))}
         </div>

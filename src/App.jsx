@@ -28,10 +28,10 @@ import Contact from './Contact';
 import ProfileSettings from './ProfileSettings';
 import CustomerDashboard from "./Components/CustomerDashboard"; 
 
-// Vendor Dedicated Portal
+// Dedicated Portals
 import VendorDashboard from './VendorDashboard';
 
-// Admin Portal Components
+// Admin Portal
 import AdminLayout from "./Components/AdminLayout";
 import AdminDashboard from "./Admindashboard";
 import VendorApproval from "./Components/VendorApproval";
@@ -51,7 +51,7 @@ const STRIPE_PUBLISHABLE_KEY =
 
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
-// 1. CUSTOMER / PUBLIC LAYOUT (Website Header + Footer)
+// 1. PUBLIC WEBSITE & CUSTOMER PORTAL
 function UserLayout() {
   return (
     <>
@@ -68,7 +68,7 @@ function UserLayout() {
         <Route path="vendor-register" element={<VendorRegister />} />
         <Route path="about" element={<About />} />
         
-        {/* PUBLIC VENDOR PROFILE (Fixed: Uses VendorProfile component) */}
+        {/* PUBLIC VENDOR PROFILE PAGE */}
         <Route path="vendors/:id" element={<VendorProfile />} />
         
         <Route path="chat/:vendorId" element={<ChatPage />} />
@@ -78,7 +78,7 @@ function UserLayout() {
         <Route path="terms-of-service" element={<TermsOfService />} />
         <Route path="contact" element={<Contact />} />
         
-        {/* Customer Specific Settings & Dashboard */}
+        {/* CUSTOMER PROFILE & SETTINGS */}
         <Route path="profile-settings" element={<ProfileSettings />} />
         <Route path="customer-dashboard" element={<CustomerDashboard />} />
 
@@ -97,7 +97,7 @@ function UserLayout() {
   );
 }
 
-// MAIN APP ROUTER
+// MAIN ENTRY
 export default function App() {
   return (
     <AuthProvider>
@@ -117,7 +117,7 @@ export default function App() {
           <NotificationProvider>
             <Routes>
               
-              {/* 2. ADMIN PORTAL (Sidebar + Separate Header) */}
+              {/* 2. ADMIN PORTAL (Separate Sidebar & Topbar) */}
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="dashboard" element={<AdminDashboard />} />
@@ -134,10 +134,10 @@ export default function App() {
                 <Route path="profile" element={<AdminProfile />} />
               </Route>
 
-              {/* 3. VENDOR DASHBOARD PORTAL */}
+              {/* 3. VENDOR DEDICATED PORTAL */}
               <Route path="/vendor-dashboard" element={<VendorDashboard />} />
 
-              {/* 4. PUBLIC & CUSTOMER SITE */}
+              {/* 4. PUBLIC SITE LAYOUT */}
               <Route path="/*" element={<UserLayout />} />
 
             </Routes>

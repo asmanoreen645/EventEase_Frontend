@@ -2,13 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./Venuepage.css";
 import { Heart } from "lucide-react";
-import { dummyVenues } from "./Components/VendorsData";
 import API from "./api/axiosConfig";
 
 const VendorsType = ["All", "Photographers", "Caterers", "Decorators", "Venues & Marquees"];
 const venueTypes = ["All", "Marquee", "Hotel", "Farmhouse", "Hall", "Convention Centre"];
 
-// Multi-Country Cascading Location Structure
 const locationData = {
   Pakistan: {
     Punjab: ["Lahore", "Rawalpindi", "Mandi Bahauddin", "Gujrat", "Faisalabad", "Multan", "Sialkot"],
@@ -80,6 +78,7 @@ export default function Venuepage() {
     if (cty) setSelectedCity(cty);
   }, [searchParams]);
 
+  // Pure Backend API Dynamic Fetch
   useEffect(() => {
     const fetchRealVendors = async () => {
       try {
@@ -96,25 +95,21 @@ export default function Venuepage() {
         const endpoint = queryString ? `/api/vendors/search?${queryString}` : "/api/vendors/search";
 
         const res = await API.get(endpoint);
-        const backendVendors = res.data.vendors || [];
+        const backendVendors = res.data.vendors || res.data.data || [];
 
         const mapped = backendVendors.map((v) => ({
-          UserId: v._id,
           _id: v._id,
-          name: v.businessName || "Unnamed Vendor",
-          image: v.coverImage || "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&q=80",
-          type: v.category || "Decorators",
-          rating: v.rating || 4.5,
-          reviews: v.totalReviews || 12,
-          location: v.location?.city || "Mandi Bahauddin",
+          name: v.businessName || v.name || "Vendor",
+          image: v.coverImage || v.images?.[0] || "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&q=80",
+          type: v.category || v.businessType || "Decorators",
+          rating: v.rating || 4.8,
+          reviews: v.totalReviews || 10,
+          location: v.location?.city || v.city || "Mandi Bahauddin",
           description: v.description || "No description provided.",
-          eventTypes: ["Wedding"],
           price: v.price || 50000,
-          country: v.location?.country || "Pakistan",
-          province: v.location?.state || v.location?.province || "Punjab",
-          city: v.location?.city || "Mandi Bahauddin",
-          topPick: false,
-          isReal: true,
+          country: v.location?.country || v.country || "Pakistan",
+          province: v.location?.state || v.location?.province || v.province || "Punjab",
+          city: v.location?.city || v.city || "Mandi Bahauddin",
         }));
 
         setRealVendors(mapped);
@@ -127,11 +122,11 @@ export default function Venuepage() {
   }, [searchParams, selectedCountry, selectedProvince, selectedCity]);
 
   useEffect(() => {
-    const targetVendors = dummyVenues.length + realVendors.length;
+    const targetVendors = realVendors.length;
     const targetRating = 4.8;
-    const targetEvents = 1000;
-    const duration = 800;
-    const steps = 20;
+    const targetEvents = 100;
+    const duration = 600;
+    const steps = 15;
     const interval = duration / steps;
 
     let step = 0;
@@ -164,9 +159,7 @@ export default function Venuepage() {
     setSelectedCity("");
   };
 
-  const allVenues = [...realVendors, ...dummyVenues];
-
-  const filteredVenues = allVenues
+  const filteredVenues = realVendors
     .filter((v) => {
       if (
         searchQuery.trim() &&
@@ -231,7 +224,7 @@ export default function Venuepage() {
         <div className="vlp-header-inner">
           <div className="vlp-header-content">
             <h1>Find Your Perfect Vendor & Venue</h1>
-            <p>{filteredVenues.length} available vendors worldwide</p>
+            <p>{filteredVenues.length} dynamic vendors available</p>
           </div>
           <div className="vlp-header-stats">
             <div className="vlp-stat">
@@ -363,8 +356,8 @@ export default function Venuepage() {
             {filteredVenues.length === 0 ? (
               <div className="vlp-no-results">
                 <div className="vlp-no-results-icon">🔍</div>
-                <h3>No vendors found</h3>
-                <p>We couldn't find any matching vendors. Try adjusting your region or budget filters.</p>
+                <h3>No dynamic vendors found</h3>
+                <p>Register new vendors via signup form to populate real database entries.</p>
                 <button
                   className="vlp-reset-btn"
                   style={{ maxWidth: "200px", margin: "16px auto 0" }}
@@ -375,14 +368,14 @@ export default function Venuepage() {
               </div>
             ) : (
               filteredVenues.map((venue) => (
-                <div key={venue._id || venue.UserId} className="vlp-card">
+                <div key={venue._id} className="vlp-card">
                   <div className="vlp-card-image">
                     <img src={venue.image} alt={venue.name} />
                     <button
-                      className={`vlp-fav-btn ${favorites.includes(venue._id || venue.UserId) ? "active" : ""}`}
-                      onClick={() => toggleFavorite(venue._id || venue.UserId)}
+                      className={`vlp-fav-btn ${favorites.includes(venue._id) ? "active" : ""}`}
+                      onClick={() => toggleFavorite(venue._id)}
                     >
-                      <Heart size={14} fill={favorites.includes(venue._id || venue.UserId) ? "currentColor" : "none"} />
+                      <Heart size={14} fill={favorites.includes(venue._id) ? "currentColor" : "none"} />
                     </button>
                     <span className="vlp-venue-type-badge">{venue.type}</span>
                   </div>
@@ -406,7 +399,7 @@ export default function Venuepage() {
                       </div>
                       <button
                         className="vlp-details-btn"
-                        onClick={() => navigate(`/vendors/${venue._id || venue.UserId}`)}
+                        onClick={() => navigate(`/vendors/${venue._id}`)}
                       >
                         View Profile
                       </button>
