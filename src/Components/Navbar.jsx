@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from 'react';
-import { FiMenu, FiX } from "react-icons/fi"; // Task 4: Mobile drawer icons
+import { FiMenu, FiX } from "react-icons/fi";
 import NotificationBell from "./NotificationBell";
 import { useAuth } from "../Components/AuthContext";
 import "./Navbar.css";
@@ -9,7 +9,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
-  const [mobileDrawer, setMobileDrawer] = useState(false); // Task 4: Mobile drawer state
+  const [mobileDrawer, setMobileDrawer] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -45,18 +45,15 @@ export default function Navbar() {
       </div>
 
       <div className="ee-nav-actions">
-        {/* Task 2: Notification Bell for Logged-In Users */}
         {user && <NotificationBell />}
 
         {user ? (
           <div style={{ position: "relative" }} ref={dropdownRef}>
             <div className="ee-user-trigger" onClick={() => setShowDropdown(!showDropdown)}>
-              {/* : Avatar / Image */}
               <div className="ee-avatar-circle">
                 {user.avatar ? <img src={user.avatar} alt="Avatar" /> : avatarLetter}
               </div>
 
-              {/* : Dynamic Role Badge */}
               <span className={`ee-role-badge badge-${user.role || 'customer'}`}>
                 {user.role || 'customer'}
               </span>
@@ -71,20 +68,18 @@ export default function Navbar() {
                 </div>
 
                 <div className="ee-dropdown-item" onClick={() => { navigate('/profile-settings'); setShowDropdown(false); }}>
-               Profile Settings
-               </div>
+                  Profile Settings
+                </div>
 
-                {/* : Customer Navigation */}
                 {user.role === 'customer' && (
                   <div className="ee-dropdown-item" onClick={() => { navigate('/customer-dashboard'); setShowDropdown(false); }}>
-                    My dashboard
+                    My Dashboard
                   </div>
                 )}
 
-                {/* : Conditional Vendor Navigation */}
                 {user.role === 'vendor' && (
                   <>
-                    <div className="ee-dropdown-item" onClick={() => { navigate('/vendor-profile'); setShowDropdown(false); }}>
+                    <div className="ee-dropdown-item" onClick={() => { navigate('/vendor-dashboard'); setShowDropdown(false); }}>
                       Vendor Profile
                     </div>
                     {user.isVerified && (
@@ -108,13 +103,11 @@ export default function Navbar() {
           </div>
         )}
 
-        {/* Task 4: Mobile Menu Toggle Button */}
         <button className="ee-mobile-toggle" onClick={() => setMobileDrawer(!mobileDrawer)}>
           {mobileDrawer ? <FiX size={24} /> : <FiMenu size={24} />}
         </button>
       </div>
 
-      {/* Task 4: Mobile Responsive Navigation Drawer */}
       {mobileDrawer && (
         <div className="ee-mobile-drawer">
           <NavLink to="/" onClick={() => setMobileDrawer(false)}>Home</NavLink>

@@ -15,7 +15,7 @@ import ForgotPassword from './ForgotPassword';
 import VendorRegister from './VendorRegistrationform';
 import VendorDashboard from './VendorDashboard';
 import About from './About';
-import VendorProfile from "./Photographer";
+import VendorProfile from "./Components/VendorProfile"; 
 import ChatPage from "./ChatPage";
 import BookingDetails from "./BookingDetails";
 import PackageSelection from "./PackageSelection";
@@ -26,24 +26,23 @@ import TermsOfService from "./TermsOfService.jsx";
 import Contact from './Contact';
 import ProfileSettings from './ProfileSettings';
 
-// 🔔 TOAST NOTIFICATION IMPORT 
+// TOAST NOTIFICATION IMPORT 
 import { Toaster } from 'react-hot-toast';
 
-// 💳 STRIPE IMPORTS & ACCURATE INITIALIZATION FIX
+// STRIPE IMPORTS
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 
-// VITE COMPATIBLE STRIPE KEY FETCH
 const STRIPE_PUBLISHABLE_KEY = 
   (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY) || 
   "pk_test_51TfIPH2Qsc3XtoFFnrgZWahVv3JeWWgxZXK9XG9TKX1xq0ySaQMXKyo4gk8kYRiiHFrW1iwDzJUublQ3kIUrxKfi00aY6qsqaD";
 
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
-// 👤 CUSTOMER DASHBOARD IMPORT
+// CUSTOMER DASHBOARD IMPORT
 import CustomerDashboard from "./Components/CustomerDashboard"; 
 
-// 👑 ADMIN IMPORTS
+// ADMIN IMPORTS
 import AdminLayout from "./Components/AdminLayout";
 import AdminDashboard from "./Admindashboard";
 import VendorApproval from "./Components/VendorApproval";
@@ -68,6 +67,7 @@ function UserLayout() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="vendor-register" element={<VendorRegister />} />
         <Route path="vendor-dashboard" element={<VendorDashboard />} />
+        <Route path="vendor-profile" element={<VendorDashboard />} />
         <Route path="about" element={<About />} />
         <Route path="vendors/:id" element={<VendorProfile />} />
         <Route path="chat/:vendorId" element={<ChatPage />} />
@@ -99,7 +99,6 @@ function App() {
   return (
     <AuthProvider>
       <HashRouter>
-        {/* Global Toast Notification Container */}
         <Toaster 
           position="top-right" 
           toastOptions={{

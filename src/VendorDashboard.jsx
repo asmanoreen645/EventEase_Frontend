@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "./api/axiosConfig"; // Axios global connection instance
+import API from "./api/axiosConfig";
 import "./VendorDashboard.css";
 import VendorProfile from "./VendorProfile";
 
-// ─── TAG COMPONENT (Dynamically handles real states) ───────────────────────────
 function StatusTag({ status }) {
   const map = {
     pending: { label: "Pending", className: "tag-pending" },
@@ -16,12 +15,10 @@ function StatusTag({ status }) {
   return <span className={`vd-tag ${s.className}`}>{s.label}</span>;
 }
 
-// ─── OVERVIEW TAB ─────────────────────────────────────────────────────────────
 function OverviewTab({ onGoToBookings, bookings, onAccept, onReject }) {
   const pendingRequests = bookings.filter(b => b.status === "pending");
   const completedCount = bookings.filter(b => b.status === "done" || b.status === "accepted").length;
   
-  // Calculate dynamic gross revenue based on accepted/done bookings
   const grossRevenue = bookings
     .filter(b => b.status === "accepted" || b.status === "done")
     .reduce((sum, b) => sum + (b.totalAmount || 0), 0);
@@ -30,7 +27,6 @@ function OverviewTab({ onGoToBookings, bookings, onAccept, onReject }) {
     <div>
       <div className="vd-section-label">Overview</div>
 
-      {/* Stats */}
       <div className="vd-stats-grid">
         <div className="vd-stat-card">
           <div className="vd-stat-label">Gross Revenue</div>
@@ -54,9 +50,7 @@ function OverviewTab({ onGoToBookings, bookings, onAccept, onReject }) {
         </div>
       </div>
 
-      {/* Two columns */}
       <div className="vd-two-col">
-        {/* Incoming Requests */}
         <div className="vd-card">
           <div className="vd-card-header">
             <span className="vd-card-title">Incoming requests</span>
@@ -88,7 +82,6 @@ function OverviewTab({ onGoToBookings, bookings, onAccept, onReject }) {
           )}
         </div>
 
-        {/* Dynamic Booking Distribution Chart */}
         <div className="vd-card">
           <div className="vd-card-header">
             <span className="vd-card-title">Booking Metrics Summary</span>
@@ -115,7 +108,6 @@ function OverviewTab({ onGoToBookings, bookings, onAccept, onReject }) {
   );
 }
 
-// ─── BOOKINGS TAB ─────────────────────────────────────────────────────────────
 function BookingsTab({ bookings, onAccept, onReject }) {
   return (
     <div>
@@ -157,7 +149,6 @@ function BookingsTab({ bookings, onAccept, onReject }) {
   );
 }
 
-// ─── MAIN DASHBOARD ───────────────────────────────────────────────────────────
 const TABS = [
   { key: "overview", label: "Overview" },
   { key: "bookings", label: "My Bookings" },
@@ -172,12 +163,10 @@ export default function VendorDashboard() {
   const navigate = useNavigate();
 
   const vendorName = localStorage.getItem("vendorName") || "Vendor Panel";
-  const vendorId = localStorage.getItem("userId") || ""; // Relies on login state token extraction
+  const vendorId = localStorage.getItem("userId") || "";
   const initials = vendorName.charAt(0).toUpperCase();
 
-  // 🔄 FETCH REAL BOOKINGS FROM DUAL-DATABASE BACKEND
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const fetchVendorBookings = async () => {
+  const fetchVendorBookings = useCallback(async () => {
     if (!vendorId) return;
     setLoading(true);
     try {
@@ -191,37 +180,31 @@ export default function VendorDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [vendorId]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchVendorBookings();
-  }, [fetchVendorBookings, vendorId]);
+  }, [fetchVendorBookings]);
 
-  // ⚡ ACTION METHOD: ACCEPT BOOKING
   const handleAcceptBooking = async (bookingId) => {
     try {
       const response = await API.put(`/api/bookings/${bookingId}/status`, { status: "accepted" });
       if (response.data && response.data.success) {
-        // Update local state smoothly
         setBookings(prev => prev.map(b => b._id === bookingId ? { ...b, status: "accepted" } : b));
       }
-    // eslint-disable-next-line no-unused-vars
-    } catch (err) {
+    } catch {
       alert("Error approving booking request.");
     }
   };
 
-  // ⚡ ACTION METHOD: REJECT BOOKING
   const handleRejectBooking = async (bookingId) => {
     try {
       const response = await API.put(`/api/bookings/${bookingId}/status`, { status: "rejected" });
       if (response.data && response.data.success) {
-        // Update local state smoothly
         setBookings(prev => prev.map(b => b._id === bookingId ? { ...b, status: "rejected" } : b));
       }
-    // eslint-disable-next-line no-unused-vars
-    } catch (err) {
+    } catch {
       alert("Error rejecting booking request.");
     }
   };
@@ -229,6 +212,7 @@ export default function VendorDashboard() {
   const topbarTitles = {
     overview: "Vendor Control Workspace",
     bookings: "Real-time Bookings Ledger",
+    profile: "Vendor Profile & Media Portfolio",
   };
 
   const renderTab = () => {
@@ -253,15 +237,14 @@ export default function VendorDashboard() {
             onReject={handleRejectBooking}
           />
         );
-        case "profile": // <-- Ye case add karein
-      return <VendorProfile />;
+      case "profile":
+        return <VendorProfile />;
       default: return null;
     }
   };
 
   return (
     <div className="vd-dash">
-      {/* Sidebar */}
       <div className="vd-sidebar">
         <div className="vd-sidebar-logo">
           <span className="vd-brand">EventEase</span>
@@ -280,7 +263,11 @@ export default function VendorDashboard() {
           </div>
         ))}
 
-        <div className="vd-sidebar-bottom">
+        <div 
+          className="vd-sidebar-bottom"
+          onClick={() => setActiveTab("profile")}
+          style={{ cursor: "pointer" }}
+        >
           <div className="vd-vendor-info">
             <div className="vd-avatar">{initials}</div>
             <div>
@@ -290,7 +277,8 @@ export default function VendorDashboard() {
           </div>
           <button
             className="vd-logout-btn"
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               localStorage.clear();
               navigate("/login");
             }}
@@ -300,7 +288,6 @@ export default function VendorDashboard() {
         </div>
       </div>
 
-      {/* Main content */}
       <div className="vd-main">
         <div className="vd-topbar">
           <span className="vd-topbar-title">{topbarTitles[activeTab]}</span>
