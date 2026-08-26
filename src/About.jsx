@@ -1,8 +1,7 @@
 import './About.css';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
-import { Target, Eye } from 'lucide-react';
-
+import { Target, Eye, User } from 'lucide-react';
 export default function AboutPage() {
   const navigate = useNavigate();
     const [counts, setCounts] = useState({ events: 0, venues: 0, users: 0, rating: 0 });
@@ -218,7 +217,34 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-      {/* 6. CTA BANNER */}
+            {/*6. Team Section */}
+      <section className="ee-content-section">
+        <h2 className="ee-section-title">Meet The Team</h2>
+        <div className="ee-team-grid">
+          <div className="ee-team-card">
+            <div className="ee-team-avatar">
+              <User size={40} color="#b0aca5" />
+            </div>
+            <p className="ee-team-name">Mahroosh</p>
+            <p className="ee-team-role">Founder & CEO</p>
+          </div>
+          <div className="ee-team-card">
+            <div className="ee-team-avatar">
+              <User size={40} color="#b0aca5" />
+            </div>
+            <p className="ee-team-name">Ayesha Bibi</p>
+            <p className="ee-team-role">Head of Product</p>
+          </div>
+          <div className="ee-team-card">
+            <div className="ee-team-avatar">
+              <User size={40} color="#b0aca5" />
+            </div>
+            <p className="ee-team-name">Asma Noreen</p>
+            <p className="ee-team-role">Lead Engineer</p>
+          </div>
+        </div>
+      </section>
+      {/* 7. CTA BANNER */}
       <div className="ee-cta-banner">
         <h2>Ready to plan your dream event?</h2>
         <p>Join thousands already planning with EventEase.</p>
