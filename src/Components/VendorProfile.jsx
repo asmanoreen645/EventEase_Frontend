@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+//import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+// eslint-disable-next-line no-unused-vars
+import React, { useState, useEffect, useCallback } from "react";
 import API from "../api/axiosConfig";
 
 export default function VendorProfile() {

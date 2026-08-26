@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+/* eslint-disable no-unused-vars */
+//import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "./api/axiosConfig";
 import "./VendorDashboard.css";
 import VendorProfile from "./Components/VendorProfile";
+import { useState, useEffect, useCallback } from "react";
 
 function StatusTag({ status }) {
   const map = {
