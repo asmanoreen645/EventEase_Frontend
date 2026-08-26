@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "./api/axiosConfig";
 import "./VendorDashboard.css";
-import VendorProfile from "./VendorProfile";
+import VendorProfile from "./Components/VendorProfile";
 
 function StatusTag({ status }) {
   const map = {

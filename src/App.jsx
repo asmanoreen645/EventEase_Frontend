@@ -15,7 +15,7 @@ import ForgotPassword from './ForgotPassword';
 import VendorRegister from './VendorRegistrationform';
 import VendorDashboard from './VendorDashboard';
 import About from './About';
-import VendorProfile from "./VendorProfile"; 
+import VendorProfile from "./Components/VendorProfile"; 
 import ChatPage from "./ChatPage";
 import BookingDetails from "./BookingDetails";
 import PackageSelection from "./PackageSelection";
