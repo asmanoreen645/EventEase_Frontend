@@ -157,7 +157,13 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.01);
 }
 .ee-service-icon {
-  font-size: 24px;
+  width: 44px;
+  height: 44px;
+  background: #fdf3e7;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 15px;
 }
 .ee-service-card h3 {

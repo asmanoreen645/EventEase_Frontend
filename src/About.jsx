@@ -1,7 +1,7 @@
 import './About.css';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
-import { Target, Eye, User } from 'lucide-react';
+import { Target, Eye, User, Cake, Heart, Video, Users } from 'lucide-react';
 export default function AboutPage() {
   const navigate = useNavigate();
     const [counts, setCounts] = useState({ events: 0, venues: 0, users: 0, rating: 0 });
@@ -135,7 +135,9 @@ export default function AboutPage() {
         <div className="ee-services-grid">
           {/* Service 1 */}
           <div className="ee-service-card">
-            <div className="ee-service-icon"></div>
+            <div className="ee-service-icon">
+  <Cake size={22} color="#8b5e34" />
+</div>
             <h3>Birthday Parties</h3>
             <p>
               From intimate gatherings to grand celebrations, we provide the tools to plan the perfect 
@@ -144,7 +146,9 @@ export default function AboutPage() {
           </div>
           {/* Service 2 */}
           <div className="ee-service-card">
-            <div className="ee-service-icon">💜</div>
+<div className="ee-service-icon">
+  <Heart size={22} color="#8b5e34" />
+</div>
             <h3>Wedding Events</h3>
             <p>
               Your dream wedding starts here. Virtually tour stunning venues, connect with top-tier 
@@ -153,7 +157,9 @@ export default function AboutPage() {
           </div>
           {/* Service 3 */}
           <div className="ee-service-card">
-            <div className="ee-service-icon"></div>
+            <div className="ee-service-icon">
+  <Video size={22} color="#8b5e34" />
+</div>
             <h3>Online Venue Visits</h3>
             <p>
               Our signature feature. Explore event spaces with immersive 360° virtual tours, saving 
@@ -162,7 +168,9 @@ export default function AboutPage() {
           </div>
           {/* Service 4 */}
           <div className="ee-service-card">
-            <div className="ee-service-icon"></div>
+            <div className="ee-service-icon">
+  <Users size={22} color="#8b5e34" />
+</div>
             <h3>Vendor Browsing & Booking</h3>
             <p>
               Access our curated marketplace of trusted vendors, from caterers and photographers to 
