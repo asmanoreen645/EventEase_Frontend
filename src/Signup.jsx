@@ -23,7 +23,6 @@ const Signup = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  // Task 26: Live Password Strength Gauge Logic
   const getPasswordStrength = (pass) => {
     let score = 0;
     if (!pass) return { score: 0, label: '', color: '#e0e0e0', width: '0%' };
@@ -50,7 +49,6 @@ const Signup = () => {
 
   const strength = getPasswordStrength(password);
 
-  // Handlers for Initial Form Submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -72,7 +70,8 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const response = await API.post('/api/auth/signup', {
+      // Endpoint updated: /auth/signup (NOT /api/auth/signup)
+      const response = await API.post('/auth/signup', {
         name,
         email,
         password,
@@ -85,7 +84,7 @@ const Signup = () => {
       }
       
     } catch (err) {
-      console.log("FULL ERROR:", err);
+      console.error("FULL ERROR:", err);
       const errMsg = err.response?.data?.message || 'Signup failed. Please try again.';
       setError(errMsg);
       toast.error(errMsg);
@@ -94,7 +93,6 @@ const Signup = () => {
     }
   };
 
-  // Handler for OTP Verification
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     setError('');
@@ -109,7 +107,8 @@ const Signup = () => {
     setOtpLoading(true);
 
     try {
-      const response = await API.post('/api/auth/verify-otp', {
+      // Endpoint updated: /auth/verify-otp
+      const response = await API.post('/auth/verify-otp', {
         email,
         otp
       });
@@ -118,14 +117,15 @@ const Signup = () => {
       login(user, token);
       toast.success("Account verified successfully!");
 
-      if (user.role === 'vendor') {
+      const userRole = user?.role?.toLowerCase();
+      if (userRole === 'vendor') {
         navigate('/vendor-register');
       } else {
-        navigate('/login');
+        navigate('/');
       }
 
     } catch (err) {
-      console.log("OTP VERIFY ERROR:", err);
+      console.error("OTP VERIFY ERROR:", err);
       const errMsg = err.response?.data?.message || 'OTP Verification Failed.';
       setError(errMsg);
       toast.error(errMsg);
@@ -134,19 +134,20 @@ const Signup = () => {
     }
   };
 
-  // Google Signup/Login Handler
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      const response = await API.post('/api/auth/google', {
+      // Endpoint updated: /auth/google
+      const response = await API.post('/auth/google', {
         token: credentialResponse.credential,
-         role: role 
+        role: role 
       });
 
       const { token, user } = response.data;
       login(user, token);
       toast.success("Signed in with Google!");
 
-      if (user?.role?.toLowerCase() === 'vendor') {
+      const userRole = user?.role?.toLowerCase();
+      if (userRole === 'vendor') {
         navigate('/vendor-register');
       } else {
         navigate('/');
@@ -219,7 +220,6 @@ const Signup = () => {
                   </span>
                 </div>
 
-                {/*  Live Password Strength Bar */}
                 {password && (
                   <div style={{ marginTop: '8px' }}>
                     <div style={{ height: '5px', width: '100%', backgroundColor: '#333', borderRadius: '3px', overflow: 'hidden' }}>
