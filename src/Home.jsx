@@ -93,7 +93,6 @@ export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [serviceSlide, setServiceSlide] = useState(0);
   
-  // Dynamic Vendors State
   const [dbVendors, setDbVendors] = useState([]);
   const [loadingVendors, setLoadingVendors] = useState(true);
 
@@ -111,12 +110,11 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  // Live Server Vendor Fetching
   useEffect(() => {
     const fetchHomeVendors = async () => {
       try {
-        const res = await API.get('/api/vendors');
-        const list = res.data.data || res.data || [];
+        const res = await API.get('/vendors');
+        const list = res.data.vendors || res.data.data || res.data || [];
         setDbVendors(Array.isArray(list) ? list.slice(0, 3) : []);
       } catch (err) {
         console.error("Home vendors fetch error:", err);
@@ -134,7 +132,7 @@ export default function Home() {
   const handleSearch = () => {
     const queryParams = new URLSearchParams();
     if (country) queryParams.append("country", country);
-    if (province) queryParams.append("province", province);
+    if (province) queryParams.append("state", province);
     if (city) queryParams.append("city", city);
     
     const queryString = queryParams.toString();
@@ -159,60 +157,66 @@ export default function Home() {
           <p className="ee-hero-subtitle">Discover top vendors, venues & services for your perfect event</p>
           
           <div className="ee-search-bar">
-            {/* COUNTRY DROPDOWN */}
-            <svg className="ee-field-icon" viewBox="0 0 24 24" fill="none" stroke="#b4945a" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/>
-            </svg>
-            <div className="ee-field-inner">
-              <span className="ee-field-label">COUNTRY</span>
-              <select
-                className="ee-search-select"
-                value={country}
-                onChange={e => { setCountry(e.target.value); setProvince(""); setCity(""); }}
-              >
-                <option value="">All Countries</option>
-                {countries.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
+            {/* COUNTRY FIELD */}
+            <div className="ee-field-group">
+              <svg className="ee-field-icon" viewBox="0 0 24 24" fill="none" stroke="#b4945a" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+              <div className="ee-field-inner">
+                <span className="ee-field-label">COUNTRY</span>
+                <select
+                  className="ee-search-select"
+                  value={country}
+                  onChange={e => { setCountry(e.target.value); setProvince(""); setCity(""); }}
+                >
+                  <option value="">All Countries</option>
+                  {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
             </div>
 
             <div className="ee-search-divider" />
 
-            {/* PROVINCE / STATE DROPDOWN */}
-            <svg className="ee-field-icon" viewBox="0 0 24 24" fill="none" stroke="#b4945a" strokeWidth="2">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-              <circle cx="12" cy="9" r="2.5"/>
-            </svg>
-            <div className="ee-field-inner">
-              <span className="ee-field-label">PROVINCE / STATE</span>
-              <select
-                className="ee-search-select"
-                value={province}
-                onChange={e => { setProvince(e.target.value); setCity(""); }}
-                disabled={!country}
-              >
-                <option value="">{country ? "All States/Provinces" : "Select Country First"}</option>
-                {availableProvinces.map(p => <option key={p} value={p}>{p}</option>)}
-              </select>
+            {/* PROVINCE / STATE FIELD */}
+            <div className="ee-field-group">
+              <svg className="ee-field-icon" viewBox="0 0 24 24" fill="none" stroke="#b4945a" strokeWidth="2">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                <circle cx="12" cy="9" r="2.5"/>
+              </svg>
+              <div className="ee-field-inner">
+                <span className="ee-field-label">PROVINCE / STATE</span>
+                <select
+                  className="ee-search-select"
+                  value={province}
+                  onChange={e => { setProvince(e.target.value); setCity(""); }}
+                  disabled={!country}
+                >
+                  <option value="">{country ? "All States/Provinces" : "Select Country First"}</option>
+                  {availableProvinces.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
             </div>
 
             <div className="ee-search-divider" />
 
-            {/* CITY DROPDOWN */}
-            <svg className="ee-field-icon" viewBox="0 0 24 24" fill="none" stroke="#b4945a" strokeWidth="2">
-              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
-              <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-            <div className="ee-field-inner">
-              <span className="ee-field-label">CITY</span>
-              <select
-                className="ee-search-select"
-                value={city}
-                onChange={e => setCity(e.target.value)}
-                disabled={!province}
-              >
-                <option value="">{province ? "Select City" : "Select State/Province First"}</option>
-                {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
+            {/* CITY FIELD */}
+            <div className="ee-field-group">
+              <svg className="ee-field-icon" viewBox="0 0 24 24" fill="none" stroke="#b4945a" strokeWidth="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <div className="ee-field-inner">
+                <span className="ee-field-label">CITY</span>
+                <select
+                  className="ee-search-select"
+                  value={city}
+                  onChange={e => setCity(e.target.value)}
+                  disabled={!province}
+                >
+                  <option value="">{province ? "Select City" : "Select State First"}</option>
+                  {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
             </div>
 
             <button className="ee-search-btn" onClick={handleSearch}>
