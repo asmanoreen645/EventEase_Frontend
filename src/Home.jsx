@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from "react";
+import API from "./api/axiosConfig";
 import "./Home.css";
 
 const heroImages = [
@@ -10,7 +11,6 @@ const heroImages = [
   "https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=1600&q=80",
 ];
 
-// Expanded Multi-Country Location Dataset
 const locationData = {
   Pakistan: {
     Punjab: ["Lahore", "Rawalpindi", "Mandi Bahauddin", "Gujrat", "Faisalabad", "Multan", "Sialkot"],
@@ -50,33 +50,6 @@ const services = [
   { label: "Social Gatherings", bg: "#0d1209" },
   { label: "Gala Dinners", bg: "#12090d" },
   { label: "Festivals", bg: "#090d1a" },
-];
-
-const vendors = [
-  {
-    id: "1",
-    name: "Floral Fantasy Decor",
-    sub: "Premium Event Styling & Floral Design",
-    rating: 4.9,
-    tags: ["LAHORE", "DECORATION"],
-    img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80",
-  },
-  {
-    id: "2",
-    name: "Moments Captured",
-    sub: "Cinematic Photography & Videography",
-    rating: 5.0,
-    tags: ["ISLAMABAD", "MEDIA"],
-    img: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&q=80",
-  },
-  {
-    id: "3",
-    name: "Royal Palace Marquee",
-    sub: "Exclusive Wedding & Event Venues",
-    rating: 4.8,
-    tags: ["MANDI BAHAUDDIN", "VENUES"],
-    img: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600&q=80",
-  },
 ];
 
 const serviceImages = [
@@ -119,6 +92,10 @@ export default function Home() {
   const [city, setCity] = useState("");
   const [currentSlide, setCurrentSlide] = useState(0);
   const [serviceSlide, setServiceSlide] = useState(0);
+  
+  // Dynamic Vendors State
+  const [dbVendors, setDbVendors] = useState([]);
+  const [loadingVendors, setLoadingVendors] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -132,6 +109,23 @@ export default function Home() {
       setServiceSlide(prev => prev + 1);
     }, 2000);
     return () => clearInterval(timer);
+  }, []);
+
+  // Live Server Vendor Fetching
+  useEffect(() => {
+    const fetchHomeVendors = async () => {
+      try {
+        const res = await API.get('/api/vendors');
+        const list = res.data.data || res.data || [];
+        setDbVendors(Array.isArray(list) ? list.slice(0, 3) : []);
+      } catch (err) {
+        console.error("Home vendors fetch error:", err);
+        setDbVendors([]);
+      } finally {
+        setLoadingVendors(false);
+      }
+    };
+    fetchHomeVendors();
   }, []);
 
   const availableProvinces = country && locationData[country] ? Object.keys(locationData[country]) : [];
@@ -167,7 +161,7 @@ export default function Home() {
           <div className="ee-search-bar">
             {/* COUNTRY DROPDOWN */}
             <svg className="ee-field-icon" viewBox="0 0 24 24" fill="none" stroke="#b4945a" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/>
             </svg>
             <div className="ee-field-inner">
               <span className="ee-field-label">COUNTRY</span>
@@ -273,7 +267,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURED VENDORS SECTION */}
+      {/* DYNAMIC FEATURED VENDORS SECTION */}
       <section className="ee-vendors-section">
         <div className="ee-vendors-header">
           <div>
@@ -282,24 +276,34 @@ export default function Home() {
           </div>
           <a onClick={() => navigate('/vendors')} className="ee-view-all" style={{cursor:'pointer'}}>View All Vendors →</a>
         </div>
-        <div className="ee-vendors-grid">
-          {vendors.map(v => (
-            <div className="ee-vendor-card" key={v.name}>
-              <div className="ee-vendor-img-wrap">
-                <img className="ee-vendor-img" src={v.img} alt={v.name} />
-                <div className="ee-vendor-rating">★ {v.rating}</div>
-              </div>
-              <div className="ee-vendor-body">
-                <div className="ee-vendor-name">{v.name}</div>
-                <div className="ee-vendor-sub">{v.sub}</div>
-                <div className="ee-tags">
-                  {v.tags.map(t => <span className="ee-tag" key={t}>{t}</span>)}
+        
+        {loadingVendors ? (
+          <div style={{ padding: "40px", textAlign: "center", color: "#b4945a" }}>Loading real-time vendors...</div>
+        ) : dbVendors.length === 0 ? (
+          <div style={{ padding: "40px", textAlign: "center", color: "#8a99ad", background: "rgba(255,255,255,0.03)", borderRadius: "12px", border: "1px dashed rgba(255,255,255,0.1)" }}>
+            No featured vendors available yet.
+          </div>
+        ) : (
+          <div className="ee-vendors-grid">
+            {dbVendors.map(v => (
+              <div className="ee-vendor-card" key={v._id || v.id}>
+                <div className="ee-vendor-img-wrap">
+                  <img className="ee-vendor-img" src={v.coverImage || v.img || "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80"} alt={v.businessName || v.name} />
+                  <div className="ee-vendor-rating">★ {v.rating || "5.0"}</div>
                 </div>
-                <button className="ee-book-btn" onClick={() => navigate(`/vendors/${v.id}`)}> View Details </button>
+                <div className="ee-vendor-body">
+                  <div className="ee-vendor-name">{v.businessName || v.name}</div>
+                  <div className="ee-vendor-sub">{v.category || v.sub || "Event Vendor"}</div>
+                  <div className="ee-tags">
+                    <span className="ee-tag">{v.city ? v.city.toUpperCase() : "PAKISTAN"}</span>
+                    <span className="ee-tag">{v.category ? v.category.toUpperCase() : "SERVICE"}</span>
+                  </div>
+                  <button className="ee-book-btn" onClick={() => navigate(`/vendors/${v._id || v.id}`)}> View Details </button>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>      
     </div>
   );

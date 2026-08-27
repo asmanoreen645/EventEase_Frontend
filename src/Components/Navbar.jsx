@@ -71,6 +71,12 @@ export default function Navbar() {
                   Profile Settings
                 </div>
 
+                {user.role === 'admin' && (
+                  <div className="ee-dropdown-item ee-highlight" onClick={() => { navigate('/admin'); setShowDropdown(false); }}>
+                    Admin Dashboard
+                  </div>
+                )}
+
                 {user.role === 'customer' && (
                   <div className="ee-dropdown-item" onClick={() => { navigate('/customer-dashboard'); setShowDropdown(false); }}>
                     My Dashboard
@@ -114,6 +120,9 @@ export default function Navbar() {
           <NavLink to="/services" onClick={() => setMobileDrawer(false)}>Services</NavLink>
           <NavLink to="/vendors" onClick={() => setMobileDrawer(false)}>Vendors</NavLink>
           <NavLink to="/about" onClick={() => setMobileDrawer(false)}>About Us</NavLink>
+          {user?.role === 'admin' && (
+            <NavLink to="/admin" onClick={() => setMobileDrawer(false)}>Admin Panel</NavLink>
+          )}
         </div>
       )}
     </nav>
