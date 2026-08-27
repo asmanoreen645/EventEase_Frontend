@@ -18,7 +18,7 @@ const VendorRegister = () => {
     description: '',
   });
 
-  const [, setDocuments] = useState({
+  const [documents, setDocuments] = useState({
     cnicFront: null,
     businessLicense: null,
   });
@@ -74,28 +74,31 @@ const VendorRegister = () => {
 
     setLoading(true);
     try {
-      // Clean JSON Payload to prevent backend 500 Cloudinary crashes
-      const payload = {
-        userId: user?._id || "64b0f1a2c3d4e5f6a7b8c9d0",
-        businessName: formData.businessName,
-        businessType: formData.businessType,
-        phone: formData.phone,
-        city: formData.city,
-        address: formData.address,
-        description: formData.description,
-        documents: ["mock-cloud-path.png"]
-      };
+      // Real FormData Object for Multipart Upload
+      const data = new FormData();
+      data.append("userId", user?._id || "64b0f1a2c3d4e5f6a7b8c9d0");
+      data.append("businessName", formData.businessName);
+      data.append("businessType", formData.businessType);
+      data.append("phone", formData.phone);
+      data.append("city", formData.city);
+      data.append("address", formData.address);
+      data.append("description", formData.description);
 
-      const res = await API.post('/api/vendors/register', payload);
-      console.log("SERVER RESPONSE:", res.data);
+      // Real Files Append
+      if (documents.cnicFront) {
+        data.append("files", documents.cnicFront);
+      }
+      if (documents.businessLicense) {
+        data.append("files", documents.businessLicense);
+      }
+
+      const res = await API.post('/api/vendors/register', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
 
       if (res.data.success || res.status === 200 || res.status === 201) {
-        // 1. Set localStorage mark so app knows vendor is registered
         localStorage.setItem('vendorRegistered', 'true');
-
-        toast.success(res.data.message || "Vendor registered successfully!");
-        
-        // 2. Redirect straight to vendor dashboard
+        toast.success(res.data.message || "Vendor registered! Pending admin verification.");
         navigate('/vendor-dashboard');
       }
     } catch (err) {
