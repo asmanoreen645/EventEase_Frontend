@@ -50,6 +50,10 @@
 /* --- Layout Sections --- */
 .ee-content-section {
   padding: 50px 8%;
+  background: #ffffff;
+}
+.ee-content-section.ee-alt-bg {
+  background: #f8f7f5;
 }
 .ee-section-title {
   font-size: 24px;

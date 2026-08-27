@@ -93,7 +93,7 @@ export default function AboutPage() {
       </section>
 
       {/* 3. OUR STORY SECTION (Timeline layout) */}
-      <section className="ee-content-section">
+      <section className="ee-content-section ee-alt-bg">
         <h2 className="ee-section-title">Our Story</h2>
         <div className="ee-timeline">
           <div className="ee-timeline-item">
@@ -173,7 +173,7 @@ export default function AboutPage() {
       </section>
       
       {/* 5. TESTIMONIALS SECTION */}
-      <section className="ee-content-section">
+      <section className="ee-content-section ee-alt-bg">
         <h2 className="ee-section-title">What People Say</h2>
         <div className="ee-testimonials-grid">
           <div className="ee-testimonial-card">
