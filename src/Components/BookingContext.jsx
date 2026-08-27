@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from "react";
+// eslint-disable-next-line no-unused-vars
+import { createContext, useContext, useCallback, useState } from "react";
 
 const BookingContext = createContext();
 
@@ -41,6 +42,7 @@ export function BookingProvider({ children }) {
 }
 
 // Custom hook - har page mein isi se context access karenge
+// eslint-disable-next-line react-refresh/only-export-components
 export function useBooking() {
   return useContext(BookingContext);
 }

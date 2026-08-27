@@ -1,49 +1,69 @@
 import { useState, useEffect } from "react";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
+import API from "../api/axiosConfig";
 import "../Admindashboard.css";
-
-const navSections = [
-  {
-    label: "Overview",
-    items: [
-      { label: "Dashboard", path: "/admin" },
-      { label: "Analytics", path: "/admin/analytics" },
-    ],
-  },
-  {
-    label: "Management",
-    items: [
-      { label: "Vendor Approval", path: "/admin/vendors", badge: "3", badgeType: "amber" },
-      { label: "All Bookings", path: "/admin/bookings", badge: "2", badgeType: "red" },
-      { label: "Payouts", path: "/admin/payouts" },
-      { label: "Users", path: "/admin/users" },
-    ],
-  },
-  {
-    label: "Monitoring",
-    items: [
-      { label: "Chat Logs", path: "/admin/chats", badge: "2", badgeType: "red" },
-      { label: "Disputes", path: "/admin/disputes" },
-      { label: "Alerts", path: "/admin/alerts" },
-    ],
-  },
-  {
-    label: "Config",
-    items: [
-      { label: "Commission", path: "/admin/commission" },
-      { label: "Settings", path: "/admin/settings" },
-    ],
-  },
-];
 
 export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [pageTitle, setPageTitle] = useState("Command Center");
+  const [counts, setCounts] = useState({ pendingVendors: 0, totalBookings: 0, chats: 0 });
 
-  // URL badalne par header ka title automatic update karne ke liye
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const res = await API.get('/api/admin/summary');
+        if (res.data && res.data.stats) {
+          setCounts({
+            pendingVendors: res.data.stats.pendingVendors || 0,
+            totalBookings: res.data.stats.totalBookings || 0,
+            chats: res.data.stats.chats || 0
+          });
+        }
+      } catch (err) {
+        console.error("Admin counts fetch failed:", err);
+      }
+    };
+    fetchCounts();
+  }, []);
+
+  const navSections = [
+    {
+      label: "Overview",
+      items: [
+        { label: "Dashboard", path: "/admin" },
+        { label: "Analytics", path: "/admin/analytics" },
+      ],
+    },
+    {
+      label: "Management",
+      items: [
+        { label: "Vendor Approval", path: "/admin/vendors", badge: counts.pendingVendors > 0 ? String(counts.pendingVendors) : null, badgeType: "amber" },
+        { label: "All Bookings", path: "/admin/bookings", badge: counts.totalBookings > 0 ? String(counts.totalBookings) : null, badgeType: "red" },
+        { label: "Payouts", path: "/admin/payouts" },
+        { label: "Users", path: "/admin/users" },
+      ],
+    },
+    {
+      label: "Monitoring",
+      items: [
+        { label: "Chat Logs", path: "/admin/chats", badge: counts.chats > 0 ? String(counts.chats) : null, badgeType: "red" },
+        { label: "Disputes", path: "/admin/disputes" },
+        { label: "Alerts", path: "/admin/alerts" },
+      ],
+    },
+    {
+      label: "Config",
+      items: [
+        { label: "Commission", path: "/admin/commission" },
+        { label: "Settings", path: "/admin/settings" },
+      ],
+    },
+  ];
+
   useEffect(() => {
     const currentPath = location.pathname;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (currentPath.includes("/vendors")) setPageTitle("Vendor Verification");
     else if (currentPath.includes("/bookings")) setPageTitle("Transactional Bookings");
     else if (currentPath.includes("/payouts")) setPageTitle("Financial Payouts");

@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import './VendorRegistrationform.css';
 
 const VendorRegister = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -72,34 +72,50 @@ const VendorRegister = () => {
       return;
     }
 
+    const activeUserId = user?._id || user?.id || localStorage.getItem('userId');
+    if (!activeUserId) {
+      toast.error("User session not found. Please login again.");
+      return;
+    }
+
     setLoading(true);
     try {
-      // Clean JSON Payload to prevent backend 500 Cloudinary crashes
-      const payload = {
-        userId: user?._id || "64b0f1a2c3d4e5f6a7b8c9d0",
-        businessName: formData.businessName,
-        businessType: formData.businessType,
-        phone: formData.phone,
-        city: formData.city,
-        address: formData.address,
-        description: formData.description,
-        documents: ["mock-cloud-path.png"]
-      };
+      const data = new FormData();
+      data.append("userId", activeUserId);
+      data.append("businessName", formData.businessName);
+      data.append("businessType", formData.businessType);
+      data.append("phone", formData.phone);
+      data.append("city", formData.city);
+      data.append("address", formData.address);
+      data.append("description", formData.description);
 
-      const res = await API.post('/api/vendors/register', payload);
-      console.log("SERVER RESPONSE:", res.data);
+      // Backend expects files under the key name 'documents'
+      if (documents.cnicFront) {
+        data.append("documents", documents.cnicFront);
+      }
+      if (documents.businessLicense) {
+        data.append("documents", documents.businessLicense);
+      }
+
+      // Endpoint updated to '/vendors/register' (Without double /api)
+      const res = await API.post('/vendors/register', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
 
       if (res.data.success || res.status === 200 || res.status === 201) {
-        // 1. Set localStorage mark so app knows vendor is registered
         localStorage.setItem('vendorRegistered', 'true');
-
-        toast.success(res.data.message || "Vendor registered successfully!");
+        localStorage.setItem('role', 'vendor');
         
-        // 2. Redirect straight to vendor dashboard
+        // Update context role
+        if (user) {
+          updateUser({ ...user, role: 'vendor' });
+        }
+
+        toast.success(res.data.message || "Vendor registered! Pending admin verification.");
         navigate('/vendor-dashboard');
       }
     } catch (err) {
-      console.error(err);
+      console.error("Vendor Register Error:", err);
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);

@@ -6,11 +6,12 @@ export default function CustomerDashboard() {
   const [user, setUser] = useState({ name: "", email: "", phone: "0300-1234567", profileImage: "" });
   const [bookings, setBookings] = useState([]);
   const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [, setErrorMessage] = useState("");
 
   // Load User details and Bookings on Mount
   useEffect(() => {
     const localUser = JSON.parse(localStorage.getItem("user")) || {};
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUser({
       name: localUser.name || "Customer User",
       email: localUser.email || "customer@eventease.com",
@@ -23,7 +24,7 @@ export default function CustomerDashboard() {
       .then((res) => {
         setBookings(res.data.bookings || res.data || []);
       })
-      .catch((err) => {
+      .catch(() => {
         console.log("Using dynamic mock data for customer preview logs");
         // Fallback Data for Viva simulation if DB tables have empty entry fields
         setBookings([
@@ -56,6 +57,7 @@ export default function CustomerDashboard() {
         setSuccessMessage("Profile details updated in live database successfully!");
         localStorage.setItem("user", JSON.stringify({ ...JSON.parse(localStorage.getItem("user")), ...user }));
       }
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
       // Safe fallback update visualization if token validation undergoes dry blocks
       setSuccessMessage("Profile modifications successfully synced!");

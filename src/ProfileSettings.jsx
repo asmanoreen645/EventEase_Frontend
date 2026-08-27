@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
-import axios from './api/axiosConfig';
+import API from './api/axiosConfig';
 import { useAuth } from './Components/AuthContext';
 import './ProfileSettings.css';
 
 const ProfileSettings = () => {
-  // AuthContext se current logged-in user ka data aur update function
   const { user, updateUser } = useAuth();
 
-  // Form ke input fields ki state
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,30 +13,27 @@ const ProfileSettings = () => {
     profileImage: ''
   });
 
-  const [imageFile, setImageFile] = useState(null);   // nayi select ki hui image file
-  const [preview, setPreview] = useState('');          // image preview URL
-  const [loading, setLoading] = useState(false);       // save button ki loading state
-  const [message, setMessage] = useState({ type: '', text: '' }); // success/error message
+  const [imageFile, setImageFile] = useState(null);
+  const [preview, setPreview] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
 
-  // Page load hote hi form ko current user ki details se bhar do
   useEffect(() => {
     if (user) {
       setFormData({
         name: user.name || '',
         email: user.email || '',
         phone: user.phone || '',
-        profileImage: user.profileImage || ''
+        profileImage: user.profileImage || user.profilePicture || ''
       });
-      setPreview(user.profileImage || '');
+      setPreview(user.profileImage || user.profilePicture || '');
     }
   }, [user]);
 
-  // Text input change hone par formData update karo
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Nayi image select hone par preview dikhao (upload abhi nahi hoti)
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -47,21 +42,20 @@ const ProfileSettings = () => {
     }
   };
 
-  // Image upload - filhal sirf vendor ke liye backend route available hai
   const uploadProfileImage = async (file) => {
     const data = new FormData();
-    data.append('profilePicture', file); // Ayesha ne yehi key name confirm kiya hai
+    data.append('profilePicture', file);
 
-    const res = await axios.put(
-      `/api/vendors/profile/upload-image/${user.id}`,
+    const userId = user._id || user.id;
+    const res = await API.put(
+      `/vendors/profile/upload-image/${userId}`,
       data,
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );
 
-    return res.data.imageUrl; // backend response mein yehi field aata hai
+    return res.data.imageUrl;
   };
 
-  // Form submit hone par backend ko update bhejo
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -70,8 +64,7 @@ const ProfileSettings = () => {
     try {
       let imageUrl = formData.profileImage;
 
-      // Sirf vendor ke liye image upload chalega (customer ke paas box hi nahi hai)
-      if (imageFile && user.role === 'vendor') {
+      if (imageFile && user?.role?.toLowerCase() === 'vendor') {
         imageUrl = await uploadProfileImage(imageFile);
       }
 
@@ -82,12 +75,12 @@ const ProfileSettings = () => {
         profileImage: imageUrl
       };
 
-      // Baaki fields (name/email/phone) is API se save hoti hain - customer aur vendor dono ke liye
-      const res = await axios.put('/api/auth/profile/update', payload);
+      // Endpoint updated: /auth/profile
+      const res = await API.put('/auth/profile', payload);
 
-      if (res.data.success) {
+      if (res.data.success || res.data.user) {
         setMessage({ type: 'success', text: 'Profile updated successfully!' });
-        updateUser(res.data.data); // Navbar/AuthContext turant refresh ho jayega
+        updateUser(res.data.user || res.data.data || payload);
       }
     } catch (err) {
       setMessage({
@@ -111,8 +104,7 @@ const ProfileSettings = () => {
         )}
 
         <form onSubmit={handleSubmit} className="ee-profile-form">
-          {/* Profile picture upload - sirf vendor ko dikhega */}
-          {user?.role === 'vendor' && (
+          {user?.role?.toLowerCase() === 'vendor' && (
             <div className="ee-profile-avatar-wrap">
               <label className="ee-profile-avatar-label">
                 <img

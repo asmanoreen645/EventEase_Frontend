@@ -7,12 +7,6 @@ const refunds = [
   { color: "red", title: "Customer ≤ 48 hours", desc: "0% refund — within cutoff period, no refund", iconClass: "ri-red" },
 ];
 
-const refundBars = [
-  { label: "Vendor cancelled", value: 3, pct: 30, color: "green" },
-  { label: "Customer >48hr", value: 5, pct: 50, color: "blue" },
-  { label: "No refund issued", value: 2, pct: 20, color: "red" },
-];
-
 const revenueBars = [
   { label: "Catering", value: "Rs 1.4M", pct: 75, color: "gold" },
   { label: "Photography", value: "Rs 0.9M", pct: 48, color: "blue" },
@@ -29,41 +23,31 @@ const vendorBars = [
 export default function Admindashboard() {
   const [stats, setStats] = useState(null);
   const [dbVendors, setDbVendors] = useState([]);
-  const [dbBookings, setDbBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   // Live Server Data Fetching Pipeline
   const fetchDashboardData = async () => {
     try {
-      // 1. Stats Data Fetch
       const statsRes = await API.get('/api/admin/summary');
-      setStats(statsRes.data.stats);
+      setStats(statsRes.data.stats || statsRes.data);
 
-      // 2. Pending Vendors Fetch
       const vendorsRes = await API.get('/api/admin/pending');
-      setDbVendors(vendorsRes.data.data || []);
-
-      // 3. System Users/Bookings Fetch (Fallback Array if Empty)
-      const usersRes = await API.get('/api/admin/users');
-      // filter default bookings or display initial context
-      setLoading(false);
+      setDbVendors(vendorsRes.data.data || vendorsRes.data || []);
     } catch (err) {
       console.error("Live fetch error:", err);
-      setLoading(false);
     }
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchDashboardData();
   }, []);
 
   // Live Action: Admin Approves or Rejects a Vendor
   const handleVerifyVendor = async (id, statusAction) => {
     try {
-      // Calls PUT /api/admin/verify-vendor/:id from your adminController
-      await API.put(`/api/admin/verify${id}`, { status: statusAction });
+      await API.put(`/api/admin/verify/${id}`, { status: statusAction });
       alert(`Vendor status successfully updated to: ${statusAction}`);
-      fetchDashboardData(); // Refresh list live from database
+      fetchDashboardData();
     } catch (err) {
       console.error("Verification toggle failed:", err);
       alert("Failed to update vendor status on live server.");
@@ -145,18 +129,11 @@ export default function Admindashboard() {
             <span>Customer</span><span>Amount</span><span>Date</span><span>Status</span>
           </div>
           
-          {/* Default fallback demo dataset for pipeline render */}
           <div className="bk-row">
-            <span className="bk-name">Ayesha Rehman</span>
-            <span className="bk-amt">Rs 45,000</span>
-            <span className="bk-date">Jul 12, 2026</span>
-            <span className="tag tag-ok">Confirmed</span>
-          </div>
-          <div className="bk-row">
-            <span className="bk-name">Sara Khan</span>
-            <span className="bk-amt">Rs 80,000</span>
-            <span className="bk-date">Jul 18, 2026</span>
-            <span className="tag tag-pnd">Pending</span>
+            <span className="bk-name">System Live</span>
+            <span className="bk-amt">--</span>
+            <span className="bk-date">--</span>
+            <span className="tag tag-ok">Active</span>
           </div>
 
           <div className="pay-section">
@@ -169,7 +146,7 @@ export default function Admindashboard() {
         </div>
       </div>
 
-      {/* ROW 2: Static Layout Context Logs */}
+      {/* ROW 2: Layout Context Logs */}
       <div className="grid-3">
         <div className="panel">
           <div className="panel-head">
@@ -177,13 +154,13 @@ export default function Admindashboard() {
             <span className="panel-badge pb-red">System Core</span>
           </div>
           <div className="chat-item">
-            <div className="chat-av va-a">AK</div>
+            <div className="chat-av va-a">SYS</div>
             <div className="chat-body">
               <div className="chat-meta">
-                <span className="chat-name">Ayesha K.</span>
-                <span className="chat-to">→ Zara Events</span>
+                <span className="chat-name">System</span>
+                <span className="chat-to">→ Monitor</span>
               </div>
-              <div className="chat-msg">When will you confirm the menu for the wedding event?</div>
+              <div className="chat-msg">Waiting for user messages...</div>
             </div>
           </div>
         </div>

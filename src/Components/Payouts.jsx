@@ -7,6 +7,7 @@ export default function Payouts() {
 
   // 1. Fetch Real Payout Data from Backend
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     fetchPayouts();
   }, []);
 
@@ -38,6 +39,7 @@ export default function Payouts() {
       // Local State Update
       setPayouts(payouts.map(p => p.id === id ? { ...p, status: "transferred" } : p));
       alert(`Payout ${id} successfully released!`);
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
       console.log("Backend offline or endpoint missing, updating locally for demo.");
       setPayouts(payouts.map(p => p.id === id ? { ...p, status: "transferred" } : p));

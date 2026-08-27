@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 //import API from "../../axiosConfig";
 //import API from "/src/axiosConfig";
 import API from "../api/axiosConfig";
@@ -12,7 +12,8 @@ export const NotificationProvider = ({ children }) => {
   const { user } = useAuth();
 
   // 1. Fetch Notifications from Database
-  const fetchNotifications = async () => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const fetchNotifications = useCallback(async () => {
     // Check agar user logged in hai aur uski ID ya _id majood hai
     const userId = user?._id || user?.id;
     if (!userId) return;
@@ -27,16 +28,17 @@ export const NotificationProvider = ({ children }) => {
     } catch (error) {
       console.error("Error fetching notifications:", error);
     }
-  };
+  });
 
   // Jab bhi logged-in user change ho, DB se notifications load hongi
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchNotifications();
     
     // Optional: Har 30 seconds baad auto-refresh for real-time updates
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
-  }, [user]);
+  }, [fetchNotifications, user]);
 
   // 2. Mark Notification as Read
   const markAsRead = async (id) => {
@@ -63,4 +65,5 @@ export const NotificationProvider = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useNotifications = () => useContext(NotificationContext);

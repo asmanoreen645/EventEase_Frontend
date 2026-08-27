@@ -2,19 +2,39 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./Venuepage.css";
 import { Heart } from "lucide-react";
-import { dummyVenues } from "./Components/VendorsData";
 import API from "./api/axiosConfig";
 
 const VendorsType = ["All", "Photographers", "Caterers", "Decorators", "Venues & Marquees"];
 const venueTypes = ["All", "Marquee", "Hotel", "Farmhouse", "Hall", "Convention Centre"];
 
-// Pakistani Regional Cascading Data Pipeline
 const locationData = {
-  Punjab: ["Mandi Bahauddin", "Lahore", "islamabad","Rawalpindi", "Gujrat", "Faisalabad", "Multan", "Sialkot"],
-  Sindh: ["Karachi", "Hyderabad", "Sukkur"],
-  "Khyber Pakhtunkhwa": ["Peshawar", "Abbottabad"],
-  Balochistan: ["Quetta"],
-  "Islamabad Capital": ["Islamabad"]
+  Pakistan: {
+    Punjab: ["Lahore", "Rawalpindi", "Mandi Bahauddin", "Gujrat", "Faisalabad", "Multan", "Sialkot"],
+    Sindh: ["Karachi", "Hyderabad", "Sukkur", "Larkana"],
+    "Khyber Pakhtunkhwa": ["Peshawar", "Abbottabad", "Mardan"],
+    Balochistan: ["Quetta", "Gwadar"],
+    "Islamabad Capital": ["Islamabad"],
+    "Azad Kashmir": ["Muzaffarabad", "Mirpur"]
+  },
+  UAE: {
+    Dubai: ["Dubai Marina", "Downtown Dubai", "Deira", "Jumeirah"],
+    "Abu Dhabi": ["Abu Dhabi City", "Al Ain"],
+    Sharjah: ["Sharjah City", "Al Majaz"]
+  },
+  India: {
+    Maharashtra: ["Mumbai", "Pune", "Nagpur"],
+    Delhi: ["New Delhi", "North Delhi"],
+    Punjab: ["Amritsar", "Ludhiana", "Chandigarh"]
+  },
+  UK: {
+    England: ["London", "Manchester", "Birmingham"],
+    Scotland: ["Edinburgh", "Glasgow"]
+  },
+  USA: {
+    California: ["Los Angeles", "San Francisco", "San Diego"],
+    "New York": ["New York City", "Buffalo"],
+    Texas: ["Houston", "Dallas", "Austin"]
+  }
 };
 
 export default function Venuepage() {
@@ -26,57 +46,70 @@ export default function Venuepage() {
   const [animatedEvents, setAnimatedEvents] = useState(0);
   const [realVendors, setRealVendors] = useState([]);
 
-  // URL Query Parameters Sync 
+  const [selectedCountry, setSelectedCountry] = useState(searchParams.get("country") || "Pakistan");
   const [selectedProvince, setSelectedProvince] = useState(searchParams.get("province") || "");
   const [selectedCity, setSelectedCity] = useState(searchParams.get("city") || "");
   const selectedService = searchParams.get("category") || "All";
+
   const setSelectedService = (val) => {
     const params = new URLSearchParams(searchParams);
     if (val === "All") params.delete("category");
     else params.set("category", val);
     setSearchParams(params);
   };
-  const [selectedType, setSelectedType] = useState("All");
+
+  const [, setSelectedType] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(150000);
-  const [minCapacity, setMinCapacity] = useState(0);
+  const [, setMinCapacity] = useState(0);
   const [sortBy, setSortBy] = useState("relevance");
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [favorites, setFavorites] = useState([]);
 
-  // URL Query Parameters ko real-time read karna (Home Page integration) — province/city ke liye
   useEffect(() => {
+    const cntry = searchParams.get("country");
     const prov = searchParams.get("province");
     const cty = searchParams.get("city");
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (cntry) setSelectedCountry(cntry);
     if (prov) setSelectedProvince(prov);
     if (cty) setSelectedCity(cty);
   }, [searchParams]);
 
-  // Fetch real vendors from backend
+  // Pure Backend API Dynamic Fetch
   useEffect(() => {
     const fetchRealVendors = async () => {
       try {
-        const res = await API.get("/api/vendors/search");
-        const backendVendors = res.data.vendors || [];
+        const countryParam = searchParams.get("country") || selectedCountry || "";
+        const provParam = searchParams.get("province") || selectedProvince || "";
+        const cityParam = searchParams.get("city") || selectedCity || "";
+
+        const queryParams = new URLSearchParams();
+        if (countryParam) queryParams.append("country", countryParam);
+        if (provParam) queryParams.append("state", provParam);
+        if (cityParam) queryParams.append("city", cityParam);
+
+        const queryString = queryParams.toString();
+        const endpoint = queryString ? `/api/vendors/search?${queryString}` : "/api/vendors/search";
+
+        const res = await API.get(endpoint);
+        const backendVendors = res.data.vendors || res.data.data || [];
 
         const mapped = backendVendors.map((v) => ({
-          UserId: v._id,
           _id: v._id,
-          name: v.businessName || "Unnamed Vendor",
-          image: v.coverImage || "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&q=80",
-          type: v.category || "Decorators",
-          rating: v.rating || 4.5,
-          reviews: v.totalReviews || 12,
-          location: v.location?.city || "Mandi Bahauddin",
+          name: v.businessName || v.name || "Vendor",
+          image: v.coverImage || v.images?.[0] || "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&q=80",
+          type: v.category || v.businessType || "Decorators",
+          rating: v.rating || 4.8,
+          reviews: v.totalReviews || 10,
+          location: v.location?.city || v.city || "Mandi Bahauddin",
           description: v.description || "No description provided.",
-          eventTypes: ["Wedding"],
           price: v.price || 50000,
-          province: v.location?.province || "Punjab",
-          city: v.location?.city || "Mandi Bahauddin",
-          topPick: false,
-          isReal: true,
+          country: v.location?.country || v.country || "Pakistan",
+          province: v.location?.state || v.location?.province || v.province || "Punjab",
+          city: v.location?.city || v.city || "Mandi Bahauddin",
         }));
 
         setRealVendors(mapped);
@@ -86,14 +119,14 @@ export default function Venuepage() {
     };
 
     fetchRealVendors();
-  }, []);
+  }, [searchParams, selectedCountry, selectedProvince, selectedCity]);
 
   useEffect(() => {
-    const targetVendors = dummyVenues.length + realVendors.length;
+    const targetVendors = realVendors.length;
     const targetRating = 4.8;
-    const targetEvents = 1000;
-    const duration = 800;
-    const steps = 20;
+    const targetEvents = 100;
+    const duration = 600;
+    const steps = 15;
     const interval = duration / steps;
 
     let step = 0;
@@ -115,64 +148,68 @@ export default function Venuepage() {
     );
   };
 
+  const handleCountryChange = (e) => {
+    setSelectedCountry(e.target.value);
+    setSelectedProvince("");
+    setSelectedCity("");
+  };
+
   const handleProvinceChange = (e) => {
     setSelectedProvince(e.target.value);
     setSelectedCity("");
   };
 
-  const allVenues = [...realVendors, ...dummyVenues];
+  const filteredVenues = realVendors
+    .filter((v) => {
+      if (
+        searchQuery.trim() &&
+        !v.name?.toLowerCase().includes(searchQuery.trim().toLowerCase())
+      )
+        return false;
 
-  // Filtering & Sorting Engine
-const filteredVenues = allVenues
-  .filter((v) => {
-    // Search query filter
-    if (
-      searchQuery.trim() &&
-      !v.name?.toLowerCase().includes(searchQuery.trim().toLowerCase())
-    )
-      return false;
+      if (selectedService === "Venues & Marquees") {
+        const isVenueType = venueTypes
+          .slice(1)
+          .some((t) => t.toLowerCase() === v.type?.toLowerCase());
+        if (!isVenueType) return false;
+      } else if (
+        selectedService !== "All" &&
+        v.type?.toLowerCase() !== selectedService.toLowerCase()
+      ) {
+        return false;
+      }
 
-    // Service category filter
-    if (selectedService === "Venues & Marquees") {
+      if (selectedCountry) {
+        const vendorCountry = (v.country || "Pakistan").toLowerCase();
+        if (vendorCountry !== selectedCountry.toLowerCase()) return false;
+      }
 
-      const isVenueType = venueTypes
-        .slice(1) // "All" ko chhod kar
-        .some((t) => t.toLowerCase() === v.type?.toLowerCase());
-      if (!isVenueType) return false;
-    } else if (
-      selectedService !== "All" &&
-      v.type?.toLowerCase() !== selectedService.toLowerCase()
-    ) {
-      return false;
-    }
+      if (selectedCity) {
+        const vendorCity = (v.city || v.location || "").toLowerCase();
+        const targetCity = selectedCity.toLowerCase();
+        if (!vendorCity.includes(targetCity)) return false;
+      } else if (selectedProvince) {
+        const vendorProvince = (v.province || v.location || "").toLowerCase();
+        const targetProvince = selectedProvince.toLowerCase();
+        if (!vendorProvince.includes(targetProvince)) return false;
+      }
 
-    // Flexible Location Match (City & Province)
-    if (selectedCity) {
-      const vendorCity = (v.city || v.location || "").toLowerCase();
-      const targetCity = selectedCity.toLowerCase();
-      if (!vendorCity.includes(targetCity)) return false;
-    } else if (selectedProvince) {
-      const vendorProvince = (v.province || v.location || "").toLowerCase();
-      const targetProvince = selectedProvince.toLowerCase();
-      if (!vendorProvince.includes(targetProvince)) return false;
-    }
+      if (v.price < minPrice || v.price > maxPrice) return false;
 
-    // Price filter
-    if (v.price < minPrice || v.price > maxPrice) return false;
-
-    return true;
-  })
-  .sort((a, b) => {
-    if (sortBy === "price-low") return a.price - b.price;
-    if (sortBy === "price-high") return b.price - a.price;
-    if (sortBy === "rating") return b.rating - a.rating;
-    return 0;
-  });
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === "price-low") return a.price - b.price;
+      if (sortBy === "price-high") return b.price - a.price;
+      if (sortBy === "rating") return b.rating - a.rating;
+      return 0;
+    });
 
   const handleResetFilters = () => {
     setSelectedType("All");
     setSelectedService("All");
     setSearchQuery("");
+    setSelectedCountry("");
     setSelectedProvince("");
     setSelectedCity("");
     setMinPrice(0);
@@ -187,7 +224,7 @@ const filteredVenues = allVenues
         <div className="vlp-header-inner">
           <div className="vlp-header-content">
             <h1>Find Your Perfect Vendor & Venue</h1>
-            <p>{filteredVenues.length} available vendors in Pakistan</p>
+            <p>{filteredVenues.length} dynamic vendors available</p>
           </div>
           <div className="vlp-header-stats">
             <div className="vlp-stat">
@@ -241,14 +278,27 @@ const filteredVenues = allVenues
           </div>
 
           <div className="vlp-filter-section">
-            <h4>Select Province</h4>
+            <h4>Select Country</h4>
+            <select
+              className="vlp-select"
+              value={selectedCountry}
+              onChange={handleCountryChange}
+            >
+              <option value="">All Countries</option>
+              {Object.keys(locationData).map((country) => (
+                <option key={country} value={country}>{country}</option>
+              ))}
+            </select>
+
+            <h4 style={{ marginTop: '12px' }}>Select State/Province</h4>
             <select
               className="vlp-select"
               value={selectedProvince}
               onChange={handleProvinceChange}
+              disabled={!selectedCountry}
             >
-              <option value="">All Provinces</option>
-              {Object.keys(locationData).map((province) => (
+              <option value="">{selectedCountry ? "All States/Provinces" : "Select Country First"}</option>
+              {selectedCountry && locationData[selectedCountry] && Object.keys(locationData[selectedCountry]).map((province) => (
                 <option key={province} value={province}>{province}</option>
               ))}
             </select>
@@ -260,8 +310,8 @@ const filteredVenues = allVenues
               onChange={(e) => setSelectedCity(e.target.value)}
               disabled={!selectedProvince}
             >
-              <option value="">{selectedProvince ? "All Cities" : "Select Province First"}</option>
-              {selectedProvince && locationData[selectedProvince].map((city) => (
+              <option value="">{selectedProvince ? "All Cities" : "Select State/Province First"}</option>
+              {selectedCountry && selectedProvince && locationData[selectedCountry]?.[selectedProvince]?.map((city) => (
                 <option key={city} value={city}>{city}</option>
               ))}
             </select>
@@ -306,8 +356,8 @@ const filteredVenues = allVenues
             {filteredVenues.length === 0 ? (
               <div className="vlp-no-results">
                 <div className="vlp-no-results-icon">🔍</div>
-                <h3>No vendors found</h3>
-                <p>We couldn't find any matching vendors. Try adjusting your region or budget filters.</p>
+                <h3>No dynamic vendors found</h3>
+                <p>Register new vendors via signup form to populate real database entries.</p>
                 <button
                   className="vlp-reset-btn"
                   style={{ maxWidth: "200px", margin: "16px auto 0" }}
@@ -318,14 +368,14 @@ const filteredVenues = allVenues
               </div>
             ) : (
               filteredVenues.map((venue) => (
-                <div key={venue._id || venue.UserId} className="vlp-card">
+                <div key={venue._id} className="vlp-card">
                   <div className="vlp-card-image">
                     <img src={venue.image} alt={venue.name} />
                     <button
-                      className={`vlp-fav-btn ${favorites.includes(venue._id || venue.UserId) ? "active" : ""}`}
-                      onClick={() => toggleFavorite(venue._id || venue.UserId)}
+                      className={`vlp-fav-btn ${favorites.includes(venue._id) ? "active" : ""}`}
+                      onClick={() => toggleFavorite(venue._id)}
                     >
-                      <Heart size={14} fill={favorites.includes(venue._id || venue.UserId) ? "currentColor" : "none"} />
+                      <Heart size={14} fill={favorites.includes(venue._id) ? "currentColor" : "none"} />
                     </button>
                     <span className="vlp-venue-type-badge">{venue.type}</span>
                   </div>
@@ -349,7 +399,7 @@ const filteredVenues = allVenues
                       </div>
                       <button
                         className="vlp-details-btn"
-                        onClick={() => navigate(`/vendors/${venue._id || venue.UserId}`)}
+                        onClick={() => navigate(`/vendors/${venue._id}`)}
                       >
                         View Profile
                       </button>

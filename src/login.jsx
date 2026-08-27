@@ -16,15 +16,13 @@ const LoginForm = () => {
   const location = useLocation();
   const { login } = useAuth();
 
-  // Common Redirection Logic
- 
   const handleAuthSuccess = (user, token) => {
-     console.log("FULL USER OBJECT:", user);
     login(user, token);
     const redirectPath = location.state?.from;
 
     const vendorOnlyPaths = ['/vendor-register', '/vendor-dashboard'];
     const adminOnlyPaths = ['/admin'];
+    const userRole = user?.role?.toLowerCase();
 
     const isPathAllowedForRole = (path, role) => {
       if (vendorOnlyPaths.includes(path) && role !== 'vendor') return false;
@@ -32,11 +30,11 @@ const LoginForm = () => {
       return true;
     };
 
-    if (redirectPath && isPathAllowedForRole(redirectPath, user.role)) {
+    if (redirectPath && isPathAllowedForRole(redirectPath, userRole)) {
       navigate(redirectPath);
-    } else if (user.role === 'admin') {
+    } else if (userRole === 'admin') {
       navigate('/admin');
-    } else if (user.role === 'vendor') {
+    } else if (userRole === 'vendor') {
       const alreadyRegistered = localStorage.getItem('vendorRegistered') === 'true';
       if (alreadyRegistered) {
         navigate('/vendor-dashboard');
@@ -48,14 +46,14 @@ const LoginForm = () => {
     }
   };
 
-  // Normal Email/Password Login Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      const response = await API.post('/api/auth/login', { email, password });
+      // Endpoint updated: /auth/login (Not /api/auth/login)
+      const response = await API.post('/auth/login', { email, password });
       const { token, user } = response.data;
       handleAuthSuccess(user, token);
     } catch (err) {
@@ -65,10 +63,10 @@ const LoginForm = () => {
     }
   };
 
-  // Google Login Success Handler
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      const response = await API.post('/api/auth/google', {
+      // Endpoint updated: /auth/google
+      const response = await API.post('/auth/google', {
         token: credentialResponse.credential
       });
 
@@ -101,6 +99,7 @@ const LoginForm = () => {
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
 
@@ -112,6 +111,7 @@ const LoginForm = () => {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
               />
               <button
                 type="button"
