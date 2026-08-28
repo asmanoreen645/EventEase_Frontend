@@ -11,7 +11,7 @@ const VendorRegister = () => {
 
   const [formData, setFormData] = useState({
     businessName: user?.name || '',
-    businessType: 'Decorator', 
+    category: 'Decorator', // Aligned with Mongoose Schema & Controller
     phone: '',
     city: 'Mandi Bahauddin',
     address: '',
@@ -83,13 +83,14 @@ const VendorRegister = () => {
       const data = new FormData();
       data.append("userId", activeUserId);
       data.append("businessName", formData.businessName);
-      data.append("businessType", formData.businessType);
+      data.append("category", formData.category); // Matched with backend controller
+      data.append("businessType", formData.category); // Fallback dual mapping
       data.append("phone", formData.phone);
       data.append("city", formData.city);
       data.append("address", formData.address);
       data.append("description", formData.description);
 
-      // Backend expects files under the key name 'documents'
+      // Backend multer middleware handles multiple files under 'documents' field key
       if (documents.cnicFront) {
         data.append("documents", documents.cnicFront);
       }
@@ -97,7 +98,7 @@ const VendorRegister = () => {
         data.append("documents", documents.businessLicense);
       }
 
-      // Endpoint updated to '/vendors/register' (Without double /api)
+      // Endpoint calling via global API instance
       const res = await API.post('/vendors/register', data, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -144,8 +145,8 @@ const VendorRegister = () => {
           <div>
             <label>BUSINESS CATEGORY *</label>
             <select 
-              name="businessType" 
-              value={formData.businessType} 
+              name="category" 
+              value={formData.category} 
               onChange={handleInputChange}
               style={{
                 width: '100%',
