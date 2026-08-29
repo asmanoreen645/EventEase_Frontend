@@ -48,7 +48,7 @@ const ForgotPassword = () => {
     }
     setLoading(true);
     try {
-      const response = await API.post("/api/auth/forgot-password", { email });
+      const response = await API.post("/auth/forgot-password", { email });
       setSuccessMsg(response.data?.message || "OTP sent to your email.");
       setStep(2);
       setTimer(OTP_EXPIRY_SECONDS);
@@ -94,10 +94,7 @@ const ForgotPassword = () => {
     }
     setLoading(true);
     try {
-      const response = await API.post("/api/auth/verify-otp", {
-        email,
-        otp: otpValue,
-      });
+      const response = await API.post("/auth/verify-otp", { email, otp: otpValue });
       setVerifiedOtp(otpValue); // OTP save kar liya Step 3 ke liye
       setSuccessMsg(response.data?.message || "OTP verified. Please set your new password.");
       setStep(3);
@@ -114,7 +111,7 @@ const ForgotPassword = () => {
     clearMessages();
     setLoading(true);
     try {
-      const response = await API.post("/api/auth/forgot-password", { email });
+      const response = await API.post("/auth/forgot-password", { email });
       setOtp(["", "", "", "", "", ""]);
       setTimer(OTP_EXPIRY_SECONDS);
       setSuccessMsg(response.data?.message || "A new OTP has been sent to your email.");
@@ -143,11 +140,11 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       // Sending verifiedOtp along with email & newPassword
-      const response = await API.post("/api/auth/reset-password", {
-        email,
-        otp: verifiedOtp || otp.join(""),
-        newPassword,
-      });
+      const response = await API.post("/auth/reset-password", {
+       email,
+        otp: verifiedOtp, 
+       newPassword,
+});
       setSuccessMsg(response.data?.message || "Password reset successful! Redirecting to login...");
       setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
