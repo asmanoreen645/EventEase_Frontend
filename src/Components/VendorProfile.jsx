@@ -10,6 +10,7 @@ export default function VendorProfile() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [vendorId, setVendorId] = useState("");
+  const [isVerified, setIsVerified] = useState(true); // Verification state track karne ke liye
 
   const [profile, setProfile] = useState({
     businessName: "",
@@ -36,6 +37,11 @@ export default function VendorProfile() {
 
       if (data) {
         if (data._id) setVendorId(data._id);
+        
+        // Admin verification status update
+        if (data.isVerified !== undefined) {
+          setIsVerified(data.isVerified);
+        }
 
         const catName = typeof data.category === 'object' 
           ? (data.category?.name || data.category?.title || "") 
@@ -63,6 +69,10 @@ export default function VendorProfile() {
         const fallbackData = fallbackRes.data?.vendor || fallbackRes.data;
         if (fallbackData) {
           if (fallbackData._id) setVendorId(fallbackData._id);
+          if (fallbackData.isVerified !== undefined) {
+            setIsVerified(fallbackData.isVerified);
+          }
+
           setProfile({
             businessName: fallbackData.businessName || "",
             category: typeof fallbackData.category === 'object' ? fallbackData.category?.name : fallbackData.category,
@@ -184,6 +194,22 @@ export default function VendorProfile() {
 
   return (
     <div style={{ maxWidth: "900px", margin: "40px auto", padding: "24px", background: "#181410", borderRadius: "10px", color: "#fff", border: "1px solid #b4945a" }}>
+      
+      {/* Pending Admin Approval Banner */}
+      {!isVerified && !id && (
+        <div style={{ 
+          background: "rgba(255, 193, 7, 0.15)", 
+          border: "1px solid #ffc107", 
+          color: "#ffc107", 
+          padding: "12px 16px", 
+          borderRadius: "6px", 
+          marginBottom: "20px", 
+          fontSize: "14px"
+        }}>
+          ⚠️ <strong>Account Pending Approval:</strong> Your profile is currently under review by our admin team. It will be visible on the services listing page once approved.
+        </div>
+      )}
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <h2 style={{ color: "#b4945a" }}>Vendor Workspace Profile</h2>
         {!id && (
