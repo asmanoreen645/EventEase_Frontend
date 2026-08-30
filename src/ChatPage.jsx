@@ -19,8 +19,8 @@ import {
   MdPerson,
 } from "react-icons/md";
 
-// 🔧 Backend base URL - socket connection isi se banegi
-const SOCKET_URL = "https://eventease-backend-693s.onrender.com";
+// 🔧 Correct Backend base URL (Aapka active Render URL)
+const SOCKET_URL = "https://eventease-backend-1-ptzp.onrender.com";
 
 // Helper Function: Category ke according icon render karne ke liye
 const getCategoryIcon = (type) => {
@@ -109,7 +109,7 @@ export default function ChatPage() {
     const fetchVendors = async () => {
       setLoadingVendors(true);
       try {
-        const res = await API.get("/api/vendors/search");
+        const res = await API.get("/vendors/search"); // 👈 Updated path (/api hata diya agar axios base URL mein hai)
         const vendorList = res.data.vendors || res.data.data || res.data;
 
         if (!Array.isArray(vendorList) || vendorList.length === 0) {
@@ -118,7 +118,6 @@ export default function ChatPage() {
 
         const formatted = vendorList.map((v) => {
           const vName = v.businessName || "Unnamed Vendor";
-          // Image fallback agar backend pe image missing ho
           const autoAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(
             vName
           )}&background=random&color=fff`;
@@ -196,7 +195,7 @@ export default function ChatPage() {
     const fetchMessages = async () => {
       setLoadingMessages(true);
       try {
-        const response = await API.get(`/api/chat/room/${room}`);
+        const response = await API.get(`/chat/room/${room}`); // 👈 Updated path
         if (response.data.success) {
           setMessages(response.data.messages);
         }
@@ -274,7 +273,7 @@ export default function ChatPage() {
     socketRef.current?.emit("send_message", newMsg);
 
     try {
-      await API.post("/api/chat/save", {
+      await API.post("/chat/save", { // 👈 Updated path
         room,
         sender: userId,
         message: newMsg.message,
@@ -321,7 +320,6 @@ export default function ChatPage() {
             </span>
           </div>
 
-          {/* SEARCH BAR WITH REACT ICON */}
           <div
             className="cp-search"
             style={{ display: "flex", alignItems: "center", gap: "8px" }}
@@ -347,7 +345,6 @@ export default function ChatPage() {
                   navigate(`/chat/${c.vendorId}`);
                 }}
               >
-                {/* VENDOR PROFILE AVATAR */}
                 <div
                   className="cp-avatar"
                   style={{
@@ -381,7 +378,6 @@ export default function ChatPage() {
 
         {/* MAIN CHAT */}
         <main className="cp-chat-main">
-          {/* CHAT HEADER */}
           <div className="cp-chat-header">
             <div
               className="cp-avatar"
@@ -417,7 +413,6 @@ export default function ChatPage() {
               </span>
             </div>
 
-            {/* HEADER ACTION ICONS */}
             <div
               className="cp-chat-header-actions"
               style={{ display: "flex", gap: "12px", cursor: "pointer" }}
@@ -427,7 +422,6 @@ export default function ChatPage() {
             </div>
           </div>
 
-          {/* VENDOR STRIP */}
           <div
             className="cp-vendor-strip"
             style={{ display: "flex", alignItems: "center", gap: "6px" }}
@@ -444,7 +438,6 @@ export default function ChatPage() {
             </button>
           </div>
 
-          {/* MESSAGES */}
           <div className="cp-messages">
             <div className="cp-date-divider">
               <span>Today</span>
@@ -493,7 +486,6 @@ export default function ChatPage() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* INPUT AREA */}
           <div className="cp-input-area">
             <div
               className="cp-attach"
