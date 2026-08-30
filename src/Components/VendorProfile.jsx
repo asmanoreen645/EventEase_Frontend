@@ -113,39 +113,37 @@ export default function VendorProfile() {
 
   // 3. Save Profile & Update Location Coordinates (PUT /api/vendors/profile & PUT /api/vendors/update-location)
   const handleSaveProfile = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      const profilePayload = {
-        businessName: profile.businessName,
-        category: profile.category,
-        phone: profile.phone,
-        description: profile.description,
-      };
+  e.preventDefault();
+  setSaving(true);
+  try {
+    const profilePayload = {
+      businessName: profile.businessName,
+      phone: profile.phone,
+      description: profile.description,
+    };
 
-      const locationPayload = {
-        city: profile.city,
-        address: profile.address,
-        latitude: profile.latitude ? parseFloat(profile.latitude) : undefined,
-        longitude: profile.longitude ? parseFloat(profile.longitude) : undefined,
-      };
+    const locationPayload = {
+      city: profile.city,
+      address: profile.address,
+      latitude: profile.latitude ? parseFloat(profile.latitude) : undefined,
+      longitude: profile.longitude ? parseFloat(profile.longitude) : undefined,
+    };
 
-      // Execute APIs in parallel
-      await Promise.all([
-        API.put("/vendors/profile", profilePayload),
-        API.put("/vendors/update-location", locationPayload)
-      ]);
+    await Promise.all([
+      API.put("/vendors/profile", profilePayload),
+      API.put("/vendors/update-location", locationPayload)
+    ]);
 
-      toast.success("Profile and Location updated successfully!");
-      setIsEditing(false);
-      fetchVendorProfile();
-    } catch (err) {
-      console.error("Profile update error:", err);
-      toast.error(err.response?.data?.message || "Failed to update profile or location.");
-    } finally {
-      setSaving(false);
-    }
-  };
+    toast.success("Profile and Location updated successfully!");
+    setIsEditing(false);
+    fetchVendorProfile();
+  } catch (err) {
+    console.error("Profile update error:", err);
+    toast.error(err.response?.data?.message || "Failed to update profile or location.");
+  } finally {
+    setSaving(false);
+  }
+};
 
   // 4. Single Profile Picture Upload (PUT /api/vendors/profile/upload-image)
   const handleProfileImageUpload = async (e) => {
