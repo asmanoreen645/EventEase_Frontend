@@ -9,8 +9,9 @@ export default function VendorProfile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [vendorId, setVendorId] = useState("");
-  const [isVerified, setIsVerified] = useState(true); // Verification state track karne ke liye
+  const [isVerified, setIsVerified] = useState(true);
 
   const [profile, setProfile] = useState({
     businessName: "",
@@ -18,12 +19,15 @@ export default function VendorProfile() {
     phone: "",
     city: "",
     address: "",
+    latitude: "",
+    longitude: "",
     description: "",
+    profileImage: "",
     images: [],
     videos: [],
   });
 
-  // 1. Fetch Dynamic Vendor Data
+  // 1. Fetch Dynamic Vendor Data (GET /api/vendors/:id)
   const fetchVendorProfile = useCallback(async () => {
     setLoading(true);
     try {
@@ -38,7 +42,6 @@ export default function VendorProfile() {
       if (data) {
         if (data._id) setVendorId(data._id);
         
-        // Admin verification status update
         if (data.isVerified !== undefined) {
           setIsVerified(data.isVerified);
         }
@@ -53,7 +56,10 @@ export default function VendorProfile() {
           phone: data.phone || data.contact || "",
           city: data.location?.city || data.city || "",
           address: data.location?.address || data.address || "",
+          latitude: data.location?.coordinates?.[1] || data.location?.latitude || data.latitude || "",
+          longitude: data.location?.coordinates?.[0] || data.location?.longitude || data.longitude || "",
           description: data.description || "",
+          profileImage: data.profileImage || data.avatar || "",
           images: Array.isArray(data.portfolioImages) ? data.portfolioImages : (Array.isArray(data.images) ? data.images : []),
           videos: Array.isArray(data.portfolioVideos) ? data.portfolioVideos : (Array.isArray(data.videos) ? data.videos : []),
         });
@@ -79,7 +85,10 @@ export default function VendorProfile() {
             phone: fallbackData.phone || "",
             city: fallbackData.location?.city || fallbackData.city || "",
             address: fallbackData.location?.address || fallbackData.address || "",
+            latitude: fallbackData.location?.latitude || fallbackData.latitude || "",
+            longitude: fallbackData.location?.longitude || fallbackData.longitude || "",
             description: fallbackData.description || "",
+            profileImage: fallbackData.profileImage || fallbackData.avatar || "",
             images: fallbackData.portfolioImages || fallbackData.images || [],
             videos: fallbackData.portfolioVideos || fallbackData.videos || [],
           });
@@ -102,35 +111,70 @@ export default function VendorProfile() {
     setProfile({ ...profile, [e.target.name]: e.target.value });
   };
 
-  // 3. Save / Update Vendor Data to Backend Database
+  // 3. Save Profile & Update Location Coordinates (PUT /api/vendors/profile & PUT /api/vendors/update-location)
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
-      const payload = {
+      const profilePayload = {
         businessName: profile.businessName,
         category: profile.category,
         phone: profile.phone,
-        city: profile.city,
-        address: profile.address,
         description: profile.description,
       };
 
-      const res = await API.put("/vendors/profile", payload);
-      if (res.data) {
-        toast.success("Profile updated successfully!");
-        setIsEditing(false);
-        fetchVendorProfile();
-      }
+      const locationPayload = {
+        city: profile.city,
+        address: profile.address,
+        latitude: profile.latitude ? parseFloat(profile.latitude) : undefined,
+        longitude: profile.longitude ? parseFloat(profile.longitude) : undefined,
+      };
+
+      // Execute APIs in parallel
+      await Promise.all([
+        API.put("/vendors/profile", profilePayload),
+        API.put("/vendors/update-location", locationPayload)
+      ]);
+
+      toast.success("Profile and Location updated successfully!");
+      setIsEditing(false);
+      fetchVendorProfile();
     } catch (err) {
       console.error("Profile update error:", err);
-      toast.error(err.response?.data?.message || "Failed to update profile.");
+      toast.error(err.response?.data?.message || "Failed to update profile or location.");
     } finally {
       setSaving(false);
     }
   };
 
-  // 4. Cloudinary Media Upload Handler
+  // 4. Single Profile Picture Upload (PUT /api/vendors/profile/upload-image)
+  const handleProfileImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    setUploadingAvatar(true);
+    try {
+      const res = await API.put("/vendors/profile/upload-image", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (res.data) {
+        toast.success("Profile picture updated successfully!");
+        fetchVendorProfile();
+      }
+    } catch (err) {
+      console.error("Profile image upload error:", err);
+      toast.error(err.response?.data?.message || "Failed to upload profile picture.");
+    } finally {
+      setUploadingAvatar(false);
+      e.target.value = "";
+    }
+  };
+
+  // 5. Cloudinary Portfolio Media Upload Handler (POST /api/vendors/:vendorId/portfolio)
   const handleMediaUpload = async (e, type) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
@@ -141,11 +185,11 @@ export default function VendorProfile() {
     }
 
     if (type === "image" && profile.images.length + files.length > 5) {
-      toast.error("Maximum 5 images allowed.");
+      toast.error("Maximum 5 images allowed in portfolio.");
       return;
     }
     if (type === "video" && profile.videos.length + files.length > 3) {
-      toast.error("Maximum 3 videos allowed.");
+      toast.error("Maximum 3 videos allowed in portfolio.");
       return;
     }
 
@@ -171,7 +215,7 @@ export default function VendorProfile() {
     }
   };
 
-  // 5. Delete Portfolio Media Handler
+  // 6. Delete Portfolio Media Handler
   const handleDeleteMedia = async (mediaUrl, type) => {
     if (!vendorId) return;
 
@@ -210,8 +254,46 @@ export default function VendorProfile() {
         </div>
       )}
 
+      {/* Header & Avatar Section */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-        <h2 style={{ color: "#b4945a" }}>Vendor Workspace Profile</h2>
+        <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+          <div style={{ position: "relative" }}>
+            <img 
+              src={profile.profileImage || "https://via.placeholder.com/80?text=Vendor"} 
+              alt="Vendor Avatar" 
+              style={{ width: "80px", height: "80px", borderRadius: "50%", objectFit: "cover", border: "2px solid #b4945a" }} 
+            />
+            {!id && (
+              <label style={{
+                position: "absolute",
+                bottom: 0,
+                right: 0,
+                background: "#b4945a",
+                color: "#000",
+                borderRadius: "50%",
+                width: "24px",
+                height: "24px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                fontSize: "12px",
+                fontWeight: "bold"
+              }} title="Upload Profile Picture">
+                ✎
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleProfileImageUpload} 
+                  disabled={uploadingAvatar}
+                  style={{ display: "none" }} 
+                />
+              </label>
+            )}
+          </div>
+          <h2 style={{ color: "#b4945a", margin: 0 }}>Vendor Workspace Profile</h2>
+        </div>
+
         {!id && (
           <button
             onClick={() => setIsEditing(!isEditing)}
@@ -282,6 +364,34 @@ export default function VendorProfile() {
             />
           </div>
 
+          {/* Map Coordinates for Location API */}
+          <div style={{ display: "flex", gap: "15px" }}>
+            <div style={{ flex: 1 }}>
+              <label>Latitude:</label>
+              <input
+                type="number"
+                step="any"
+                name="latitude"
+                value={profile.latitude}
+                onChange={handleChange}
+                placeholder="e.g. 31.5204"
+                style={{ width: "100%", padding: "8px", marginTop: "5px", borderRadius: "4px" }}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label>Longitude:</label>
+              <input
+                type="number"
+                step="any"
+                name="longitude"
+                value={profile.longitude}
+                onChange={handleChange}
+                placeholder="e.g. 74.3587"
+                style={{ width: "100%", padding: "8px", marginTop: "5px", borderRadius: "4px" }}
+              />
+            </div>
+          </div>
+
           <div>
             <label>Description:</label>
             <textarea
@@ -298,7 +408,7 @@ export default function VendorProfile() {
             disabled={saving}
             style={{ background: "#28a745", color: "#fff", border: "none", padding: "10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}
           >
-            {saving ? "Saving to Database..." : "Save Backend Profile"}
+            {saving ? "Saving to Database..." : "Save Backend Profile & Location"}
           </button>
         </form>
       ) : (
@@ -306,6 +416,9 @@ export default function VendorProfile() {
           <h3 style={{ fontSize: "22px", color: "#fff" }}>{profile.businessName || "No Business Name Set"}</h3>
           <p><strong>Category:</strong> {profile.category || "N/A"}</p>
           <p><strong>Location:</strong> {profile.address ? `${profile.address}, ${profile.city}` : profile.city || "N/A"}</p>
+          {(profile.latitude || profile.longitude) && (
+            <p><strong>Coordinates:</strong> Lat: {profile.latitude || "N/A"}, Long: {profile.longitude || "N/A"}</p>
+          )}
           <p><strong>Phone:</strong> {profile.phone || "N/A"}</p>
           <p><strong>Description:</strong> {profile.description || "No description provided."}</p>
         </div>
