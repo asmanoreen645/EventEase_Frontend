@@ -25,15 +25,24 @@ export default function VendorProfile() {
   const fetchVendorProfile = useCallback(async () => {
     setLoading(true);
     try {
-      // Dynamic route if ID present, otherwise Auth Profile
-      const endpoint = id && id !== "1" ? `/api/vendors/${id}` : "/api/vendors/profile";
+      const activeUserId = localStorage.getItem("userId");
+      // Agar ID hai toh specify, varna user-specific vendor record fetch
+      const endpoint = id && id !== "1" 
+        ? `/vendors/${id}` 
+        : `/vendors/user/${activeUserId}`;
+        
       const res = await API.get(endpoint);
       const data = res.data?.vendor || res.data?.data || res.data;
 
       if (data) {
+        // Category Name Extract Fix (agar Category object format mein ho)
+        const catName = typeof data.category === 'object' 
+          ? (data.category?.name || data.category?.title || "") 
+          : (data.category || data.businessType || "");
+
         setProfile({
           businessName: data.businessName || data.name || "",
-          category: data.category || data.businessType || "",
+          category: catName,
           phone: data.phone || data.contact || "",
           city: data.location?.city || data.city || "",
           address: data.location?.address || data.address || "",
@@ -41,17 +50,40 @@ export default function VendorProfile() {
           images: Array.isArray(data.images) ? data.images : [],
           videos: Array.isArray(data.videos) ? data.videos : [],
         });
+
+        // Save Vendor Name for Dashboard Sidebar Header
+        if (data.businessName) {
+          localStorage.setItem("vendorName", data.businessName);
+        }
       }
     } catch (err) {
       console.error("Fetch profile error:", err);
-      toast.error("Failed to load profile data.");
+      // Fallback request agar profile direct me query ho
+      try {
+        const fallbackRes = await API.get('/vendors/me');
+        const fallbackData = fallbackRes.data?.vendor || fallbackRes.data;
+        if (fallbackData) {
+          setProfile({
+            businessName: fallbackData.businessName || "",
+            category: typeof fallbackData.category === 'object' ? fallbackData.category?.name : fallbackData.category,
+            phone: fallbackData.phone || "",
+            city: fallbackData.location?.city || fallbackData.city || "",
+            address: fallbackData.location?.address || fallbackData.address || "",
+            description: fallbackData.description || "",
+            images: fallbackData.images || [],
+            videos: fallbackData.videos || [],
+          });
+        }
+      } catch (fallbackErr) {
+        console.error("Fallback Profile Error:", fallbackErr);
+        toast.error("Failed to load profile data.");
+      }
     } finally {
       setLoading(false);
     }
   }, [id]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchVendorProfile();
   }, [fetchVendorProfile]);
 
@@ -74,9 +106,9 @@ export default function VendorProfile() {
         description: profile.description,
       };
 
-      const res = await API.put("/api/vendors/profile", payload);
+      const res = await API.put("/vendors/profile", payload);
       if (res.data) {
-        toast.success("Profile updated successfully in backend!");
+        toast.success("Profile updated successfully!");
         setIsEditing(false);
         fetchVendorProfile();
       }
@@ -107,7 +139,7 @@ export default function VendorProfile() {
 
     setUploading(true);
     try {
-      const res = await API.post(`/api/vendors/upload-${type}`, formData, {
+      const res = await API.post(`/vendors/upload-${type}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -141,7 +173,6 @@ export default function VendorProfile() {
       </div>
 
       {isEditing ? (
-        /* EDIT FORM MODE */
         <form onSubmit={handleSaveProfile} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
           <div>
             <label>Business Name:</label>
@@ -221,7 +252,6 @@ export default function VendorProfile() {
           </button>
         </form>
       ) : (
-        /* READ-ONLY / VIEW MODE */
         <div>
           <h3 style={{ fontSize: "22px", color: "#fff" }}>{profile.businessName || "No Business Name Set"}</h3>
           <p><strong>Category:</strong> {profile.category || "N/A"}</p>
@@ -233,7 +263,6 @@ export default function VendorProfile() {
 
       <hr style={{ margin: "25px 0", borderColor: "#333" }} />
 
-      {/* PORTFOLIO SECTION */}
       <h3 style={{ color: "#b4945a" }}>Media Portfolio Workspace</h3>
 
       <div style={{ marginBottom: "20px" }}>
