@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import API from './api/axiosConfig';
 import { useAuth } from './Components/AuthContext';
@@ -9,10 +9,15 @@ const VendorRegister = () => {
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
 
+  const [categoriesList, setCategoriesList] = useState([]);
+  const [fetchingCategories, setFetchingCategories] = useState(true);
+
   const [formData, setFormData] = useState({
     businessName: user?.name || '',
-    category: 'Decorator', // Aligned with Mongoose Schema & Controller
+    category: '', // Database se real ObjectId 
     phone: '',
+    country: 'Pakistan',
+    state: 'Punjab',
     city: 'Mandi Bahauddin',
     address: '',
     description: '',
@@ -32,6 +37,34 @@ const VendorRegister = () => {
 
   const MAX_FILE_SIZE_MB = 5;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
+
+  // ===================================================================
+  // 🚀 REAL PRODUCTION DATA FETCHING FROM DATABASE
+  // ===================================================================
+  useEffect(() => {
+    const fetchCategoriesFromDB = async () => {
+      try {
+        setFetchingCategories(true);
+        // Aapke Backend ka Category endpoint
+        const res = await API.get('/categories'); 
+        
+        const categories = res.data?.categories || res.data || [];
+        
+        if (Array.isArray(categories) && categories.length > 0) {
+          setCategoriesList(categories);
+          // Auto select first real category ObjectId from DB
+          setFormData((prev) => ({ ...prev, category: categories[0]._id }));
+        }
+      } catch (err) {
+        console.error("Error loading categories from DB:", err);
+        toast.error("Failed to load categories. Please refresh.");
+      } finally {
+        setFetchingCategories(false);
+      }
+    };
+
+    fetchCategoriesFromDB();
+  }, []);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -67,8 +100,9 @@ const VendorRegister = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.businessName || !formData.city) {
-      toast.error("Please fill in required fields!");
+
+    if (!formData.businessName || !formData.category || !formData.city) {
+      toast.error("Please fill in all required fields!");
       return;
     }
 
@@ -83,14 +117,15 @@ const VendorRegister = () => {
       const data = new FormData();
       data.append("userId", activeUserId);
       data.append("businessName", formData.businessName);
-      data.append("category", formData.category); // Matched with backend controller
-      data.append("businessType", formData.category); // Fallback dual mapping
+      data.append("category", formData.category); // Real Database ObjectId
+      data.append("businessType", formData.category); // Fallback field
       data.append("phone", formData.phone);
+      data.append("country", formData.country);
+      data.append("state", formData.state);
       data.append("city", formData.city);
       data.append("address", formData.address);
       data.append("description", formData.description);
 
-      // Backend multer middleware handles multiple files under 'documents' field key
       if (documents.cnicFront) {
         data.append("documents", documents.cnicFront);
       }
@@ -98,16 +133,14 @@ const VendorRegister = () => {
         data.append("documents", documents.businessLicense);
       }
 
-      // Endpoint calling via global API instance
       const res = await API.post('/vendors/register', data, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      if (res.data.success || res.status === 200 || res.status === 201) {
+      if (res.data?.success || res.status === 200 || res.status === 201) {
         localStorage.setItem('vendorRegistered', 'true');
         localStorage.setItem('role', 'vendor');
         
-        // Update context role
         if (user) {
           updateUser({ ...user, role: 'vendor' });
         }
@@ -148,6 +181,8 @@ const VendorRegister = () => {
               name="category" 
               value={formData.category} 
               onChange={handleInputChange}
+              required
+              disabled={fetchingCategories}
               style={{
                 width: '100%',
                 padding: '12px 14px',
@@ -158,11 +193,17 @@ const VendorRegister = () => {
                 boxSizing: 'border-box'
               }}
             >
-              <option value="Decorator">Decorator</option>
-              <option value="Photographer">Photographer</option>
-              <option value="Catering">Catering / Food</option>
-              <option value="Venue">Venue / Hall</option>
-              <option value="Musician">DJ & Music</option>
+              {fetchingCategories ? (
+                <option value="">Loading categories from database...</option>
+              ) : categoriesList.length > 0 ? (
+                categoriesList.map((cat) => (
+                  <option key={cat._id} value={cat._id}>
+                    {cat.name || cat.title || cat.categoryName}
+                  </option>
+                ))
+              ) : (
+                <option value="">No categories found in Database</option>
+              )}
             </select>
           </div>
 
@@ -230,7 +271,7 @@ const VendorRegister = () => {
             {docErrors.businessLicense && <p className="error-msg">{docErrors.businessLicense}</p>}
           </div>
 
-          <button type="submit" disabled={loading}>
+          <button type="submit" disabled={loading || fetchingCategories}>
             {loading ? 'Submitting...' : 'Complete Vendor Registration'}
           </button>
         </form>
