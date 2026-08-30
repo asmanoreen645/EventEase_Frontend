@@ -35,7 +35,6 @@ export default function VendorProfile() {
       const data = res.data?.vendor || res.data?.data || res.data;
 
       if (data) {
-        // Save Vendor Mongo ID for Portfolio Upload Endpoint
         if (data._id) setVendorId(data._id);
 
         const catName = typeof data.category === 'object' 
@@ -121,7 +120,7 @@ export default function VendorProfile() {
     }
   };
 
-  // 4. Corrected Cloudinary Media Upload Handler
+  // 4. Cloudinary Media Upload Handler
   const handleMediaUpload = async (e, type) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
@@ -145,7 +144,6 @@ export default function VendorProfile() {
 
     setUploading(true);
     try {
-      // Correct API route matching vendorRoutes.js: router.post('/:vendorId/portfolio')
       const res = await API.post(`/vendors/${vendorId}/portfolio`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -160,6 +158,25 @@ export default function VendorProfile() {
     } finally {
       setUploading(false);
       e.target.value = "";
+    }
+  };
+
+  // 5. Delete Portfolio Media Handler
+  const handleDeleteMedia = async (mediaUrl, type) => {
+    if (!vendorId) return;
+
+    try {
+      const res = await API.delete(`/vendors/${vendorId}/portfolio`, {
+        data: { mediaUrl, type }
+      });
+
+      if (res.data && res.data.success) {
+        toast.success(`${type === "image" ? "Image" : "Video"} deleted successfully!`);
+        fetchVendorProfile();
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+      toast.error(err.response?.data?.message || "Failed to delete media.");
     }
   };
 
@@ -285,7 +302,33 @@ export default function VendorProfile() {
         )}
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "10px" }}>
           {profile.images.map((imgUrl, idx) => (
-            <img key={idx} src={imgUrl} alt="Portfolio" style={{ width: "110px", height: "110px", objectFit: "cover", borderRadius: "6px" }} />
+            <div key={idx} style={{ position: "relative" }}>
+              <img src={imgUrl} alt="Portfolio" style={{ width: "110px", height: "110px", objectFit: "cover", borderRadius: "6px" }} />
+              {!id && (
+                <button
+                  type="button"
+                  onClick={() => handleDeleteMedia(imgUrl, "image")}
+                  style={{
+                    position: "absolute",
+                    top: "4px",
+                    right: "4px",
+                    background: "red",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: "22px",
+                    height: "22px",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    lineHeight: "1"
+                  }}
+                  title="Delete Image"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           ))}
         </div>
       </div>
@@ -303,7 +346,33 @@ export default function VendorProfile() {
         )}
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "10px" }}>
           {profile.videos.map((vidUrl, idx) => (
-            <video key={idx} src={vidUrl} controls style={{ width: "180px", height: "110px", borderRadius: "6px" }} />
+            <div key={idx} style={{ position: "relative" }}>
+              <video src={vidUrl} controls style={{ width: "180px", height: "110px", borderRadius: "6px" }} />
+              {!id && (
+                <button
+                  type="button"
+                  onClick={() => handleDeleteMedia(vidUrl, "video")}
+                  style={{
+                    position: "absolute",
+                    top: "4px",
+                    right: "4px",
+                    background: "red",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: "22px",
+                    height: "22px",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    lineHeight: "1"
+                  }}
+                  title="Delete Video"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           ))}
         </div>
       </div>
