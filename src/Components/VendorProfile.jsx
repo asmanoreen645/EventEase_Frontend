@@ -9,6 +9,7 @@ export default function VendorProfile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [vendorId, setVendorId] = useState("");
 
   const [profile, setProfile] = useState({
     businessName: "",
@@ -26,7 +27,6 @@ export default function VendorProfile() {
     setLoading(true);
     try {
       const activeUserId = localStorage.getItem("userId");
-      // Agar ID hai toh specify, varna user-specific vendor record fetch
       const endpoint = id && id !== "1" 
         ? `/vendors/${id}` 
         : `/vendors/user/${activeUserId}`;
@@ -35,7 +35,9 @@ export default function VendorProfile() {
       const data = res.data?.vendor || res.data?.data || res.data;
 
       if (data) {
-        // Category Name Extract Fix (agar Category object format mein ho)
+        // Save Vendor Mongo ID for Portfolio Upload Endpoint
+        if (data._id) setVendorId(data._id);
+
         const catName = typeof data.category === 'object' 
           ? (data.category?.name || data.category?.title || "") 
           : (data.category || data.businessType || "");
@@ -47,22 +49,21 @@ export default function VendorProfile() {
           city: data.location?.city || data.city || "",
           address: data.location?.address || data.address || "",
           description: data.description || "",
-          images: Array.isArray(data.images) ? data.images : [],
-          videos: Array.isArray(data.videos) ? data.videos : [],
+          images: Array.isArray(data.portfolioImages) ? data.portfolioImages : (Array.isArray(data.images) ? data.images : []),
+          videos: Array.isArray(data.portfolioVideos) ? data.portfolioVideos : (Array.isArray(data.videos) ? data.videos : []),
         });
 
-        // Save Vendor Name for Dashboard Sidebar Header
         if (data.businessName) {
           localStorage.setItem("vendorName", data.businessName);
         }
       }
     } catch (err) {
       console.error("Fetch profile error:", err);
-      // Fallback request agar profile direct me query ho
       try {
         const fallbackRes = await API.get('/vendors/me');
         const fallbackData = fallbackRes.data?.vendor || fallbackRes.data;
         if (fallbackData) {
+          if (fallbackData._id) setVendorId(fallbackData._id);
           setProfile({
             businessName: fallbackData.businessName || "",
             category: typeof fallbackData.category === 'object' ? fallbackData.category?.name : fallbackData.category,
@@ -70,8 +71,8 @@ export default function VendorProfile() {
             city: fallbackData.location?.city || fallbackData.city || "",
             address: fallbackData.location?.address || fallbackData.address || "",
             description: fallbackData.description || "",
-            images: fallbackData.images || [],
-            videos: fallbackData.videos || [],
+            images: fallbackData.portfolioImages || fallbackData.images || [],
+            videos: fallbackData.portfolioVideos || fallbackData.videos || [],
           });
         }
       } catch (fallbackErr) {
@@ -120,10 +121,15 @@ export default function VendorProfile() {
     }
   };
 
-  // 4. Cloudinary Media Upload Handler
+  // 4. Corrected Cloudinary Media Upload Handler
   const handleMediaUpload = async (e, type) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
+
+    if (!vendorId) {
+      toast.error("Vendor profile ID not found. Please refresh.");
+      return;
+    }
 
     if (type === "image" && profile.images.length + files.length > 5) {
       toast.error("Maximum 5 images allowed.");
@@ -139,17 +145,18 @@ export default function VendorProfile() {
 
     setUploading(true);
     try {
-      const res = await API.post(`/vendors/upload-${type}`, formData, {
+      // Correct API route matching vendorRoutes.js: router.post('/:vendorId/portfolio')
+      const res = await API.post(`/vendors/${vendorId}/portfolio`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
       if (res.data && res.data.success) {
-        toast.success(`${type === "image" ? "Images" : "Videos"} uploaded!`);
+        toast.success(`${type === "image" ? "Images" : "Videos"} uploaded successfully!`);
         fetchVendorProfile();
       }
     } catch (err) {
       console.error("Upload error:", err);
-      toast.error("Media upload failed.");
+      toast.error(err.response?.data?.message || "Media upload failed.");
     } finally {
       setUploading(false);
       e.target.value = "";
