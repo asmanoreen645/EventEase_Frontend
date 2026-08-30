@@ -92,7 +92,7 @@ export default function Venuepage() {
         if (cityParam) queryParams.append("city", cityParam);
 
         const queryString = queryParams.toString();
-        const endpoint = queryString ? `/api/vendors/search?${queryString}` : "/api/vendors/search";
+        const endpoint = queryString ? `/vendors/search?${queryString}` : "/vendors/search";
 
         const res = await API.get(endpoint);
         const backendVendors = res.data.vendors || res.data.data || [];
