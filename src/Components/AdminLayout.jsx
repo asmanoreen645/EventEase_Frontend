@@ -12,7 +12,7 @@ export default function AdminLayout() {
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        const res = await API.get('/api/admin/dashboard');
+        const res = await API.get('/admin/dashboard');
         if (res.data && res.data.stats) {
           setCounts({
             pendingVendors: res.data.stats.totalVendors || 0,

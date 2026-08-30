@@ -27,10 +27,10 @@ export default function Admindashboard() {
   // Live Server Data Fetching Pipeline
   const fetchDashboardData = async () => {
     try {
-      const statsRes = await API.get('/api/admin/dashboard');
+      const statsRes = await API.get('/admin/dashboard');
       setStats(statsRes.data.stats || statsRes.data);
 
-      const vendorsRes = await API.get('/api/admin/vendors');
+      const vendorsRes = await API.get('/admin/vendors');
       const allVendors = vendorsRes.data.vendors || vendorsRes.data.data || vendorsRes.data || [];
       
       // Filter out only pending vendors for moderation
@@ -48,7 +48,7 @@ export default function Admindashboard() {
   // Live Action: Admin Approves a Vendor
   const handleVerifyVendor = async (id) => {
     try {
-      await API.put(`/api/admin/vendor/approve/${id}`);
+      await API.put(`/admin/vendor/approve/${id}`);
       alert("Vendor approved successfully!");
       fetchDashboardData();
     } catch (err) {

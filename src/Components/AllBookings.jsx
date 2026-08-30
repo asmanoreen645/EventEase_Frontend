@@ -7,7 +7,7 @@ export default function AllBookings() {
 
   const fetchBookings = async () => {
     try {
-      const res = await API.get('/api/admin/bookings');
+      const res = await API.get('/admin/bookings');
       setBookings(res.data.bookings || res.data || []);
       setLoading(false);
     } catch (err) {
