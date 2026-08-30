@@ -178,6 +178,7 @@ export default function VendorProfile() {
         : 0;
 
       const locationPayload = {
+        vendorId: vendorId,
         city: profile.city || "Default",
         address: profile.address || "Default Address",
         latitude: latVal,

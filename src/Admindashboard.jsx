@@ -27,26 +27,29 @@ export default function Admindashboard() {
   // Live Server Data Fetching Pipeline
   const fetchDashboardData = async () => {
     try {
-      const statsRes = await API.get('/api/admin/summary');
+      const statsRes = await API.get('/api/admin/dashboard');
       setStats(statsRes.data.stats || statsRes.data);
 
-      const vendorsRes = await API.get('/api/admin/pending');
-      setDbVendors(vendorsRes.data.data || vendorsRes.data || []);
+      const vendorsRes = await API.get('/api/admin/vendors');
+      const allVendors = vendorsRes.data.vendors || vendorsRes.data.data || vendorsRes.data || [];
+      
+      // Filter out only pending vendors for moderation
+      const pending = allVendors.filter(v => v.status === 'pending' || !v.isVerified);
+      setDbVendors(pending);
     } catch (err) {
       console.error("Live fetch error:", err);
     }
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchDashboardData();
   }, []);
 
-  // Live Action: Admin Approves or Rejects a Vendor
-  const handleVerifyVendor = async (id, statusAction) => {
+  // Live Action: Admin Approves a Vendor
+  const handleVerifyVendor = async (id) => {
     try {
-      await API.put(`/api/admin/verify/${id}`, { status: statusAction });
-      alert(`Vendor status successfully updated to: ${statusAction}`);
+      await API.put(`/api/admin/vendor/approve/${id}`);
+      alert("Vendor approved successfully!");
       fetchDashboardData();
     } catch (err) {
       console.error("Verification toggle failed:", err);
@@ -57,7 +60,7 @@ export default function Admindashboard() {
   const statCards = [
     { color: "gold", label: "Total Users", value: stats ? stats.totalUsers : "...", trend: "↑ Live", trendLabel: "from database", trendUp: true },
     { color: "green", label: "Total Vendors", value: stats ? stats.totalVendors : "...", trend: "↑ Live", trendLabel: "from database", trendUp: true },
-    { color: "blue", label: "Total Customers", value: stats ? stats.totalCustomers : "...", trend: "↑ Live", trendLabel: "from database", trendUp: true },
+    { color: "blue", label: "Total Bookings", value: stats ? stats.totalBookings : "...", trend: "↑ Live", trendLabel: "from database", trendUp: true },
     { color: "red", label: "Verified Vendors", value: stats ? stats.verifiedVendors : "...", trend: "↑ Live", trendLabel: "from database", trendUp: true },
   ];
 
@@ -91,14 +94,13 @@ export default function Admindashboard() {
             dbVendors.map((v, i) => (
               <div key={v._id || i} className="vendor-row">
                 <div className="sdot field pend" />
-                <div className="v-av va-a">{v.name ? v.name.substring(0,2).toUpperCase() : "VN"}</div>
+                <div className="v-av va-a">{(v.userId?.name || v.name) ? (v.userId?.name || v.name).substring(0,2).toUpperCase() : "VN"}</div>
                 <div style={{ flex: 1, marginLeft: "10px" }}>
-                  <div className="v-name">{v.name}</div>
-                  <div className="v-type">{v.email} — Profile Pending</div>
+                  <div className="v-name">{v.userId?.name || v.name || "Vendor Name"}</div>
+                  <div className="v-type">{v.userId?.email || v.email || "No email"} — Profile Pending</div>
                 </div>
                 <div className="v-actions">
-                  <button className="btn-mini btn-approve" onClick={() => handleVerifyVendor(v._id, 'approved')}>✓ Approve</button>
-                  <button className="btn-mini btn-reject" onClick={() => handleVerifyVendor(v._id, 'rejected')}>✕ Reject</button>
+                  <button className="btn-mini btn-approve" onClick={() => handleVerifyVendor(v._id)}>✓ Approve</button>
                 </div>
               </div>
             ))
@@ -119,7 +121,7 @@ export default function Admindashboard() {
           </div>
         </div>
 
-        {/* Booking Pipeline Pipeline */}
+        {/* Booking Pipeline */}
         <div className="panel">
           <div className="panel-head">
             <div className="panel-title">Booking Pipeline</div>
