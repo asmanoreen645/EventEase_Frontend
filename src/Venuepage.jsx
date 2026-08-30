@@ -111,6 +111,8 @@ export default function Venuepage() {
           province: v.location?.state || v.location?.province || v.province || "Punjab",
           city: v.location?.city || v.city || "Mandi Bahauddin",
         }));
+        console.log("Backend Vendors Raw:", backendVendors);
+        console.log("Mapped Vendors:", mapped);
 
         setRealVendors(mapped);
       } catch (err) {
