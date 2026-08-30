@@ -46,7 +46,7 @@ const VendorRegister = () => {
       try {
         setFetchingCategories(true);
         // Aapke Backend ka Category endpoint
-        const res = await API.get('/categories'); 
+        const res = await API.get('/vendors/categories');
         
         const categories = res.data?.categories || res.data || [];
         
