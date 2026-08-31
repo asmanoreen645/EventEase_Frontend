@@ -179,7 +179,7 @@ export default function VendorProfile() {
             <button 
   onClick={async () => {
     try {
-      const res = await API.post("/chat/conversation", { vendorId: vendorId || id });
+      const res = await API.post("/api/chat/conversation", { vendorId: vendorId || id });
       const conversationId = res.data._id || res.data.conversationId;
       navigate(`/chat/${conversationId}`);
     } catch (err) {
