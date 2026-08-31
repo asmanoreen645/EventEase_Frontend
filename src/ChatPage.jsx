@@ -19,7 +19,7 @@ import {
   MdPerson,
 } from "react-icons/md";
 
-// 🔧 Correct Backend base URL (Aapka active Render URL)
+// 🔧 Correct Backend base URL
 const SOCKET_URL = "https://eventease-backend-1-ptzp.onrender.com";
 
 // Helper Function: Category ke according icon render karne ke liye
@@ -36,45 +36,6 @@ const getCategoryIcon = (type) => {
   }
 };
 
-// ==========================================
-// 🎭 DUMMY FALLBACK DATA
-// ==========================================
-const dummyConversations = [
-  {
-    id: 1,
-    vendorId: "vendor1",
-    name: "Moon Photography",
-    type: "photo",
-    avatar: "https://ui-avatars.com/api/?name=Moon+Photography&background=random&color=fff",
-    location: "Lahore",
-    price: "PKR 10,000",
-    verified: true,
-    online: true,
-  },
-  {
-    id: 2,
-    vendorId: "vendor2",
-    name: "Hanif Rajput Decor",
-    type: "dec",
-    avatar: "https://ui-avatars.com/api/?name=Hanif+Rajput&background=random&color=fff",
-    location: "Karachi",
-    price: "PKR 10,000",
-    verified: true,
-    online: false,
-  },
-  {
-    id: 3,
-    vendorId: "vendor3",
-    name: "Zaiqa Catering",
-    type: "cat",
-    avatar: "https://ui-avatars.com/api/?name=Zaiqa+Catering&background=random&color=fff",
-    location: "Lahore",
-    price: "PKR 5,000",
-    verified: false,
-    online: true,
-  },
-];
-
 export default function ChatPage() {
   const { vendorId } = useParams();
   const navigate = useNavigate();
@@ -89,7 +50,7 @@ export default function ChatPage() {
   const [search, setSearch] = useState("");
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [loadingVendors, setLoadingVendors] = useState(true);
-  const [usingDummy, setUsingDummy] = useState(false);
+  
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
 
@@ -103,17 +64,19 @@ export default function ChatPage() {
   }, [userId, token, navigate]);
 
   // ==========================================
-  // 1️⃣ FETCH VENDORS
+  // 1️⃣ FETCH REAL VENDORS ONLY
   // ==========================================
   useEffect(() => {
     const fetchVendors = async () => {
       setLoadingVendors(true);
       try {
-        const res = await API.get("/vendors/search"); // 👈 Updated path (/api hata diya agar axios base URL mein hai)
+        const res = await API.get("/vendors/search");
         const vendorList = res.data.vendors || res.data.data || res.data;
 
         if (!Array.isArray(vendorList) || vendorList.length === 0) {
-          throw new Error("Empty or invalid vendor list");
+          setConversations([]);
+          setLoadingVendors(false);
+          return;
         }
 
         const formatted = vendorList.map((v) => {
@@ -142,8 +105,8 @@ export default function ChatPage() {
         });
 
         setConversations(formatted);
-        setUsingDummy(false);
 
+        // Target select karna URL ke mutabiq
         const target =
           formatted.find((c) => c.vendorId === vendorId) || formatted[0];
 
@@ -154,22 +117,8 @@ export default function ChatPage() {
           }
         }
       } catch (err) {
-        console.warn(
-          "Real vendors load nahi hue, dummy data use ho raha hai:",
-          err.message
-        );
-
-        setConversations(dummyConversations);
-        setUsingDummy(true);
-
-        const target =
-          dummyConversations.find((c) => c.vendorId === vendorId) ||
-          dummyConversations[0];
-
-        setActiveConvo(target);
-        if (!vendorId || vendorId === "undefined") {
-          navigate(`/chat/${target.vendorId}`, { replace: true });
-        }
+        console.error("Real vendors load hone mein masla aaya:", err.message);
+        setConversations([]);
       } finally {
         setLoadingVendors(false);
       }
@@ -195,7 +144,7 @@ export default function ChatPage() {
     const fetchMessages = async () => {
       setLoadingMessages(true);
       try {
-        const response = await API.get(`/chat/room/${room}`); // 👈 Updated path
+        const response = await API.get(`/chat/room/${room}`);
         if (response.data.success) {
           setMessages(response.data.messages);
         }
@@ -203,6 +152,7 @@ export default function ChatPage() {
         if (err.response?.status !== 404) {
           console.error("Chat history error:", err);
         }
+        // Agar pehli baar chat ho rahi hai aur history nahi hai
         setMessages([
           {
             _id: "welcome",
@@ -273,7 +223,7 @@ export default function ChatPage() {
     socketRef.current?.emit("send_message", newMsg);
 
     try {
-      await API.post("/chat/save", { // 👈 Updated path
+      await API.post("/chat/save", {
         room,
         sender: userId,
         message: newMsg.message,
@@ -294,7 +244,15 @@ export default function ChatPage() {
   if (loadingVendors) {
     return (
       <div className="cp-page" style={{ textAlign: "center", padding: "60px" }}>
-        Loading conversations...
+        Loading real vendors...
+      </div>
+    );
+  }
+
+  if (conversations.length === 0) {
+    return (
+      <div className="cp-page" style={{ textAlign: "center", padding: "60px" }}>
+        Koi active vendor available nahi hai chat ke liye.
       </div>
     );
   }
@@ -302,7 +260,7 @@ export default function ChatPage() {
   if (!activeConvo) {
     return (
       <div className="cp-page" style={{ textAlign: "center", padding: "60px" }}>
-        Koi vendor conversation available nahi hai.
+        Koi vendor conversation selected nahi hai.
       </div>
     );
   }
@@ -314,10 +272,7 @@ export default function ChatPage() {
         <aside className="cp-sidebar">
           <div className="cp-sidebar-header">
             <p>Messages</p>
-            <span>
-              {conversations.length} conversations
-              {usingDummy && " (Demo data)"}
-            </span>
+            <span>{conversations.length} real vendors</span>
           </div>
 
           <div
