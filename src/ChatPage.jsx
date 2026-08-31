@@ -80,30 +80,37 @@ export default function ChatPage() {
           return;
         }
 
-        const formatted = vendorList.map((v) => {
-          const vName = v.businessName || "Unnamed Vendor";
-          const autoAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            vName
-          )}&background=random&color=fff`;
+      const formatted = vendorList.map((v) => {
+  const vName = v.businessName || "Unnamed Vendor";
+  const autoAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    vName
+  )}&background=random&color=fff`;
 
-          return {
-            id: v._id,
-            vendorId: v._id,
-            name: vName,
-            avatar: v.profileImage || v.coverImage || autoAvatar,
-            type: (v.category || "").toLowerCase().includes("photo")
-              ? "photo"
-              : (v.category || "").toLowerCase().includes("cater")
-              ? "cat"
-              : (v.category || "").toLowerCase().includes("decor")
-              ? "dec"
-              : "other",
-            location: v.location?.city || "N/A",
-            price: "Contact for price",
-            verified: v.isVerified === true,
-            online: false,
-          };
-        });
+  // ✅ FIX: category string ho ya object, dono cases safely handle karein
+  const categoryStr = (
+    typeof v.category === "string"
+      ? v.category
+      : v.category?.name || ""
+  ).toLowerCase();
+
+  return {
+    id: v._id,
+    vendorId: v._id,
+    name: vName,
+    avatar: v.profileImage || v.coverImage || autoAvatar,
+    type: categoryStr.includes("photo")
+      ? "photo"
+      : categoryStr.includes("cater")
+      ? "cat"
+      : categoryStr.includes("decor")
+      ? "dec"
+      : "other",
+    location: v.location?.city || "N/A",
+    price: "Contact for price",
+    verified: v.isVerified === true,
+    online: false,
+  };
+});
 
         setConversations(formatted);
 
