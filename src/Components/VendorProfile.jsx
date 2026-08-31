@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import API from "../api/axiosConfig";
 
 export default function VendorProfile() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [vendorId, setVendorId] = useState("");
   const [isVerified, setIsVerified] = useState(true);
@@ -17,6 +17,7 @@ export default function VendorProfile() {
     businessName: "",
     category: "",
     phone: "",
+    email: "",
     city: "",
     address: "",
     latitude: "",
@@ -25,9 +26,9 @@ export default function VendorProfile() {
     profileImage: "",
     images: [],
     videos: [],
+    rating: 4.8
   });
 
-  // Helper to safely extract string from category or city object
   const safeExtract = (val, fallback = "") => {
     if (!val) return fallback;
     if (typeof val === 'object') {
@@ -36,7 +37,6 @@ export default function VendorProfile() {
     return String(val);
   };
 
-  // 1. Fetch Dynamic Vendor Data (GET /api/vendors/:id)
   const fetchVendorProfile = useCallback(async () => {
     setLoading(true);
     try {
@@ -50,10 +50,7 @@ export default function VendorProfile() {
 
       if (data) {
         if (data._id) setVendorId(data._id);
-        
-        if (data.isVerified !== undefined) {
-          setIsVerified(data.isVerified);
-        }
+        if (data.isVerified !== undefined) setIsVerified(data.isVerified);
 
         const catName = safeExtract(data.category) || safeExtract(data.businessType);
         const cityName = safeExtract(data.location?.city) || safeExtract(data.city);
@@ -61,50 +58,22 @@ export default function VendorProfile() {
         setProfile({
           businessName: data.businessName || data.name || "",
           category: catName,
-          phone: data.phone || data.contact || "",
+          phone: data.phone || data.contact || "092 3XXX XXXXX",
+          email: data.email || "contact@eventease.com",
           city: cityName,
-          address: data.location?.address || data.address || "",
+          address: data.location?.address || data.address || cityName || "Pakistan",
           latitude: data.location?.coordinates?.[1] ?? data.location?.latitude ?? data.latitude ?? "",
           longitude: data.location?.coordinates?.[0] ?? data.location?.longitude ?? data.longitude ?? "",
-          description: data.description || "",
-          profileImage: data.profileImage || data.avatar || "",
+          description: data.description || "Event decoration and stage setup.",
+          profileImage: data.profileImage || data.avatar || "https://via.placeholder.com/150",
           images: Array.isArray(data.portfolioImages) ? data.portfolioImages : (Array.isArray(data.images) ? data.images : []),
           videos: Array.isArray(data.portfolioVideos) ? data.portfolioVideos : (Array.isArray(data.videos) ? data.videos : []),
+          rating: data.rating || 4.8
         });
-
-        if (data.businessName) {
-          localStorage.setItem("vendorName", data.businessName);
-        }
       }
     } catch (err) {
       console.error("Fetch profile error:", err);
-      try {
-        const fallbackRes = await API.get('/vendors/me');
-        const fallbackData = fallbackRes.data?.vendor || fallbackRes.data;
-        if (fallbackData) {
-          if (fallbackData._id) setVendorId(fallbackData._id);
-          if (fallbackData.isVerified !== undefined) {
-            setIsVerified(fallbackData.isVerified);
-          }
-
-          setProfile({
-            businessName: fallbackData.businessName || "",
-            category: safeExtract(fallbackData.category),
-            phone: fallbackData.phone || "",
-            city: safeExtract(fallbackData.location?.city) || safeExtract(fallbackData.city),
-            address: fallbackData.location?.address || fallbackData.address || "",
-            latitude: fallbackData.location?.latitude ?? fallbackData.latitude ?? "",
-            longitude: fallbackData.location?.longitude ?? fallbackData.longitude ?? "",
-            description: fallbackData.description || "",
-            profileImage: fallbackData.profileImage || fallbackData.avatar || "",
-            images: fallbackData.portfolioImages || fallbackData.images || [],
-            videos: fallbackData.portfolioVideos || fallbackData.videos || [],
-          });
-        }
-      } catch (fallbackErr) {
-        console.error("Fallback Profile Error:", fallbackErr);
-        toast.error("Failed to load profile data.");
-      }
+      toast.error("Failed to load profile data.");
     } finally {
       setLoading(false);
     }
@@ -114,59 +83,15 @@ export default function VendorProfile() {
     fetchVendorProfile();
   }, [fetchVendorProfile]);
 
-  // 2. Handle Text Form Changes
   const handleChange = (e) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
   };
 
-  // 3. Auto Fetch Latitude & Longitude based on City name using OpenStreetMap Nominatim API
   const handleCityChange = async (e) => {
     const newCity = e.target.value;
     setProfile((prev) => ({ ...prev, city: newCity }));
-
-    if (newCity.trim().length > 2) {
-      try {
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(newCity)}`
-        );
-        const geoData = await response.json();
-
-        if (geoData && geoData.length > 0) {
-          setProfile((prev) => ({
-            ...prev,
-            latitude: parseFloat(geoData[0].lat),
-            longitude: parseFloat(geoData[0].lon),
-          }));
-        }
-      } catch (err) {
-        console.error("City geocoding error:", err);
-      }
-    }
   };
 
-  // 4. Auto-get current location coordinates from Browser Geolocation API
-  const handleGetLocation = () => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setProfile((prev) => ({
-            ...prev,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          }));
-          toast.success("Location coordinates fetched successfully!");
-        },
-        (error) => {
-          console.error("Geolocation error:", error);
-          toast.error("Could not fetch current location. Please type manually.");
-        }
-      );
-    } else {
-      toast.error("Geolocation is not supported by your browser.");
-    }
-  };
-
-  // 5. Save Profile & Update Location Coordinates
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -178,414 +103,170 @@ export default function VendorProfile() {
         category: profile.category,
       };
 
-      const latVal = profile.latitude !== "" && profile.latitude !== undefined && profile.latitude !== null
-        ? parseFloat(profile.latitude)
-        : 0;
+      await API.put("/vendors/profile", profilePayload);
 
-      const lngVal = profile.longitude !== "" && profile.longitude !== undefined && profile.longitude !== null
-        ? parseFloat(profile.longitude)
-        : 0;
-
-      const locationPayload = {
-        vendorId: vendorId,
-        city: profile.city || "Default",
-        address: profile.address || "Default Address",
-        latitude: latVal,
-        longitude: lngVal,
-        coordinates: [lngVal, latVal]
-      };
-
-      await Promise.all([
-        API.put("/vendors/profile", profilePayload),
-        API.put("/vendors/update-location", locationPayload)
-      ]);
-
-      toast.success("Profile and Location updated successfully!");
+      toast.success("Profile updated successfully!");
       setIsEditing(false);
       fetchVendorProfile();
     } catch (err) {
       console.error("Profile update error:", err);
-      toast.error(err.response?.data?.message || "Failed to update profile or location.");
+      toast.error("Failed to update profile.");
     } finally {
       setSaving(false);
     }
   };
 
-  // 6. Single Profile Picture Upload
   const handleProfileImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const formData = new FormData();
     formData.append("image", file);
 
     setUploadingAvatar(true);
     try {
-      const res = await API.put("/vendors/profile/upload-image", formData, {
+      await API.put("/vendors/profile/upload-image", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
-      if (res.data) {
-        toast.success("Profile picture updated successfully!");
-        fetchVendorProfile();
-      }
+      toast.success("Profile picture updated!");
+      fetchVendorProfile();
     } catch (err) {
-      console.error("Profile image upload error:", err);
-      toast.error(err.response?.data?.message || "Failed to upload profile picture.");
+      toast.error("Failed to upload image.");
     } finally {
       setUploadingAvatar(false);
-      e.target.value = "";
     }
   };
 
-  // 7. Cloudinary Portfolio Media Upload Handler
-  const handleMediaUpload = async (e, type) => {
-    const files = Array.from(e.target.files);
-    if (!files.length) return;
-
-    if (!vendorId) {
-      toast.error("Vendor profile ID not found. Please refresh.");
-      return;
-    }
-
-    if (type === "image" && profile.images.length + files.length > 5) {
-      toast.error("Maximum 5 images allowed in portfolio.");
-      return;
-    }
-    if (type === "video" && profile.videos.length + files.length > 3) {
-      toast.error("Maximum 3 videos allowed in portfolio.");
-      return;
-    }
-
-    const formData = new FormData();
-    files.forEach((file) => formData.append("media", file));
-
-    setUploading(true);
-    try {
-      const res = await API.post(`/vendors/${vendorId}/portfolio`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      if (res.data && res.data.success) {
-        toast.success(`${type === "image" ? "Images" : "Videos"} uploaded successfully!`);
-        fetchVendorProfile();
-      }
-    } catch (err) {
-      console.error("Upload error:", err);
-      toast.error(err.response?.data?.message || "Media upload failed.");
-    } finally {
-      setUploading(false);
-      e.target.value = "";
-    }
-  };
-
-  // 8. Delete Portfolio Media Handler
-  const handleDeleteMedia = async (mediaUrl, type) => {
-    if (!vendorId) return;
-
-    try {
-      const res = await API.delete(`/vendors/${vendorId}/portfolio`, {
-        data: { mediaUrl, type }
-      });
-
-      if (res.data && res.data.success) {
-        toast.success(`${type === "image" ? "Image" : "Video"} deleted successfully!`);
-        fetchVendorProfile();
-      }
-    } catch (err) {
-      console.error("Delete error:", err);
-      toast.error(err.response?.data?.message || "Failed to delete media.");
-    }
-  };
-
-  if (loading) return <div style={{ padding: "40px", textAlign: "center", color: "#fff" }}>Loading Profile...</div>;
+  if (loading) return <div style={{ textAlign: "center", padding: "80px", color: "#666" }}>Loading Professional Profile...</div>;
 
   return (
-    <div style={{ maxWidth: "900px", margin: "40px auto", padding: "24px", background: "#181410", borderRadius: "10px", color: "#fff", border: "1px solid #b4945a" }}>
+    <div style={{ background: "#f8f9fa", minHeight: "100vh", paddingBottom: "60px", fontFamily: "sans-serif" }}>
       
-      {!isVerified && !id && (
-        <div style={{ 
-          background: "rgba(255, 193, 7, 0.15)", 
-          border: "1px solid #ffc107", 
-          color: "#ffc107", 
-          padding: "12px 16px", 
-          borderRadius: "6px", 
-          marginBottom: "20px", 
-          fontSize: "14px"
-        }}>
-          ⚠️ <strong>Account Pending Approval:</strong> Your profile is currently under review by our admin team. It will be visible on the services listing page once approved.
-        </div>
-      )}
+      <div style={{ background: "#fff", borderBottom: "1px solid #e5e5e5", padding: "40px 20px", boxShadow: "0 2px 4px rgba(0,0,0,0.02)" }}>
+        <div style={{ maxWidth: "1000px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
+          
+          <div style={{ display: "flex", alignItems: "center", gap: "25px" }}>
+            <div style={{ position: "relative" }}>
+              <img 
+                src={profile.profileImage} 
+                alt="Vendor Avatar" 
+                style={{ width: "110px", height: "110px", borderRadius: "50%", objectFit: "cover", border: "3px solid #b4945a" }} 
+              />
+              {isEditing && (
+                <label style={{ position: "absolute", bottom: 0, right: 0, background: "#b4945a", color: "#000", borderRadius: "50%", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "14px" }}>
+                  ✎
+                  <input type="file" accept="image/*" onChange={handleProfileImageUpload} style={{ display: "none" }} />
+                </label>
+              )}
+            </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-          <div style={{ position: "relative" }}>
-            <img 
-              src={profile.profileImage || "https://via.placeholder.com/80?text=Vendor"} 
-              alt="Vendor Avatar" 
-              style={{ width: "80px", height: "80px", borderRadius: "50%", objectFit: "cover", border: "2px solid #b4945a" }} 
-            />
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <h1 style={{ margin: 0, fontSize: "28px", color: "#111" }}>{profile.businessName || "Vendor Name"}</h1>
+                <span style={{ background: "#f1f3f5", padding: "4px 10px", borderRadius: "12px", fontSize: "12px", fontWeight: "600", color: "#495057" }}>
+                  ⭐ {profile.rating} Rating
+                </span>
+              </div>
+              <p style={{ color: "#b4945a", margin: "6px 0 0 0", fontSize: "14px", fontWeight: "600" }}>{safeExtract(profile.category)}</p>
+              
+              <div style={{ display: "flex", gap: "20px", marginTop: "12px", fontSize: "13px", color: "#666", flexWrap: "wrap" }}>
+                <span>📞 {profile.phone}</span>
+                <span>✉️ {profile.email}</span>
+                <span>📍 {profile.address}, {profile.city}</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <button 
+              onClick={() => alert("Chat feature opening...")}
+              style={{ background: "#fff", border: "1px solid #b4945a", color: "#b4945a", padding: "10px 18px", borderRadius: "6px", fontWeight: "600", cursor: "pointer" }}
+            >
+              Chat with Vendor
+            </button>
+            <button 
+              onClick={() => navigate(`/book/${vendorId || id}`)}
+              style={{ background: "#b4945a", border: "none", color: "#000", padding: "10px 18px", borderRadius: "6px", fontWeight: "600", cursor: "pointer" }}
+            >
+              Book Now
+            </button>
             {!id && (
-              <label style={{
-                position: "absolute",
-                bottom: 0,
-                right: 0,
-                background: "#b4945a",
-                color: "#000",
-                borderRadius: "50%",
-                width: "24px",
-                height: "24px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                fontSize: "12px",
-                fontWeight: "bold"
-              }} title="Upload Profile Picture">
-                ✎
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleProfileImageUpload} 
-                  disabled={uploadingAvatar}
-                  style={{ display: "none" }} 
-                />
-              </label>
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                style={{ background: "#333", color: "#fff", border: "none", padding: "10px 16px", borderRadius: "6px", cursor: "pointer", fontWeight: "600" }}
+              >
+                {isEditing ? "View Public Profile" : "Edit Profile"}
+              </button>
             )}
           </div>
-          <h2 style={{ color: "#b4945a", margin: 0 }}>Vendor Workspace Profile</h2>
-        </div>
 
-        {!id && (
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            style={{ background: "#b4945a", color: "#000", border: "none", padding: "8px 16px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}
-          >
-            {isEditing ? "Cancel Edit" : "Edit Profile"}
-          </button>
-        )}
+        </div>
       </div>
 
-      {isEditing ? (
-        <form onSubmit={handleSaveProfile} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-          <div>
-            <label>Business Name:</label>
-            <input
-              type="text"
-              name="businessName"
-              value={profile.businessName}
-              onChange={handleChange}
-              style={{ width: "100%", padding: "8px", marginTop: "5px", borderRadius: "4px" }}
-              required
-            />
-          </div>
-
-          <div>
-            <label>Category / Field:</label>
-            <input
-              type="text"
-              name="category"
-              value={profile.category}
-              onChange={handleChange}
-              style={{ width: "100%", padding: "8px", marginTop: "5px", borderRadius: "4px" }}
-              required
-            />
-          </div>
-
-          <div style={{ display: "flex", gap: "15px" }}>
-            <div style={{ flex: 1 }}>
-              <label>Phone:</label>
-              <input
-                type="text"
-                name="phone"
-                value={profile.phone}
-                onChange={handleChange}
-                style={{ width: "100%", padding: "8px", marginTop: "5px", borderRadius: "4px" }}
-              />
-            </div>
-            <div style={{ flex: 1 }}>
-              <label>City / Location:</label>
-              <input
-                type="text"
-                name="city"
-                value={profile.city}
-                onChange={handleCityChange}
-                placeholder="e.g. Lahore"
-                style={{ width: "100%", padding: "8px", marginTop: "5px", borderRadius: "4px" }}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label>Address:</label>
-            <input
-              type="text"
-              name="address"
-              value={profile.address}
-              onChange={handleChange}
-              style={{ width: "100%", padding: "8px", marginTop: "5px", borderRadius: "4px" }}
-            />
-          </div>
-
-          <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <label>Coordinates (Latitude & Longitude):</label>
-              <button 
-                type="button" 
-                onClick={handleGetLocation} 
-                style={{ background: "#b4945a", border: "none", padding: "4px 8px", borderRadius: "4px", fontSize: "12px", cursor: "pointer", color: "#000", fontWeight: "bold" }}
-              >
-                📍 Get Live GPS
-              </button>
-            </div>
-            <div style={{ display: "flex", gap: "15px", marginTop: "5px" }}>
+      {isEditing && (
+        <div style={{ maxWidth: "1000px", margin: "30px auto", background: "#fff", padding: "30px", borderRadius: "8px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
+          <h3 style={{ color: "#b4945a", marginTop: 0 }}>Edit Your Profile Details</h3>
+          <form onSubmit={handleSaveProfile} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+            <div style={{ display: "flex", gap: "15px" }}>
               <div style={{ flex: 1 }}>
-                <input
-                  type="number"
-                  step="any"
-                  name="latitude"
-                  value={profile.latitude}
-                  onChange={handleChange}
-                  placeholder="e.g. 31.5204"
-                  style={{ width: "100%", padding: "8px", borderRadius: "4px" }}
-                />
+                <label style={{ fontSize: "13px", fontWeight: "600" }}>Business Name:</label>
+                <input type="text" name="businessName" value={profile.businessName} onChange={handleChange} style={{ width: "100%", padding: "8px", marginTop: "4px", borderRadius: "4px", border: "1px solid #ccc" }} required />
               </div>
               <div style={{ flex: 1 }}>
-                <input
-                  type="number"
-                  step="any"
-                  name="longitude"
-                  value={profile.longitude}
-                  onChange={handleChange}
-                  placeholder="e.g. 74.3587"
-                  style={{ width: "100%", padding: "8px", borderRadius: "4px" }}
-                />
+                <label style={{ fontSize: "13px", fontWeight: "600" }}>Category:</label>
+                <input type="text" name="category" value={profile.category} onChange={handleChange} style={{ width: "100%", padding: "8px", marginTop: "4px", borderRadius: "4px", border: "1px solid #ccc" }} required />
               </div>
             </div>
-          </div>
-
-          <div>
-            <label>Description:</label>
-            <textarea
-              name="description"
-              rows="4"
-              value={profile.description}
-              onChange={handleChange}
-              style={{ width: "100%", padding: "8px", marginTop: "5px", borderRadius: "4px" }}
-            ></textarea>
-          </div>
-
-          <button
-            type="submit"
-            disabled={saving}
-            style={{ background: "#28a745", color: "#fff", border: "none", padding: "10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}
-          >
-            {saving ? "Saving to Database..." : "Save Backend Profile & Location"}
-          </button>
-        </form>
-      ) : (
-        <div>
-          <h3 style={{ fontSize: "22px", color: "#fff" }}>{profile.businessName || "No Business Name Set"}</h3>
-          <p><strong>Category:</strong> {safeExtract(profile.category) || "N/A"}</p>
-          <p><strong>Location:</strong> {profile.address ? `${profile.address}, ${safeExtract(profile.city)}` : safeExtract(profile.city) || "N/A"}</p>
-          {(profile.latitude || profile.longitude) && (
-            <p><strong>Coordinates:</strong> Lat: {profile.latitude || "0"}, Long: {profile.longitude || "0"}</p>
-          )}
-          <p><strong>Phone:</strong> {profile.phone || "N/A"}</p>
-          <p><strong>Description:</strong> {profile.description || "No description provided."}</p>
+            <div style={{ display: "flex", gap: "15px" }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: "13px", fontWeight: "600" }}>Phone:</label>
+                <input type="text" name="phone" value={profile.phone} onChange={handleChange} style={{ width: "100%", padding: "8px", marginTop: "4px", borderRadius: "4px", border: "1px solid #ccc" }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: "13px", fontWeight: "600" }}>City:</label>
+                <input type="text" name="city" value={profile.city} onChange={handleCityChange} style={{ width: "100%", padding: "8px", marginTop: "4px", borderRadius: "4px", border: "1px solid #ccc" }} />
+              </div>
+            </div>
+            <div>
+              <label style={{ fontSize: "13px", fontWeight: "600" }}>Description:</label>
+              <textarea name="description" rows="3" value={profile.description} onChange={handleChange} style={{ width: "100%", padding: "8px", marginTop: "4px", borderRadius: "4px", border: "1px solid #ccc" }}></textarea>
+            </div>
+            <button type="submit" disabled={saving} style={{ background: "#28a745", color: "#fff", border: "none", padding: "10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>
+              {saving ? "Saving Changes..." : "Save Changes"}
+            </button>
+          </form>
         </div>
       )}
 
-      <hr style={{ margin: "25px 0", borderColor: "#333" }} />
-
-      <h3 style={{ color: "#b4945a" }}>Media Portfolio Workspace</h3>
-
-      <div style={{ marginBottom: "20px" }}>
-        <h4>Images ({profile.images.length}/5)</h4>
-        {!id && (
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            disabled={uploading || profile.images.length >= 5}
-            onChange={(e) => handleMediaUpload(e, "image")}
-          />
-        )}
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "10px" }}>
-          {profile.images.map((imgUrl, idx) => (
-            <div key={idx} style={{ position: "relative" }}>
-              <img src={imgUrl} alt="Portfolio" style={{ width: "110px", height: "110px", objectFit: "cover", borderRadius: "6px" }} />
-              {!id && (
-                <button
-                  type="button"
-                  onClick={() => handleDeleteMedia(imgUrl, "image")}
-                  style={{
-                    position: "absolute",
-                    top: "4px",
-                    right: "4px",
-                    background: "red",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "50%",
-                    width: "22px",
-                    height: "22px",
-                    cursor: "pointer",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    lineHeight: "1"
-                  }}
-                  title="Delete Image"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          ))}
+      <div style={{ maxWidth: "1000px", margin: "40px auto 0 auto", padding: "0 20px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "20px" }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: "22px", color: "#111" }}>Our Portfolio</h2>
+            <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: "#666" }}>A showcase of cinematic excellence and timeless events</p>
+          </div>
+          <span style={{ color: "#b4945a", fontSize: "14px", cursor: "pointer", fontWeight: "600" }}>View All →</span>
         </div>
-      </div>
 
-      <div>
-        <h4>Videos ({profile.videos.length}/3)</h4>
-        {!id && (
-          <input
-            type="file"
-            accept="video/*"
-            multiple
-            disabled={uploading || profile.videos.length >= 3}
-            onChange={(e) => handleMediaUpload(e, "video")}
-          />
+        {profile.images.length > 0 ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px" }}>
+            {profile.images.map((imgSrc, index) => (
+              <div key={index} style={{ borderRadius: "10px", overflow: "hidden", height: "180px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", background: "#fff" }}>
+                <img src={imgSrc} alt="Portfolio" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ background: "#fff", padding: "40px", textAlign: "center", borderRadius: "8px", border: "1px dashed #ccc", color: "#777" }}>
+            No portfolio images uploaded yet. {!id && "Go to your dashboard to upload portfolio pictures!"}
+          </div>
         )}
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "10px" }}>
-          {profile.videos.map((vidUrl, idx) => (
-            <div key={idx} style={{ position: "relative" }}>
-              <video src={vidUrl} controls style={{ width: "180px", height: "110px", borderRadius: "6px" }} />
-              {!id && (
-                <button
-                  type="button"
-                  onClick={() => handleDeleteMedia(vidUrl, "video")}
-                  style={{
-                    position: "absolute",
-                    top: "4px",
-                    right: "4px",
-                    background: "red",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "50%",
-                    width: "22px",
-                    height: "22px",
-                    cursor: "pointer",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    lineHeight: "1"
-                  }}
-                  title="Delete Video"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
+
+        {profile.description && (
+          <div style={{ background: "#fff", marginTop: "40px", padding: "24px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+            <h3 style={{ margin: "0 0 10px 0", fontSize: "18px", color: "#111" }}>About Services</h3>
+            <p style={{ margin: 0, color: "#555", lineHeight: "1.6", fontSize: "14px" }}>{profile.description}</p>
+          </div>
+        )}
+
       </div>
     </div>
   );
