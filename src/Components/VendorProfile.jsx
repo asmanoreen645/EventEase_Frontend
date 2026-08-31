@@ -167,6 +167,7 @@ export default function VendorProfile() {
         businessName: profile.businessName,
         phone: profile.phone,
         description: profile.description,
+        category: profile.category,
       };
 
       const latVal = profile.latitude !== "" && profile.latitude !== undefined && profile.latitude !== null
