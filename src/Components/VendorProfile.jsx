@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import API from "../api/axiosConfig";
+import "./VendorProfile.css";
 
 export default function VendorProfile() {
   const { id } = useParams();

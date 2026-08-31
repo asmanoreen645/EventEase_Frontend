@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "./api/axiosConfig";
-import "./VendorProfile.css"; 
+import "./ChatPage.css"; 
 
 // 📦 React Icons 
 import { 
