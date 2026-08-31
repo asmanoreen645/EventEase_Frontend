@@ -177,11 +177,19 @@ export default function VendorProfile() {
           {/* Action Buttons */}
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <button 
-              onClick={() => alert("Chat feature opening...")}
-              style={{ background: "#fff", border: "1px solid #b4945a", color: "#b4945a", padding: "8px 16px", borderRadius: "6px", fontWeight: "600", cursor: "pointer", fontSize: "13px" }}
-            >
-              Chat with Vendor
-            </button>
+  onClick={async () => {
+    try {
+      const res = await API.post("/api/chat/conversation", { vendorId: vendorId || id });
+      const conversationId = res.data._id || res.data.conversationId;
+      navigate(`/chat/${conversationId}`);
+    } catch (err) {
+      toast.error("Could not open chat room.");
+    }
+  }}
+  style={{ background: "#fff", border: "1px solid #b4945a", color: "#b4945a", padding: "8px 16px", borderRadius: "6px", fontWeight: "600", cursor: "pointer", fontSize: "13px" }}
+>
+  Chat with Vendor
+</button>
             <button 
               onClick={() => navigate(`/book/${vendorId || id}`)}
               style={{ background: "#b4945a", border: "none", color: "#000", padding: "8px 16px", borderRadius: "6px", fontWeight: "600", cursor: "pointer", fontSize: "13px" }}
