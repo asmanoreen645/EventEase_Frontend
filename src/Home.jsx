@@ -299,8 +299,8 @@ export default function Home() {
                   <div className="ee-vendor-name">{v.businessName || v.name}</div>
                   <div className="ee-vendor-sub">{v.category || v.sub || "Event Vendor"}</div>
                   <div className="ee-tags">
-                    <span className="ee-tag">{v.city ? v.city.toUpperCase() : "PAKISTAN"}</span>
-                    <span className="ee-tag">{v.category ? v.category.toUpperCase() : "SERVICE"}</span>
+                 <span className="ee-tag">{typeof v.city === 'string' ? v.city.toUpperCase() : (v.city?.name || "PAKISTAN").toUpperCase()}</span>
+                 <span className="ee-tag">{typeof v.category === 'string' ? v.category.toUpperCase() : (v.category?.name || "SERVICE").toUpperCase()}</span>
                   </div>
                   <button className="ee-book-btn" onClick={() => navigate(`/vendors/${v._id || v.id}`)}> View Details </button>
                 </div>
