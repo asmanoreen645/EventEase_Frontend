@@ -27,6 +27,15 @@ export default function VendorProfile() {
     videos: [],
   });
 
+  // Helper to safely extract string from category or city object
+  const safeExtract = (val, fallback = "") => {
+    if (!val) return fallback;
+    if (typeof val === 'object') {
+      return val.name || val.title || val.city || fallback;
+    }
+    return String(val);
+  };
+
   // 1. Fetch Dynamic Vendor Data (GET /api/vendors/:id)
   const fetchVendorProfile = useCallback(async () => {
     setLoading(true);
@@ -46,15 +55,14 @@ export default function VendorProfile() {
           setIsVerified(data.isVerified);
         }
 
-        const catName = typeof data.category === 'object' 
-          ? (data.category?.name || data.category?.title || "") 
-          : (data.category || data.businessType || "");
+        const catName = safeExtract(data.category) || safeExtract(data.businessType);
+        const cityName = safeExtract(data.location?.city) || safeExtract(data.city);
 
         setProfile({
           businessName: data.businessName || data.name || "",
           category: catName,
           phone: data.phone || data.contact || "",
-          city: data.location?.city || data.city || "",
+          city: cityName,
           address: data.location?.address || data.address || "",
           latitude: data.location?.coordinates?.[1] ?? data.location?.latitude ?? data.latitude ?? "",
           longitude: data.location?.coordinates?.[0] ?? data.location?.longitude ?? data.longitude ?? "",
@@ -81,9 +89,9 @@ export default function VendorProfile() {
 
           setProfile({
             businessName: fallbackData.businessName || "",
-            category: typeof fallbackData.category === 'object' ? fallbackData.category?.name : fallbackData.category,
+            category: safeExtract(fallbackData.category),
             phone: fallbackData.phone || "",
-            city: fallbackData.location?.city || fallbackData.city || "",
+            city: safeExtract(fallbackData.location?.city) || safeExtract(fallbackData.city),
             address: fallbackData.location?.address || fallbackData.address || "",
             latitude: fallbackData.location?.latitude ?? fallbackData.latitude ?? "",
             longitude: fallbackData.location?.longitude ?? fallbackData.longitude ?? "",
@@ -158,7 +166,7 @@ export default function VendorProfile() {
     }
   };
 
-  // 5. Save Profile & Update Location Coordinates (PUT /api/vendors/profile & PUT /api/vendors/update-location)
+  // 5. Save Profile & Update Location Coordinates
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -203,7 +211,7 @@ export default function VendorProfile() {
     }
   };
 
-  // 6. Single Profile Picture Upload (PUT /api/vendors/profile/upload-image)
+  // 6. Single Profile Picture Upload
   const handleProfileImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -230,7 +238,7 @@ export default function VendorProfile() {
     }
   };
 
-  // 7. Cloudinary Portfolio Media Upload Handler (POST /api/vendors/:vendorId/portfolio)
+  // 7. Cloudinary Portfolio Media Upload Handler
   const handleMediaUpload = async (e, type) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
@@ -295,7 +303,6 @@ export default function VendorProfile() {
   return (
     <div style={{ maxWidth: "900px", margin: "40px auto", padding: "24px", background: "#181410", borderRadius: "10px", color: "#fff", border: "1px solid #b4945a" }}>
       
-      {/* Pending Admin Approval Banner */}
       {!isVerified && !id && (
         <div style={{ 
           background: "rgba(255, 193, 7, 0.15)", 
@@ -310,7 +317,6 @@ export default function VendorProfile() {
         </div>
       )}
 
-      {/* Header & Avatar Section */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
           <div style={{ position: "relative" }}>
@@ -398,7 +404,7 @@ export default function VendorProfile() {
               />
             </div>
             <div style={{ flex: 1 }}>
-              <label>City / Location (Auto-detects coords):</label>
+              <label>City / Location:</label>
               <input
                 type="text"
                 name="city"
@@ -421,7 +427,6 @@ export default function VendorProfile() {
             />
           </div>
 
-          {/* Map Coordinates Section */}
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <label>Coordinates (Latitude & Longitude):</label>
@@ -481,8 +486,8 @@ export default function VendorProfile() {
       ) : (
         <div>
           <h3 style={{ fontSize: "22px", color: "#fff" }}>{profile.businessName || "No Business Name Set"}</h3>
-          <p><strong>Category:</strong> {profile.category || "N/A"}</p>
-          <p><strong>Location:</strong> {profile.address ? `${profile.address}, ${profile.city}` : profile.city || "N/A"}</p>
+          <p><strong>Category:</strong> {safeExtract(profile.category) || "N/A"}</p>
+          <p><strong>Location:</strong> {profile.address ? `${profile.address}, ${safeExtract(profile.city)}` : safeExtract(profile.city) || "N/A"}</p>
           {(profile.latitude || profile.longitude) && (
             <p><strong>Coordinates:</strong> Lat: {profile.latitude || "0"}, Long: {profile.longitude || "0"}</p>
           )}
