@@ -2,11 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import API from "../api/axiosConfig";
+import { useBooking } from "./BookingContext"; // <-- 1. BookingContext import kar liya hai
 import "./VendorProfile.css";
 
 export default function VendorProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { setVendor } = useBooking(); // <-- 2. setVendor hook initialize kiya hai
+
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -178,13 +181,23 @@ export default function VendorProfile() {
           {/* Action Buttons */}
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <button 
-  onClick={() => navigate(`/chat/${vendorId || id}`)}
-  style={{ background: "#fff", border: "1px solid #b4945a", color: "#b4945a", padding: "8px 16px", borderRadius: "6px", fontWeight: "600", cursor: "pointer", fontSize: "13px" }}
->
-  Chat with Vendor
-</button>
+              onClick={() => navigate(`/chat/${vendorId || id}`)}
+              style={{ background: "#fff", border: "1px solid #b4945a", color: "#b4945a", padding: "8px 16px", borderRadius: "6px", fontWeight: "600", cursor: "pointer", fontSize: "13px" }}
+            >
+              Chat with Vendor
+            </button>
+            
+            {/* 3. Book Now button updated to save vendor data before navigating */}
             <button 
-              onClick={() => navigate(`/book/${vendorId || id}`)}
+              onClick={() => {
+                setVendor({
+                  id: vendorId || id,
+                  name: profile.businessName,
+                  category: profile.category,
+                  image: profile.profileImage
+                });
+                navigate(`/book/${vendorId || id}`);
+              }}
               style={{ background: "#b4945a", border: "none", color: "#000", padding: "8px 16px", borderRadius: "6px", fontWeight: "600", cursor: "pointer", fontSize: "13px" }}
             >
               Book Now
