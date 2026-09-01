@@ -72,7 +72,7 @@ function UserLayout() {
         <Route path="vendors/:id" element={<VendorProfile />} />
         
         <Route path="chat/:vendorId" element={<ChatPage />} />
-        <Route path="details" element={<BookingDetails />} />
+        <Route path="book/:id" element={<BookingDetails />} />
         <Route path="package" element={<PackageSelection />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
         <Route path="terms-of-service" element={<TermsOfService />} />
