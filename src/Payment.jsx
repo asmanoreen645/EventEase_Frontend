@@ -143,6 +143,7 @@ function Payment() {
             bookingId: bookingId,
             token: token.id,
             amount: totalDueToday, // Yeh amount charge hogi aur backend par commission calculate hogi
+            userId: userId
           });
 
           if (!chargeResponse.data.success) {
