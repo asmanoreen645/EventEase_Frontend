@@ -159,19 +159,28 @@ function Payment() {
         }
       }
 
-      // ===== STEP 4: Send Notification Email =====
+            // ===== STEP 4: Send Notification Email =====
       try {
         const userEmail = localStorage.getItem('userEmail');
         await API.post('/notifications/send-email', {
-          userId: userId,
-          to: userEmail || undefined,
+          toEmail: userEmail || undefined,
           subject: "EventEase - Booking Confirmed!",
-          text: `Assalam o Alaikum! Aapki booking ${vendor.name} ke sath confirm ho gayi aur payment successful hui. Event date: ${bookingDetails.eventDate}. Total amount: PKR ${totalPrice}`,
-          title: "Booking Confirmed",
-          type: "booking"
+          textMessage: `Hello! Your booking with ${vendor.name} has been confirmed and payment was successful. Event date: ${bookingDetails.eventDate}. Total amount: PKR ${totalPrice}`,
         });
       } catch (notifyErr) {
         console.error("Notification send failed:", notifyErr);
+      }
+
+      // ===== STEP 5: Save In-App Notification =====
+      try {
+        await API.post('/notifications', {
+          userId: userId,
+          title: "Booking Confirmed",
+          message: `Your booking with ${vendor.name} has been confirmed. Event date: ${bookingDetails.eventDate}.`,
+          type: "booking"
+        });
+      } catch (inAppErr) {
+        console.error("In-app notification save failed:", inAppErr);
       }
 
       alert("Booking confirmed! Payment successful.");
@@ -183,7 +192,7 @@ function Payment() {
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   return (
     <div className="booking-page">
