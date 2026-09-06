@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import API from "../api/axiosConfig"; // Apne path ke mutabiq adjust karein
+import API from "../api/axiosConfig"; 
 
 export default function AllBookings() {
   const [bookings, setBookings] = useState([]);
@@ -17,6 +17,7 @@ export default function AllBookings() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchBookings();
   }, []);
 

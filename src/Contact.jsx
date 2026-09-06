@@ -41,7 +41,7 @@ const Contact = () => {
           <p className="info-desc">Feel free to reach out to us using any of the details below.</p>
 
           <div className="info-item">
-            <span className="icon">📍</span>
+            <span className="icon"></span>
             <div>
               <h4>Location</h4>
               <p>Mandi Bahauddin, Punjab, Pakistan</p>
@@ -49,7 +49,7 @@ const Contact = () => {
           </div>
 
           <div className="info-item">
-            <span className="icon">📧</span>
+            <span className="icon"></span>
             <div>
               <h4>Email Support</h4>
               <p>support@eventease.com</p>
@@ -57,7 +57,7 @@ const Contact = () => {
           </div>
 
           <div className="info-item">
-            <span className="icon">📞</span>
+            <span className="icon"></span>
             <div>
               <h4>Phone / WhatsApp</h4>
               <p>+92 300 1234567</p>
@@ -65,7 +65,7 @@ const Contact = () => {
           </div>
 
           <div className="info-item">
-            <span className="icon">🕒</span>
+            <span className="icon"></span>
             <div>
               <h4>Working Hours</h4>
               <p>Mon - Sat: 9:00 AM - 7:00 PM</p>

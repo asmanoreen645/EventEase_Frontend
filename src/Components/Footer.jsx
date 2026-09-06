@@ -15,11 +15,11 @@ export default function Footer() {
       }
     };
 
-    // Agar hum pehle se /services page par hain
+    
     if (location.pathname === "/services") {
       scrollToFaq();
     } else {
-      // Agar kisi aur page par hain, pehle navigate karein phir scroll karein
+      // first navigate then scroll
       navigate("/services");
       setTimeout(() => {
         scrollToFaq();

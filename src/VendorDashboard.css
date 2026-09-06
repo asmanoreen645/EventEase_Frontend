@@ -1,4 +1,4 @@
-/* ─── LAYOUT ─────────────────────────────────────────────────────────────── */
+/* LAYOUT */
 .vd-dash {
   display: flex;
   min-height: 100vh;
@@ -6,7 +6,7 @@
   font-family: 'Segoe UI', sans-serif;
 }
 
-/* ─── SIDEBAR ────────────────────────────────────────────────────────────── */
+/* SIDEBAR */
 .vd-sidebar {
   width: 210px;
   background: #0d1b3e;
@@ -114,7 +114,7 @@
 
 .vd-logout-btn:hover { background: rgba(216,90,48,0.25); }
 
-/* ─── MAIN ───────────────────────────────────────────────────────────────── */
+/*  MAIN  */
 .vd-main { flex: 1; overflow-y: auto; }
 
 .vd-topbar {
@@ -143,7 +143,7 @@
 
 .vd-content { padding: 24px; }
 
-/* ─── SECTION LABEL ──────────────────────────────────────────────────────── */
+/* SECTION LABEL */
 .vd-section-label {
   font-size: 11px;
   color: #6b7280;
@@ -153,7 +153,7 @@
   margin-bottom: 16px;
 }
 
-/* ─── STATS ──────────────────────────────────────────────────────────────── */
+/* STATS  */
 .vd-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -174,7 +174,7 @@
 .vd-stat-sub.green { color: #1d9e75; }
 .vd-stat-sub.muted { color: #9ca3af; }
 
-/* ─── TWO COL ────────────────────────────────────────────────────────────── */
+/* TWO COL */
 .vd-two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -182,7 +182,7 @@
   margin-bottom: 20px;
 }
 
-/* ─── CARD ───────────────────────────────────────────────────────────────── */
+/* CARD  */
 .vd-card {
   background: #fff;
   border: 0.5px solid #e5e7eb;
@@ -201,7 +201,7 @@
 .vd-card-title { font-size: 13px; font-weight: 600; color: #111; }
 .vd-card-link { font-size: 12px; color: #1d9e75; cursor: pointer; }
 
-/* ─── BOOKING ITEM ───────────────────────────────────────────────────────── */
+/*  BOOKING ITEM  */
 .vd-booking-item {
   display: flex;
   align-items: flex-start;
@@ -229,7 +229,7 @@
 .vd-b-meta { text-align: right; flex-shrink: 0; }
 .vd-b-date { font-size: 11px; color: #9ca3af; margin-bottom: 4px; }
 
-/* ─── TAGS ───────────────────────────────────────────────────────────────── */
+/* TAGS  */
 .vd-tag {
   display: inline-block;
   font-size: 10px;
@@ -242,7 +242,7 @@
 .tag-pending { background: #faeeda; color: #854f0b; }
 .tag-done { background: #eaf3de; color: #3b6d11; }
 
-/* ─── BUTTONS ────────────────────────────────────────────────────────────── */
+/*  BUTTONS  */
 .vd-btn-acc {
   background: #1d9e75; color: #fff;
   border: none; border-radius: 6px;
@@ -257,7 +257,7 @@
   cursor: pointer;
 }
 
-/* ─── BAR CHART ──────────────────────────────────────────────────────────── */
+/* BAR CHART */
 .vd-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .vd-bar-label { font-size: 11px; color: #6b7280; width: 28px; }
 .vd-bar-bg { flex: 1; height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden; }
@@ -266,7 +266,7 @@
 
 .vd-total { margin-top: 16px; padding-top: 14px; border-top: 0.5px solid #e5e7eb; }
 
-/* ─── PORTFOLIO ──────────────────────────────────────────────────────────── */
+/*  PORTFOLIO */
 .vd-portfolio-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -290,7 +290,7 @@
 .vd-port-add { border-style: dashed; }
 .vd-port-label { font-size: 11px; color: #6b7280; }
 
-/* ─── MESSAGES ───────────────────────────────────────────────────────────── */
+/*  MESSAGES */
 .vd-msg-list { display: flex; flex-direction: column; gap: 10px; }
 
 .vd-msg-item {
@@ -329,7 +329,7 @@
 .vd-msg-time { font-size: 11px; color: #9ca3af; }
 .vd-unread-dot { width: 8px; height: 8px; border-radius: 50%; background: #1d9e75; }
 
-/* ─── SETTINGS ───────────────────────────────────────────────────────────── */
+/*  SETTINGS */
 .vd-settings-row {
   display: flex;
   align-items: center;
@@ -396,7 +396,7 @@
 
 .vd-save-btn:hover { background: #0f6e56; }
 
-/* ─── RESPONSIVE ─────────────────────────────────────────────────────────── */
+/*  RESPONSIVE  */
 @media (max-width: 768px) {
   .vd-stats-grid { grid-template-columns: repeat(2, 1fr); }
   .vd-two-col { grid-template-columns: 1fr; }

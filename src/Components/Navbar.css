@@ -1,6 +1,6 @@
-/* ── MAIN NAVBAR WRAPPER ── */
+/*  MAIN NAVBAR WRAPPER */
 .ee-nav {
-  position: sticky; /* Task 4: Scroll hone par top par fixed rahega */
+  position: sticky; /* Task 4: fix */
   top: 0;
   left: 0;
   right: 0;
@@ -17,7 +17,7 @@
   transition: all 0.3s ease;
 }
 
-/* ── LOGO ── */
+/* LOGO */
 .ee-logo {
   font-size: 1.4rem;
   font-weight: 700;
@@ -31,7 +31,7 @@
   color: #c9a84c;
 }
 
-/* ── DESKTOP ROUTER LINKS (Task 3) ── */
+/* DESKTOP ROUTER LINKS (Task 3)  */
 .ee-nav-links {
   display: flex;
   gap: 2rem;
@@ -58,7 +58,7 @@
   border-bottom: 2px solid #c9a84c;
 }
 
-/* ── ACTION BUTTONS & USER PROFILE AREA ── */
+/*  ACTION BUTTONS & USER PROFILE AREA */
 .ee-nav-actions {
   display: flex;
   gap: 1rem;
@@ -109,7 +109,7 @@
   transform: scale(0.98);
 }
 
-/* ── USER PROFILE TRIGGER & ROLE BADGE (Task 1) ── */
+/* USER PROFILE TRIGGER & ROLE BADGE (Task 1) */
 .ee-user-trigger {
   display: flex;
   align-items: center;
@@ -172,7 +172,7 @@
   color: #b45309;
 }
 
-/* ── USER CONTEXT DROPDOWN MENU (Task 2) ── */
+/* USER CONTEXT DROPDOWN MENU (Task 2)  */
 .ee-dropdown-menu {
   position: absolute;
   top: 48px;
@@ -266,7 +266,7 @@
   outline: none;
 }
 
-/* ── RESPONSIVE MOBILE DRAWER (Task 4) ── */
+/*  RESPONSIVE MOBILE DRAWER (Task 4)  */
 @media (max-width: 768px) {
   .ee-nav {
     padding: 0 1.2rem;
@@ -334,6 +334,6 @@
   }
 
   .ee-role-badge {
-    display: none; /* Mobile screen par spaces bachane ke liye badge hide ho jaye */
+    display: none; /* badge hide  */
   }
 }

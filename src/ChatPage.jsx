@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 import "./ChatPage.css";
 import API from "./api/axiosConfig";
 
-// 📦 React Icons 
+//  React Icons 
 import {
   MdCameraAlt,
   MdRestaurant,
@@ -19,10 +19,10 @@ import {
   MdPerson,
 } from "react-icons/md";
 
-// 🔧 Correct Backend base URL
+// Correct Backend base URL
 const SOCKET_URL = "https://eventease-backend-1-ptzp.onrender.com";
 
-// Helper Function: Category ke according icon render karne ke liye
+// Helper Function
 const getCategoryIcon = (type) => {
   switch (type) {
     case "photo":
@@ -55,18 +55,18 @@ export default function ChatPage() {
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
 
-  // ==========================================
-  // 0️⃣ LOGIN CHECK
-  // ==========================================
+  
+  //  LOGIN CHECK
+  
   useEffect(() => {
     if (!userId || !token) {
       navigate("/login");
     }
   }, [userId, token, navigate]);
 
-  // ==========================================
-  // 1️⃣ FETCH REAL VENDORS ONLY
-  // ==========================================
+  
+  // 1 FETCH REAL VENDORS ONLY
+  
   useEffect(() => {
     const fetchVendors = async () => {
       setLoadingVendors(true);
@@ -86,7 +86,7 @@ export default function ChatPage() {
     vName
   )}&background=random&color=fff`;
 
-  // ✅ FIX: category string ho ya object, dono cases safely handle karein
+  //  FIX
   const categoryStr = (
     typeof v.category === "string"
       ? v.category
@@ -114,7 +114,7 @@ export default function ChatPage() {
 
         setConversations(formatted);
 
-        // Target select karna URL ke mutabiq
+        // Target select 
         const target =
           formatted.find((c) => c.vendorId === vendorId) || formatted[0];
 
@@ -143,16 +143,14 @@ export default function ChatPage() {
     if (match) setActiveConvo(match);
   }, [vendorId, conversations]);
 
-  // ✅ FIX 1: IDs ko sort kar ke room banate hain, taake customer ya vendor
-  // kisi bhi taraf se chat khole, room-name hamesha same bane — aur ye
-  // backend ke startConversation wale room-format se bhi consistent rahe.
+  //  FIX 1: IDs sort 
   const room = activeConvo
     ? `room_${[userId, activeConvo.vendorId].sort().join("_")}`
     : null;
 
-  // ==========================================
-  // 2️⃣ FETCH CHAT HISTORY
-  // ==========================================
+  
+  // 2 FETCH CHAT HISTORY
+  
   useEffect(() => {
     if (!room) return;
     const fetchMessages = async () => {
@@ -164,10 +162,7 @@ export default function ChatPage() {
           setMessages(response.data.messages);
         }
       } catch (err) {
-        // ✅ FIX 2: Sirf "koi history nahi mili" (404) par welcome message
-        // dikhayein. Baaki errors (network fail, 401, 500) par user ko
-        // asal mein pata chalna chahiye ke kuch ghalat hua hai, warna
-        // wo samajhega chat kaam kar rahi hai jab ke backend down hai.
+        // FIX 2
         if (err.response?.status === 404) {
           setMessages([
             {
@@ -190,9 +185,9 @@ export default function ChatPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room]);
 
-  // ==========================================
-  // 3️⃣ SOCKET.IO CONNECTION
-  // ==========================================
+  
+  // 3 SOCKET.IO CONNECTION
+  
   useEffect(() => {
     if (!room || !userId) return;
 
@@ -224,9 +219,9 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ==========================================
-  // 4️⃣ SEND MESSAGE
-  // ==========================================
+  
+  // 4 SEND MESSAGE
+  
   const sendMessage = async () => {
     if (!inputText.trim() || !room) return;
 

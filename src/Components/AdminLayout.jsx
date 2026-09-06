@@ -63,6 +63,7 @@ export default function AdminLayout() {
 
   useEffect(() => {
     const currentPath = location.pathname;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (currentPath.includes("/vendors")) setPageTitle("Vendor Verification");
     else if (currentPath.includes("/bookings")) setPageTitle("Transactional Bookings");
     else if (currentPath.includes("/payouts")) setPageTitle("Financial Payouts");
@@ -144,7 +145,7 @@ export default function AdminLayout() {
         </div>
 
         <div className="rbac-ribbon">
-          <span className="rbac-icon">🔐</span>
+          <span className="rbac-icon"></span>
           <span><strong>Role-Based Access Control Active</strong> — Authorized admins logs enabled.</span>
         </div>
 

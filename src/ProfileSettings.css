@@ -1,4 +1,4 @@
-/* Page wrapper - center karta hai card ko */
+/* Page wrapper -  */
 .ee-profile-page {
   display: flex;
   justify-content: center;
@@ -6,7 +6,7 @@
   min-height: 70vh;
 }
 
-/* Card - Navbar/Footer ke dark gold theme se match karta hua */
+/* Card - Navbar/ */
 .ee-profile-card {
   background-color: #1a1209;
   border: 1px solid #b4945a;

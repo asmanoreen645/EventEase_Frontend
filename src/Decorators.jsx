@@ -44,7 +44,7 @@ export default function Decorators() {
                         <span className="vlp-reviews">({vendor.reviews} reviews)</span>
                       </div>
                     </div>
-                    <p className="vlp-location">📍 {vendor.location}</p>
+                    <p className="vlp-location"> {vendor.location}</p>
                     <p className="vlp-description">{vendor.description}</p>
                     <div className="vlp-card-tags">
                       {vendor.eventTypes.map((t) => (

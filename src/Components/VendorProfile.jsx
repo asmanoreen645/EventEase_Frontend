@@ -2,20 +2,20 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import API from "../api/axiosConfig";
-import { useBooking } from "./BookingContext"; // <-- 1. BookingContext import kar liya hai
+import { useBooking } from "./BookingContext"; // <-- 1. BookingContext
 import "./VendorProfile.css";
 
 export default function VendorProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { setVendor } = useBooking(); // <-- 2. setVendor hook initialize kiya hai
+  const { setVendor } = useBooking(); // <-- 2. setVendor hook initialize 
 
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [, setUploadingAvatar] = useState(false);
   const [vendorId, setVendorId] = useState("");
-  const [isVerified, setIsVerified] = useState(true);
+  const [, setIsVerified] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
 
   const [profile, setProfile] = useState({
@@ -86,6 +86,7 @@ export default function VendorProfile() {
   }, [id]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchVendorProfile();
   }, [fetchVendorProfile]);
 
@@ -129,6 +130,7 @@ export default function VendorProfile() {
       });
       toast.success("Profile picture updated!");
       fetchVendorProfile();
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
       toast.error("Failed to upload image.");
     } finally {
@@ -165,15 +167,15 @@ export default function VendorProfile() {
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <h1 style={{ margin: 0, fontSize: "26px", color: "#111" }}>{profile.businessName || "Vendor Name"}</h1>
                 <span style={{ background: "#f1f3f5", padding: "4px 10px", borderRadius: "12px", fontSize: "12px", fontWeight: "600", color: "#495057" }}>
-                  ⭐ {profile.rating} Rating
+                   {profile.rating} Rating
                 </span>
               </div>
               <p style={{ color: "#b4945a", margin: "6px 0 0 0", fontSize: "14px", fontWeight: "600" }}>{safeExtract(profile.category)}</p>
               
               <div style={{ display: "flex", gap: "15px", marginTop: "10px", fontSize: "13px", color: "#666", flexWrap: "wrap" }}>
-                <span>📞 {profile.phone}</span>
-                <span>✉️ {profile.email}</span>
-                <span>📍 {profile.address}, {profile.city}</span>
+                <span> {profile.phone}</span>
+                <span> {profile.email}</span>
+                <span> {profile.address}, {profile.city}</span>
               </div>
             </div>
           </div>

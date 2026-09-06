@@ -38,14 +38,14 @@ const VendorRegister = () => {
   const MAX_FILE_SIZE_MB = 5;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 
-  // ===================================================================
-  // 🚀 REAL PRODUCTION DATA FETCHING FROM DATABASE
-  // ===================================================================
+  
+  //  REAL PRODUCTION DATA FETCHING FROM DATABASE
+  
   useEffect(() => {
     const fetchCategoriesFromDB = async () => {
       try {
         setFetchingCategories(true);
-        // Aapke Backend ka Category endpoint
+        // your backend category endpoint
         const res = await API.get('/vendors/categories');
         
         const categories = res.data?.categories || res.data || [];
