@@ -21,7 +21,6 @@ const cardElementOptions = {
   },
 };
 
-// NAYA: check karta hai ke id asal MongoDB ObjectId hai ya dummy number
 function isValidObjectId(id) {
   return typeof id === "string" && /^[0-9a-fA-F]{24}$/.test(id);
 }
@@ -61,9 +60,6 @@ function Payment() {
   const handlePay = async (e) => {
     e.preventDefault();
     setCardError("");
-    console.log("selectedPackage check:", selectedPackage);
-    console.log("DEBUG vendor object:", vendor);
-    console.log("DEBUG vendor keys:", vendor ? Object.keys(vendor) : "vendor is null/undefined");
 
     const userId = localStorage.getItem("userId");
     if (!userId) {
@@ -93,14 +89,13 @@ function Payment() {
     try {
       setLoading(true);
 
-      // ===== STEP 1: Booking create karo (dummy ya real check ke sath) =====
+      // ===== STEP 1: Create Booking =====
       const rawVendorId = vendor._id || vendor.id || vendor.UserId || vendor.vendorId;
       const isDummy = !isValidObjectId(String(rawVendorId));
 
       let bookingId;
 
       if (isDummy) {
-        // Dummy vendor — backend ko call nahi karna, seedha simulate karo
         console.log("Dummy vendor detected, skipping real booking API call");
         bookingId = "dummy-" + Date.now();
       } else {
@@ -112,9 +107,8 @@ function Payment() {
           billingAddress: billingAddress,
           userId: userId
         };
-        console.log("Sending Payload to Backend:", bookingData);
-        const bookingResponse = await API.post('/api/bookings/book', bookingData);
-        console.log("Booking Response:", bookingResponse.data);
+        
+        const bookingResponse = await API.post('/bookings/book', bookingData);
 
         if (!bookingResponse.data.success) {
           alert("Booking failed! Please try again.");
@@ -125,7 +119,7 @@ function Payment() {
         bookingId = bookingResponse.data.booking?._id || bookingResponse.data._id;
       }
 
-      // ===== STEP 2: Card details ko Stripe token mein convert karo =====
+      // ===== STEP 2: Create Stripe Token =====
       const cardElement = elements.getElement(CardElement);
       const { token, error } = await stripe.createToken(cardElement, {
         name: cardName,
@@ -140,18 +134,17 @@ function Payment() {
         return;
       }
 
-      // ===== STEP 3: Backend ko token bhejo, actual charge ho (dummy ya real check ke sath) =====
+      // ===== STEP 3: Process Charge on Backend =====
       if (isDummy) {
         console.log("Dummy booking — skipping real charge API call");
       } else {
         try {
-          const chargeResponse = await API.post('/api/payments/charge', {
-         bookingId: bookingId,
-          token: token.id,
-         amount: totalDueToday, // Total due amount backend Stripe charge ke liye pass karein
-});
-
-          console.log("Charge Response:", chargeResponse.data);
+          const chargeResponse = await API.post('/payments/charge', {
+            bookingId: bookingId,
+            token: token.id,
+            amount: totalDueToday, // Yeh amount charge hogi aur backend par commission calculate hogi
+            userId: userId
+          });
 
           if (!chargeResponse.data.success) {
             alert("Payment failed: " + (chargeResponse.data.message || "Please try again."));
@@ -166,19 +159,28 @@ function Payment() {
         }
       }
 
-      // ===== STEP 4: Notification bhejo =====
+            // ===== STEP 4: Send Notification Email =====
       try {
         const userEmail = localStorage.getItem('userEmail');
-        await API.post('/api/notifications/send-email', {
-          userId: userId,
-          to: userEmail || undefined,
+        await API.post('/notifications/send-email', {
+          toEmail: userEmail || undefined,
           subject: "EventEase - Booking Confirmed!",
-          text: `Assalam o Alaikum! Aapki booking ${vendor.name} ke sath confirm ho gayi aur payment successful hui. Event date: ${bookingDetails.eventDate}. Total amount: PKR ${totalPrice}`,
-          title: "Booking Confirmed",
-          type: "booking"
+          textMessage: `Hello! Your booking with ${vendor.name} has been confirmed and payment was successful. Event date: ${bookingDetails.eventDate}. Total amount: PKR ${totalPrice}`,
         });
       } catch (notifyErr) {
-        console.error("Notification send failed (booking still confirmed):", notifyErr);
+        console.error("Notification send failed:", notifyErr);
+      }
+
+      // ===== STEP 5: Save In-App Notification =====
+      try {
+        await API.post('/notifications', {
+          userId: userId,
+          title: "Booking Confirmed",
+          message: `Your booking with ${vendor.name} has been confirmed. Event date: ${bookingDetails.eventDate}.`,
+          type: "booking"
+        });
+      } catch (inAppErr) {
+        console.error("In-app notification save failed:", inAppErr);
       }
 
       alert("Booking confirmed! Payment successful.");
@@ -190,12 +192,11 @@ function Payment() {
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   return (
     <div className="booking-page">
       <div className="booking-card">
-
         <div className="booking-steps">
           <div className="step">
             <span className="step__circle">1</span>
@@ -294,7 +295,6 @@ function Payment() {
             </button>
           </div>
         </form>
-
       </div>
     </div>
   );

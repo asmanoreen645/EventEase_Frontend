@@ -297,11 +297,17 @@ export default function Home() {
                 </div>
                 <div className="ee-vendor-body">
                   <div className="ee-vendor-name">{v.businessName || v.name}</div>
-                  <div className="ee-vendor-sub">{v.category || v.sub || "Event Vendor"}</div>
-                  <div className="ee-tags">
-                    <span className="ee-tag">{v.city ? v.city.toUpperCase() : "PAKISTAN"}</span>
-                    <span className="ee-tag">{v.category ? v.category.toUpperCase() : "SERVICE"}</span>
-                  </div>
+                  <div className="ee-vendor-sub">
+  {typeof v.category === 'object' ? (v.category?.name || "Event Vendor") : (v.category || v.sub || "Event Vendor")}
+</div>
+<div className="ee-tags">
+  <span className="ee-tag">
+    {typeof v.city === 'object' ? (v.city?.name || "PAKISTAN").toUpperCase() : (v.city || "PAKISTAN").toUpperCase()}
+  </span>
+  <span className="ee-tag">
+    {typeof v.category === 'object' ? (v.category?.name || "SERVICE").toUpperCase() : (v.category || "SERVICE").toUpperCase()}
+  </span>
+</div>
                   <button className="ee-book-btn" onClick={() => navigate(`/vendors/${v._id || v.id}`)}> View Details </button>
                 </div>
               </div>

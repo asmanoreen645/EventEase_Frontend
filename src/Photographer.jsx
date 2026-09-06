@@ -216,53 +216,79 @@ function isValidObjectId(id) {
 }
 
 function RatingSection({ vendorId, onRatingSuccess }) {
-  const [userRating, setUserRating] = useState(0);
+  const [userRating, setUserRating] = useState(5);
   const [hoveredRating, setHoveredRating] = useState(0);
+  const [comment, setComment] = useState("");
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [reviewsList, setReviewsList] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
 
   const isDummy =
     !isValidObjectId(vendorId) || String(vendorId).startsWith("vendor");
 
-  const handleRating = async (stars) => {
+  // Fetch existing reviews for this vendor when component loads
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (isDummy) return;
+      try {
+        const res = await API.get(`/reviews/vendor/${vendorId}`);
+        if (res.data.success) {
+          setReviewsList(res.data.reviews || []);
+          if (res.data.averageRating) {
+            setAverageRating(res.data.averageRating);
+            if (onRatingSuccess) onRatingSuccess(res.data.averageRating);
+          }
+        }
+      } catch (err) {
+        console.error("Fetch reviews error:", err);
+      }
+    };
+    fetchReviews();
+  }, [vendorId, isDummy]);
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
     const customerId = localStorage.getItem("userId");
 
     if (!customerId) {
-      alert("Pehle login karo rating dene ke liye!");
+      alert("Please log in first to submit a review!");
       return;
     }
 
     if (isDummy) {
-      setUserRating(stars);
       setRatingSubmitted(true);
-      if (onRatingSuccess) onRatingSuccess(stars);
-      alert(`Demo Rating: Aap ne ${stars} stars diye! ⭐`);
+      alert(`Demo Mode: You submitted ${userRating} stars and a review! ⭐`);
       return;
     }
 
     try {
       setLoading(true);
 
-      const res = await API.post("/api/ratings/give-rating", {
+      const res = await API.post("/reviews", {
+        bookingId: localStorage.getItem("lastBookingId") || "650712345678901234567890",
         vendorId,
-        customerId,
-        stars,
+        rating: userRating,
+        comment,
       });
 
-      setUserRating(stars);
-      setRatingSubmitted(true);
-
-      if (onRatingSuccess) {
-        const updatedRating = res.data?.newRating || stars;
-        onRatingSuccess(updatedRating);
+      if (res.data.success) {
+        setRatingSubmitted(true);
+        alert("Review and rating submitted successfully! Thank you! ⭐");
+        
+        // Refresh reviews list
+        const updatedRes = await API.get(`/reviews/vendor/${vendorId}`);
+        if (updatedRes.data.success) {
+          setReviewsList(updatedRes.data.reviews || []);
+          setAverageRating(updatedRes.data.averageRating);
+          if (onRatingSuccess) onRatingSuccess(updatedRes.data.averageRating);
+        }
       }
-
-      alert("Rating submit ho gayi! Shukriya! ⭐");
     } catch (err) {
-      console.error("Rating error:", err.response?.data || err.message);
+      console.error("Review error:", err.response?.data || err.message);
       alert(
         err.response?.data?.message ||
-          "Rating submit nahi hui. Dobara try karo."
+          "Failed to submit review. Please try again."
       );
     } finally {
       setLoading(false);
@@ -284,11 +310,11 @@ function RatingSection({ vendorId, onRatingSuccess }) {
         style={{
           marginBottom: "6px",
           color: "#1e293b",
-          fontSize: "16px",
+          fontSize: "18px",
           fontWeight: 600,
         }}
       >
-        Rate this Vendor
+        Vendor Reviews & Ratings {averageRating > 0 && `(${averageRating} ⭐)`}
       </h3>
 
       {isDummy && (
@@ -300,42 +326,116 @@ function RatingSection({ vendorId, onRatingSuccess }) {
             fontStyle: "italic",
           }}
         >
-          (Demo mode active — test rating UI)
+          (Demo mode active — test review UI)
         </p>
       )}
 
-      <p style={{ marginBottom: "14px", color: "#6b7280", fontSize: "13px" }}>
-        How was your experience? Click on stars!
-      </p>
+      {/* SUBMIT REVIEW FORM */}
+      {!ratingSubmitted ? (
+        <form onSubmit={handleReviewSubmit} style={{ marginTop: "15px" }}>
+          <p style={{ marginBottom: "8px", color: "#6b7280", fontSize: "14px" }}>
+            Share your experience with this vendor:
+          </p>
+          
+          {/* Star Selection */}
+          <div style={{ display: "flex", gap: "6px", marginBottom: "12px" }}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <span
+                key={star}
+                onClick={() => setUserRating(star)}
+                onMouseEnter={() => setHoveredRating(star)}
+                onMouseLeave={() => setHoveredRating(0)}
+                style={{
+                  fontSize: "30px",
+                  cursor: "pointer",
+                  color:
+                    star <= (hoveredRating || userRating) ? "#f59e0b" : "#d1d5db",
+                  transition: "color 0.15s",
+                }}
+              >
+                ★
+              </span>
+            ))}
+          </div>
 
-      {ratingSubmitted ? (
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {/* Comment Input */}
+          <textarea
+            rows="3"
+            placeholder="Write your review comment here..."
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "10px",
+              borderRadius: "8px",
+              border: "1px solid #d1d5db",
+              marginBottom: "12px",
+              fontSize: "14px",
+              outline: "none",
+            }}
+          />
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              background: "#4f46e5",
+              color: "#fff",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: "8px",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            {loading ? "Submitting..." : "Submit Review"}
+          </button>
+        </form>
+      ) : (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "10px" }}>
           <span style={{ fontSize: "24px" }}>✅</span>
-          <p style={{ color: "#1d9e75", fontWeight: 500 }}>
-            Aapne {userRating} star rating di! Shukriya!
+          <p style={{ color: "#10b981", fontWeight: 500 }}>
+            Your review has been submitted successfully! Thank you.
           </p>
         </div>
-      ) : (
-        <div style={{ display: "flex", gap: "8px" }}>
-          {[1, 2, 3, 4, 5].map((star) => (
-            <span
-              key={star}
-              onClick={() => !loading && handleRating(star)}
-              onMouseEnter={() => setHoveredRating(star)}
-              onMouseLeave={() => setHoveredRating(0)}
-              style={{
-                fontSize: "36px",
-                cursor: loading ? "not-allowed" : "pointer",
-                color:
-                  star <= (hoveredRating || userRating) ? "#f59e0b" : "#d1d5db",
-                transition: "color 0.15s",
-              }}
-            >
-              ★
-            </span>
-          ))}
-        </div>
       )}
+
+      {/* DISPLAY EXISTING REVIEWS */}
+      <div style={{ marginTop: "30px" }}>
+        <h4 style={{ fontSize: "16px", marginBottom: "12px", color: "#334155" }}>
+          All Customer Reviews ({reviewsList.length})
+        </h4>
+        {reviewsList.length === 0 ? (
+          <p style={{ color: "#9ca3af", fontSize: "14px" }}>No reviews yet.</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {reviewsList.map((rev) => (
+              <div
+                key={rev._id}
+                style={{
+                  padding: "12px",
+                  background: "#f8fafc",
+                  borderRadius: "8px",
+                  border: "1px solid #e2e8f0",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                  <strong style={{ fontSize: "14px", color: "#1e293b" }}>
+                    {rev.customerId?.name || "Customer"}
+                  </strong>
+                  <span style={{ color: "#f59e0b", fontSize: "14px" }}>
+                    {"★".repeat(rev.rating)}
+                    {"☆".repeat(5 - rev.rating)}
+                  </span>
+                </div>
+                <p style={{ fontSize: "13px", color: "#475569", margin: 0 }}>
+                  {rev.comment || "No comment provided."}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

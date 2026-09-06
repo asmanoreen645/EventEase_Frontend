@@ -12,12 +12,12 @@ export default function AdminLayout() {
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        const res = await API.get('/api/admin/summary');
+        const res = await API.get('/admin/dashboard');
         if (res.data && res.data.stats) {
           setCounts({
-            pendingVendors: res.data.stats.pendingVendors || 0,
+            pendingVendors: res.data.stats.totalVendors || 0,
             totalBookings: res.data.stats.totalBookings || 0,
-            chats: res.data.stats.chats || 0
+            chats: 0
           });
         }
       } catch (err) {
@@ -63,7 +63,6 @@ export default function AdminLayout() {
 
   useEffect(() => {
     const currentPath = location.pathname;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (currentPath.includes("/vendors")) setPageTitle("Vendor Verification");
     else if (currentPath.includes("/bookings")) setPageTitle("Transactional Bookings");
     else if (currentPath.includes("/payouts")) setPageTitle("Financial Payouts");
@@ -98,7 +97,7 @@ export default function AdminLayout() {
             <div className="nav-label">{section.label}</div>
             {section.items.map((item) => {
               const isActive = location.pathname === item.path || 
-                               (item.path === "/admin" && location.pathname === "/admin/dashboard");
+                             (item.path === "/admin" && location.pathname === "/admin/dashboard");
               return (
                 <Link
                   key={item.label}
@@ -132,7 +131,6 @@ export default function AdminLayout() {
 
       {/* DYNAMIC CONTENT WRAPPER */}
       <main className="main">
-        {/* Fixed Topbar */}
         <div className="topbar">
           <div>
             <div className="page-title">{pageTitle.split(" ")[0]} <span>{pageTitle.split(" ").slice(1).join(" ")}</span></div>
@@ -150,7 +148,6 @@ export default function AdminLayout() {
           <span><strong>Role-Based Access Control Active</strong> — Authorized admins logs enabled.</span>
         </div>
 
-        {/* Dynamic Inner Component Render Area */}
         <div className="admin-content-area" style={{ marginTop: '20px' }}>
           <Outlet />
         </div>

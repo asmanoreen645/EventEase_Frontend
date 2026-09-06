@@ -19,8 +19,8 @@ import {
   MdPerson,
 } from "react-icons/md";
 
-// 🔧 Backend base URL - socket connection isi se banegi
-const SOCKET_URL = "https://eventease-backend-693s.onrender.com";
+// 🔧 Correct Backend base URL
+const SOCKET_URL = "https://eventease-backend-1-ptzp.onrender.com";
 
 // Helper Function: Category ke according icon render karne ke liye
 const getCategoryIcon = (type) => {
@@ -36,45 +36,6 @@ const getCategoryIcon = (type) => {
   }
 };
 
-// ==========================================
-// 🎭 DUMMY FALLBACK DATA
-// ==========================================
-const dummyConversations = [
-  {
-    id: 1,
-    vendorId: "vendor1",
-    name: "Moon Photography",
-    type: "photo",
-    avatar: "https://ui-avatars.com/api/?name=Moon+Photography&background=random&color=fff",
-    location: "Lahore",
-    price: "PKR 10,000",
-    verified: true,
-    online: true,
-  },
-  {
-    id: 2,
-    vendorId: "vendor2",
-    name: "Hanif Rajput Decor",
-    type: "dec",
-    avatar: "https://ui-avatars.com/api/?name=Hanif+Rajput&background=random&color=fff",
-    location: "Karachi",
-    price: "PKR 10,000",
-    verified: true,
-    online: false,
-  },
-  {
-    id: 3,
-    vendorId: "vendor3",
-    name: "Zaiqa Catering",
-    type: "cat",
-    avatar: "https://ui-avatars.com/api/?name=Zaiqa+Catering&background=random&color=fff",
-    location: "Lahore",
-    price: "PKR 5,000",
-    verified: false,
-    online: true,
-  },
-];
-
 export default function ChatPage() {
   const { vendorId } = useParams();
   const navigate = useNavigate();
@@ -89,7 +50,8 @@ export default function ChatPage() {
   const [search, setSearch] = useState("");
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [loadingVendors, setLoadingVendors] = useState(true);
-  const [usingDummy, setUsingDummy] = useState(false);
+  const [historyError, setHistoryError] = useState(false);
+
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
 
@@ -103,48 +65,56 @@ export default function ChatPage() {
   }, [userId, token, navigate]);
 
   // ==========================================
-  // 1️⃣ FETCH VENDORS
+  // 1️⃣ FETCH REAL VENDORS ONLY
   // ==========================================
   useEffect(() => {
     const fetchVendors = async () => {
       setLoadingVendors(true);
       try {
-        const res = await API.get("/api/vendors/search");
+        const res = await API.get("/vendors/search");
         const vendorList = res.data.vendors || res.data.data || res.data;
 
         if (!Array.isArray(vendorList) || vendorList.length === 0) {
-          throw new Error("Empty or invalid vendor list");
+          setConversations([]);
+          setLoadingVendors(false);
+          return;
         }
 
-        const formatted = vendorList.map((v) => {
-          const vName = v.businessName || "Unnamed Vendor";
-          // Image fallback agar backend pe image missing ho
-          const autoAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            vName
-          )}&background=random&color=fff`;
+      const formatted = vendorList.map((v) => {
+  const vName = v.businessName || "Unnamed Vendor";
+  const autoAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    vName
+  )}&background=random&color=fff`;
 
-          return {
-            id: v._id,
-            vendorId: v._id,
-            name: vName,
-            avatar: v.profileImage || v.coverImage || autoAvatar,
-            type: (v.category || "").toLowerCase().includes("photo")
-              ? "photo"
-              : (v.category || "").toLowerCase().includes("cater")
-              ? "cat"
-              : (v.category || "").toLowerCase().includes("decor")
-              ? "dec"
-              : "other",
-            location: v.location?.city || "N/A",
-            price: "Contact for price",
-            verified: v.isVerified === true,
-            online: false,
-          };
-        });
+  // ✅ FIX: category string ho ya object, dono cases safely handle karein
+  const categoryStr = (
+    typeof v.category === "string"
+      ? v.category
+      : v.category?.name || ""
+  ).toLowerCase();
+
+  return {
+    id: v._id,
+    vendorId: v._id,
+    name: vName,
+    avatar: v.profileImage || v.coverImage || autoAvatar,
+    type: categoryStr.includes("photo")
+      ? "photo"
+      : categoryStr.includes("cater")
+      ? "cat"
+      : categoryStr.includes("decor")
+      ? "dec"
+      : "other",
+    location: v.location?.city || "N/A",
+    price: "Contact for price",
+    verified: v.isVerified === true,
+    online: false,
+  };
+});
 
         setConversations(formatted);
-        setUsingDummy(false);
 
+        // Target select karna URL ke mutabiq
         const target =
           formatted.find((c) => c.vendorId === vendorId) || formatted[0];
 
@@ -155,22 +125,8 @@ export default function ChatPage() {
           }
         }
       } catch (err) {
-        console.warn(
-          "Real vendors load nahi hue, dummy data use ho raha hai:",
-          err.message
-        );
-
-        setConversations(dummyConversations);
-        setUsingDummy(true);
-
-        const target =
-          dummyConversations.find((c) => c.vendorId === vendorId) ||
-          dummyConversations[0];
-
-        setActiveConvo(target);
-        if (!vendorId || vendorId === "undefined") {
-          navigate(`/chat/${target.vendorId}`, { replace: true });
-        }
+        console.error("Real vendors load hone mein masla aaya:", err.message);
+        setConversations([]);
       } finally {
         setLoadingVendors(false);
       }
@@ -187,7 +143,12 @@ export default function ChatPage() {
     if (match) setActiveConvo(match);
   }, [vendorId, conversations]);
 
-  const room = activeConvo ? `${userId}_${activeConvo.vendorId}` : null;
+  // ✅ FIX 1: IDs ko sort kar ke room banate hain, taake customer ya vendor
+  // kisi bhi taraf se chat khole, room-name hamesha same bane — aur ye
+  // backend ke startConversation wale room-format se bhi consistent rahe.
+  const room = activeConvo
+    ? `room_${[userId, activeConvo.vendorId].sort().join("_")}`
+    : null;
 
   // ==========================================
   // 2️⃣ FETCH CHAT HISTORY
@@ -196,23 +157,31 @@ export default function ChatPage() {
     if (!room) return;
     const fetchMessages = async () => {
       setLoadingMessages(true);
+      setHistoryError(false);
       try {
-        const response = await API.get(`/api/chat/room/${room}`);
+        const response = await API.get(`/chat/room/${room}`);
         if (response.data.success) {
           setMessages(response.data.messages);
         }
       } catch (err) {
-        if (err.response?.status !== 404) {
+        // ✅ FIX 2: Sirf "koi history nahi mili" (404) par welcome message
+        // dikhayein. Baaki errors (network fail, 401, 500) par user ko
+        // asal mein pata chalna chahiye ke kuch ghalat hua hai, warna
+        // wo samajhega chat kaam kar rahi hai jab ke backend down hai.
+        if (err.response?.status === 404) {
+          setMessages([
+            {
+              _id: "welcome",
+              sender: "vendor",
+              message: `Assalam o Alaikum! Welcome to ${activeConvo?.name}. How can we help you?`,
+              timestamp: new Date().toISOString(),
+            },
+          ]);
+        } else {
           console.error("Chat history error:", err);
+          setMessages([]);
+          setHistoryError(true);
         }
-        setMessages([
-          {
-            _id: "welcome",
-            sender: "vendor",
-            message: `Assalam o Alaikum! Welcome to ${activeConvo?.name}. How can we help you?`,
-            timestamp: new Date().toISOString(),
-          },
-        ]);
       } finally {
         setLoadingMessages(false);
       }
@@ -275,7 +244,7 @@ export default function ChatPage() {
     socketRef.current?.emit("send_message", newMsg);
 
     try {
-      await API.post("/api/chat/save", {
+      await API.post("/chat/save", {
         room,
         sender: userId,
         message: newMsg.message,
@@ -296,7 +265,15 @@ export default function ChatPage() {
   if (loadingVendors) {
     return (
       <div className="cp-page" style={{ textAlign: "center", padding: "60px" }}>
-        Loading conversations...
+        Loading real vendors...
+      </div>
+    );
+  }
+
+  if (conversations.length === 0) {
+    return (
+      <div className="cp-page" style={{ textAlign: "center", padding: "60px" }}>
+        Koi active vendor available nahi hai chat ke liye.
       </div>
     );
   }
@@ -304,7 +281,7 @@ export default function ChatPage() {
   if (!activeConvo) {
     return (
       <div className="cp-page" style={{ textAlign: "center", padding: "60px" }}>
-        Koi vendor conversation available nahi hai.
+        Koi vendor conversation selected nahi hai.
       </div>
     );
   }
@@ -316,13 +293,9 @@ export default function ChatPage() {
         <aside className="cp-sidebar">
           <div className="cp-sidebar-header">
             <p>Messages</p>
-            <span>
-              {conversations.length} conversations
-              {usingDummy && " (Demo data)"}
-            </span>
+            <span>{conversations.length} real vendors</span>
           </div>
 
-          {/* SEARCH BAR WITH REACT ICON */}
           <div
             className="cp-search"
             style={{ display: "flex", alignItems: "center", gap: "8px" }}
@@ -348,7 +321,6 @@ export default function ChatPage() {
                   navigate(`/chat/${c.vendorId}`);
                 }}
               >
-                {/* VENDOR PROFILE AVATAR */}
                 <div
                   className="cp-avatar"
                   style={{
@@ -382,7 +354,6 @@ export default function ChatPage() {
 
         {/* MAIN CHAT */}
         <main className="cp-chat-main">
-          {/* CHAT HEADER */}
           <div className="cp-chat-header">
             <div
               className="cp-avatar"
@@ -418,7 +389,6 @@ export default function ChatPage() {
               </span>
             </div>
 
-            {/* HEADER ACTION ICONS */}
             <div
               className="cp-chat-header-actions"
               style={{ display: "flex", gap: "12px", cursor: "pointer" }}
@@ -428,7 +398,6 @@ export default function ChatPage() {
             </div>
           </div>
 
-          {/* VENDOR STRIP */}
           <div
             className="cp-vendor-strip"
             style={{ display: "flex", alignItems: "center", gap: "6px" }}
@@ -445,7 +414,6 @@ export default function ChatPage() {
             </button>
           </div>
 
-          {/* MESSAGES */}
           <div className="cp-messages">
             <div className="cp-date-divider">
               <span>Today</span>
@@ -460,6 +428,18 @@ export default function ChatPage() {
                 }}
               >
                 Loading messages...
+              </div>
+            )}
+
+            {historyError && !loadingMessages && (
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "20px",
+                  color: "#dc2626",
+                }}
+              >
+                Messages load nahi ho sake. Please refresh karein.
               </div>
             )}
 
@@ -494,7 +474,6 @@ export default function ChatPage() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* INPUT AREA */}
           <div className="cp-input-area">
             <div
               className="cp-attach"

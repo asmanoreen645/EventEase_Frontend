@@ -92,7 +92,7 @@ export default function Venuepage() {
         if (cityParam) queryParams.append("city", cityParam);
 
         const queryString = queryParams.toString();
-        const endpoint = queryString ? `/api/vendors/search?${queryString}` : "/api/vendors/search";
+        const endpoint = queryString ? `/vendors/search?${queryString}` : "/vendors/search";
 
         const res = await API.get(endpoint);
         const backendVendors = res.data.vendors || res.data.data || [];
@@ -101,7 +101,7 @@ export default function Venuepage() {
           _id: v._id,
           name: v.businessName || v.name || "Vendor",
           image: v.coverImage || v.images?.[0] || "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&q=80",
-          type: v.category || v.businessType || "Decorators",
+          type: typeof v.category === "object" ? v.category?.name : (v.category || "Decorators"),
           rating: v.rating || 4.8,
           reviews: v.totalReviews || 10,
           location: v.location?.city || v.city || "Mandi Bahauddin",
@@ -111,6 +111,8 @@ export default function Venuepage() {
           province: v.location?.state || v.location?.province || v.province || "Punjab",
           city: v.location?.city || v.city || "Mandi Bahauddin",
         }));
+        console.log("Backend Vendors Raw:", backendVendors);
+        console.log("Mapped Vendors:", mapped);
 
         setRealVendors(mapped);
       } catch (err) {
