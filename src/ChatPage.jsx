@@ -183,6 +183,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (!vendorId || conversations.length === 0) return;
     const match = conversations.find((c) => c.vendorId === vendorId);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (match) setActiveConvo(match);
   }, [vendorId, conversations]);
 
