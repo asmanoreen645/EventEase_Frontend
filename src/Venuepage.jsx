@@ -358,8 +358,8 @@ export default function Venuepage() {
             {filteredVenues.length === 0 ? (
               <div className="vlp-no-results">
                 <div className="vlp-no-results-icon">🔍</div>
-                <h3>No dynamic vendors found</h3>
-                <p>Register new vendors via signup form to populate real database entries.</p>
+                <h3>Please wait </h3>
+                <p>Getting things ready for you.</p>
                 <button
                   className="vlp-reset-btn"
                   style={{ maxWidth: "200px", margin: "16px auto 0" }}
