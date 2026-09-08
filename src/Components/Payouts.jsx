@@ -18,7 +18,7 @@ export default function Payouts() {
       setPayouts(res.data);
     } catch (err) {
       console.error("Error fetching payouts:", err);
-      // Fallback data agar API response na de (For evaluation/demo safety)
+      //(For evaluation/demo safety)
       setPayouts([
         { id: "PAY-501", vendor: "Zara Events", bank: "HBL (****4321)", totalSales: "Rs 4,50,000", commission: "Rs 45,000 (10%)", payable: "Rs 4,05,000", status: "ready" },
         { id: "PAY-502", vendor: "MK Photography", bank: "Meezan Bank (****8890)", totalSales: "Rs 1,80,000", commission: "Rs 18,000 (10%)", payable: "Rs 1,62,000", status: "transferred" },

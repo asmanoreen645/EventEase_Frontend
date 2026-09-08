@@ -9,7 +9,7 @@ export default function NotificationBell() {
   const { notifications, unreadCount } = useNotifications();
   const dropdownRef = useRef(null);
 
-  // Outside click listener: Bahar click hone par dropdown automatic hide hoga
+  // Outside click listener: 
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {

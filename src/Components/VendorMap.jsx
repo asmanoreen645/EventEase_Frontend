@@ -16,7 +16,7 @@ L.Icon.Default.mergeOptions({
 const DEFAULT_LAT = 32.5742;
 const DEFAULT_LNG = 73.4851;
 
-// Helper component jo map ki tiles ko auto-adjust aur re-render karta hai
+// Helper component 
 function MapResizer() {
   const map = useMap();
   useEffect(() => {

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import "./Services.css";
 
-// ===== SVG ICONS =====
+// SVG ICONS 
 const VenueIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="36" height="36">
     <rect x="3" y="10" width="18" height="11" rx="1"/>
@@ -34,7 +34,7 @@ const DecoratorIcon = () => (
 );
 
 
-// ===== DATA =====
+//  DATA 
 const heroImages = [
   "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&q=80",
   "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1600&q=80",
@@ -62,7 +62,7 @@ const categories = [
   { label: "Decorators", Icon: DecoratorIcon, path: "/decorators" },
 ];
 
-// ===== COMPONENT =====
+//  COMPONENT 
 export default function Vendors() {
   const navigate = useNavigate();
   const [, setActiveSlide] = useState(0);

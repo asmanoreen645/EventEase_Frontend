@@ -4,7 +4,7 @@ import { useBooking } from "./Components/BookingContext";
 import "./BookingDetails.css";
 import "./PackageSelection.css";
 
-// ─── PACKAGE DATA - har vendor category ka apna data ───────────────────────
+// ─── PACKAGE DATA -  vendor category  data ───────────────────────
 const PACKAGE_DATA = {
   photographer: {
     label: "Photographer",
@@ -140,11 +140,11 @@ const PACKAGE_DATA = {
   },
 };
 
-// Vendor.category ko upar wali keys se map karna
+// Vendor.category map with above keys
 function getCategoryKey(category) {
   if (category === "photographer") return "photographer";
   if (category === "decorator") return "decorator";
-  // venue, catering, venuehall - sab same per-head structure use karenge
+  // venue, catering, venuehall - use same sub per head
   return "venue";
 }
 
@@ -155,7 +155,7 @@ function PackageSelection() {
   const [selectedIndex, setSelectedIndex] = useState(1);
   const [checkedExtras, setCheckedExtras] = useState([]);
 
-  // Agar pehle steps complete nahi hue, wapas bhej do
+  // follow all steps
   if (!vendor || !bookingDetails) {
     return (
       <div className="booking-page">
@@ -186,8 +186,8 @@ function PackageSelection() {
     .filter((ex) => checkedExtras.includes(ex.name))
     .reduce((sum, ex) => sum + ex.price, 0);
 
-  // Per-head categories ke liye total = (package + extras) x guests
-  // Fixed categories ke liye total = package + extras
+  // Per-head categories  total = (package + extras) x guests
+  // Fixed categorie total = package + extras
   const total = data.perHead
     ? (selectedPkg.price + extrasTotal) * guestCount
     : selectedPkg.price + extrasTotal;

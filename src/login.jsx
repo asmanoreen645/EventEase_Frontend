@@ -83,7 +83,7 @@ const LoginForm = () => {
       <div className="login-card">
         <div className="logo-section">
           <div className="logo-box">
-            <span className="calendar-icon">📅</span>
+            <span className="calendar-icon"></span>
           </div>
           <h1>EventEase</h1>
           <p className="subtitle">Plan your perfect moment</p>
@@ -118,7 +118,7 @@ const LoginForm = () => {
                 className="toggle-password"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                👁️
+                
               </button>
             </div>
           </div>

@@ -17,7 +17,7 @@ function BookingDetails() {
     notes: "",
   });
 
-  // Agar koi vendor select nahi hua (direct URL se aaya), to wapas bhej do
+  // if vendor is not selected reverse it if it comes from url
   if (!vendor) {
     return (
       <div className="booking-page">
@@ -41,7 +41,7 @@ function BookingDetails() {
 
     // Basic validation
     if (!form.bookingName || !form.eventDate || !form.contact) {
-      alert("Booking Name, Event Date aur Contact Number zaroori hain.");
+      alert("Booking Name, compulsory event date and contact number.");
       return;
     }
 

@@ -5,7 +5,7 @@
   font-family: 'Segoe UI', sans-serif;
 }
 
-/* ===== HEADER ===== */
+/*  HEADER  */
 .vlp-header {
   position: relative;
   overflow: hidden;
@@ -90,7 +90,7 @@
   margin: 0;
 }
  
-/* ===== BODY LAYOUT ===== */
+/*  BODY LAYOUT */
 .vlp-body {
   display: flex;
   gap: 24px;
@@ -99,7 +99,7 @@
   margin: 0 auto;
 }
 
-/* ===== SIDEBAR ===== */
+/*  SIDEBAR  */
 .vlp-search-input {
   width: 100%;
   padding: 10px 12px;
@@ -280,7 +280,7 @@
   border-color: #b4945a;
 }
 
-/* ===== CARDS ===== */
+/* CARDS */
 .vlp-cards {
   display: flex;
   flex-direction: column;
@@ -468,7 +468,7 @@
   background: #c9a96e;
   transform: scale(1.03);
 }
-/* ===== NO RESULTS ===== */
+/*  NO RESULTS  */
 .vlp-no-results {
   text-align: center;
   padding: 60px 20px;
@@ -482,7 +482,7 @@
   margin-bottom: 12px;
 }
 
-/* ===== RESPONSIVE ===== */
+/*  RESPONSIVE  */
 @media (max-width: 900px) {
   .vlp-body {
     flex-direction: column;
@@ -513,7 +513,7 @@
     font-size: 1.6rem;
   }
 }
-/* ===== PILL FILTERS ===== */
+/*  PILL FILTERS  */
 .vlp-pill-group {
   display: flex;
   flex-wrap: wrap;
@@ -542,7 +542,7 @@
   color: #fff;
   font-weight: 600;
 }
-/* ===== COUNTRY/CITY SELECT ===== */
+/*  COUNTRY/CITY SELECT  */
 .vlp-select {
   width: 100%;
   padding: 8px 10px;
@@ -573,7 +573,7 @@
   background: #f5f5f5;
   cursor: not-allowed;
 }
-/* ===== FAVORITE HEART BUTTON ===== */
+/*  FAVORITE HEART BUTTON  */
 .vlp-fav-btn {
   position: absolute;
   top: 10px;

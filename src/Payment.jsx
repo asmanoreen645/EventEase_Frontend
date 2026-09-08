@@ -119,7 +119,7 @@ function Payment() {
         bookingId = bookingResponse.data.booking?._id || bookingResponse.data._id;
       }
 
-      // ===== STEP 2: Create Stripe Token =====
+      //  STEP 2: Create Stripe Token 
       const cardElement = elements.getElement(CardElement);
       const { token, error } = await stripe.createToken(cardElement, {
         name: cardName,
@@ -134,7 +134,7 @@ function Payment() {
         return;
       }
 
-      // ===== STEP 3: Process Charge on Backend =====
+      //  STEP 3: Process Charge on Backend 
       if (isDummy) {
         console.log("Dummy booking — skipping real charge API call");
       } else {
@@ -142,7 +142,7 @@ function Payment() {
           const chargeResponse = await API.post('/payments/charge', {
             bookingId: bookingId,
             token: token.id,
-            amount: totalDueToday, // Yeh amount charge hogi aur backend par commission calculate hogi
+            amount: totalDueToday, // amount charge and comission cut
             userId: userId
           });
 
@@ -159,7 +159,7 @@ function Payment() {
         }
       }
 
-            // ===== STEP 4: Send Notification Email =====
+            //  STEP 4: Send Notification Email 
       try {
         const userEmail = localStorage.getItem('userEmail');
         await API.post('/notifications/send-email', {
@@ -171,7 +171,7 @@ function Payment() {
         console.error("Notification send failed:", notifyErr);
       }
 
-      // ===== STEP 5: Save In-App Notification =====
+      // STEP 5: Save In-App Notification 
       try {
         await API.post('/notifications', {
           userId: userId,
