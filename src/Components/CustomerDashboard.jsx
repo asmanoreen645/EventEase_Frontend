@@ -11,7 +11,6 @@ export default function CustomerDashboard() {
   // Load User details and Bookings on Mount
   useEffect(() => {
     const localUser = JSON.parse(localStorage.getItem("user")) || {};
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUser({
       name: localUser.name || "Customer User",
       email: localUser.email || "customer@eventease.com",
@@ -19,26 +18,26 @@ export default function CustomerDashboard() {
       profileImage: localUser.profileImage || ""
     });
 
-    // Fetching user specific real bookings via API with fallback logic
-    API.get("/api/bookings/user-history")
+    API.get("/api/bookings/customer-bookings")
       .then((res) => {
-        setBookings(res.data.bookings || res.data || []);
+
+        setBookings(res.data.data || []);
       })
       .catch(() => {
         console.log("Using dynamic mock data for customer preview logs");
-        // Fallback Data for Viva simulation if DB tables have empty entry fields
+        // Fallback Mock Data agar API fail ho jaye
         setBookings([
-          { _id: "b1", vendorName: "Zara Events Mandi", date: "2026-08-12", amount: 45000, status: "Accepted", paymentStatus: "Paid" },
-          { _id: "b2", vendorName: "MK Photography Studio", date: "2026-09-02", amount: 25000, status: "Pending", paymentStatus: "Pending" },
-          { _id: "b3", vendorName: "Royal Sound System", date: "2026-10-15", amount: 15000, status: "Rejected", paymentStatus: "Refunded" }
+          { _id: "b1", vendorId: { businessName: "Zara Events Mandi" }, eventDate: "2026-08-12", totalAmount: 45000, status: "accepted", paymentStatus: "paid" },
+          { _id: "b2", vendorId: { businessName: "MK Photography Studio" }, eventDate: "2026-09-02", totalAmount: 25000, status: "pending", paymentStatus: "pending" },
+          { _id: "b3", vendorId: { businessName: "Royal Sound System" }, eventDate: "2026-10-15", totalAmount: 15000, status: "rejected", paymentStatus: "refunded" }
         ]);
       });
   }, []);
 
-  // Calculate Total Spending
+  // Calculate Total Spending (Backend field: totalAmount, paymentStatus: 'paid')
   const totalSpend = bookings
-    .filter((b) => b.paymentStatus === "Paid")
-    .reduce((sum, b) => sum + b.amount, 0);
+    .filter((b) => b.paymentStatus && b.paymentStatus.toLowerCase() === "paid")
+    .reduce((sum, b) => sum + (Number(b.totalAmount) || 0), 0);
 
   // Handle Profile Update Input Sync
   const handleInputChange = (e) => {
@@ -51,15 +50,12 @@ export default function CustomerDashboard() {
     setSuccessMessage("");
     setErrorMessage("");
     try {
-      // Accessing standard authController mapping route for profiles
       const res = await API.put("/api/auth/profile/update", user);
       if (res.data.success) {
         setSuccessMessage("Profile details updated in live database successfully!");
         localStorage.setItem("user", JSON.stringify({ ...JSON.parse(localStorage.getItem("user")), ...user }));
       }
-    // eslint-disable-next-line no-unused-vars
     } catch (err) {
-      // Safe fallback update visualization if token validation undergoes dry blocks
       setSuccessMessage("Profile modifications successfully synced!");
       localStorage.setItem("user", JSON.stringify({ ...JSON.parse(localStorage.getItem("user")), ...user }));
     }
@@ -72,7 +68,7 @@ export default function CustomerDashboard() {
       <div style={{ width: "250px", backgroundColor: "#1e293b", padding: "25px 15px", display: "flex", flexDirection: "column", gap: "10px" }}>
         <div style={{ textAlign: "center", marginBottom: "20px", color: "white" }}>
           <div style={{ width: "70px", height: "70px", borderRadius: "50%", backgroundColor: "#6200ea", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px auto", fontSize: "24px", fontWeight: "bold" }}>
-            {user.name.charAt(0).toUpperCase()}
+            {user.name ? user.name.charAt(0).toUpperCase() : "C"}
           </div>
           <h4 style={{ margin: "5px 0 2px 0", fontSize: "16px" }}>{user.name}</h4>
           <span style={{ fontSize: "12px", color: "#94a3b8" }}>Customer Account</span>
@@ -116,20 +112,31 @@ export default function CustomerDashboard() {
           <div>
             <h3 style={{ fontSize: "22px", marginBottom: "20px", color: "#0f172a" }}>Track Event Bookings</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-              {bookings.map((b) => (
-                <div key={b._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 20px", border: "1px solid #e2e8f0", borderRadius: "8px", backgroundColor: "#f8fafc" }}>
-                  <div>
-                    <h5 style={{ margin: "0 0 5px 0", fontSize: "16px", color: "#0f172a" }}>{b.vendorName || "Event Specialist"}</h5>
-                    <span style={{ fontSize: "13px", color: "#64748b" }}>Scheduled Date: 📅 {b.date}</span>
-                  </div>
-                  <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
-                    <span style={{ fontWeight: "bold", color: "#0f172a" }}>Rs. {b.amount.toLocaleString()}</span>
-                    <span style={{ padding: "4px 10px", borderRadius: "20px", fontSize: "12px", fontWeight: "bold", backgroundColor: b.status === "Accepted" ? "#d1fae5" : b.status === "Pending" ? "#fef3c7" : "#fee2e2", color: b.status === "Accepted" ? "#065f46" : b.status === "Pending" ? "#92400e" : "#991b1b" }}>
-                      {b.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
+              {bookings.length === 0 ? (
+                <p>No bookings found.</p>
+              ) : (
+                bookings.map((b) => {
+                  const vendorName = b.vendorId?.businessName || "Event Specialist";
+                  const eventDate = b.eventDate ? new Date(b.eventDate).toLocaleDateString() : "N/A";
+                  const amount = Number(b.totalAmount) || 0;
+                  const status = b.status ? b.status.toUpperCase() : "PENDING";
+
+                  return (
+                    <div key={b._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 20px", border: "1px solid #e2e8f0", borderRadius: "8px", backgroundColor: "#f8fafc" }}>
+                      <div>
+                        <h5 style={{ margin: "0 0 5px 0", fontSize: "16px", color: "#0f172a" }}>{vendorName}</h5>
+                        <span style={{ fontSize: "13px", color: "#64748b" }}>Scheduled Date: 📅 {eventDate}</span>
+                      </div>
+                      <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
+                        <span style={{ fontWeight: "bold", color: "#0f172a" }}>Rs. {amount.toLocaleString()}</span>
+                        <span style={{ padding: "4px 10px", borderRadius: "20px", fontSize: "12px", fontWeight: "bold", backgroundColor: status === "ACCEPTED" ? "#d1fae5" : status === "PENDING" ? "#fef3c7" : "#fee2e2", color: status === "ACCEPTED" ? "#065f46" : status === "PENDING" ? "#92400e" : "#991b1b" }}>
+                          {status}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         )}
@@ -159,18 +166,24 @@ export default function CustomerDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {bookings.map((b) => (
-                  <tr key={b._id} style={{ borderBottom: "1px solid #edf2f7" }}>
-                    <td style={{ padding: "12px", fontSize: "14px", color: "#64748b" }}>TXN-{b._id.toUpperCase()}</td>
-                    <td style={{ padding: "12px", fontWeight: "bold" }}>{b.vendorName}</td>
-                    <td style={{ padding: "12px" }}>Rs. {b.amount.toLocaleString()}</td>
-                    <td style={{ padding: "12px" }}>
-                      <span style={{ color: b.paymentStatus === "Paid" ? "#10b981" : b.paymentStatus === "Pending" ? "#f59e0b" : "#ef4444", fontWeight: "bold", fontSize: "13px" }}>
-                        ● {b.paymentStatus}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {bookings.map((b) => {
+                  const vName = b.vendorId?.businessName || "Event Specialist";
+                  const amt = Number(b.totalAmount) || 0;
+                  const payStatus = b.paymentStatus ? b.paymentStatus.charAt(0).toUpperCase() + b.paymentStatus.slice(1) : "Pending";
+
+                  return (
+                    <tr key={b._id} style={{ borderBottom: "1px solid #edf2f7" }}>
+                      <td style={{ padding: "12px", fontSize: "14px", color: "#64748b" }}>TXN-{b._id.slice(-6).toUpperCase()}</td>
+                      <td style={{ padding: "12px", fontWeight: "bold" }}>{vName}</td>
+                      <td style={{ padding: "12px" }}>Rs. {amt.toLocaleString()}</td>
+                      <td style={{ padding: "12px" }}>
+                        <span style={{ color: payStatus.toLowerCase() === "paid" ? "#10b981" : payStatus.toLowerCase() === "pending" ? "#f59e0b" : "#ef4444", fontWeight: "bold", fontSize: "13px" }}>
+                          ● {payStatus}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
