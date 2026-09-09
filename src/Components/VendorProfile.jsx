@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 import API from "../api/axiosConfig";
 import { useBooking } from "./BookingContext";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css'; 
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import "./VendorProfile.css";
@@ -43,7 +45,8 @@ export default function VendorProfile() {
   const [, setIsVerified] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
 
-  // Reviews State
+  // Calendar & Reviews State
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [reviews, setReviews] = useState([]);
 
   const [profile, setProfile] = useState({
@@ -58,7 +61,7 @@ export default function VendorProfile() {
     images: [],
     videos: [],
     rating: 4.8,
-    lat: 31.5204, // Default Pakistan (Lahore) coordinates
+    lat: 31.5204, // Default coordinates
     lng: 74.3587
   });
 
@@ -109,7 +112,6 @@ export default function VendorProfile() {
         const catName = safeExtract(data.category) || safeExtract(data.businessType);
         const cityName = safeExtract(data.location?.city) || safeExtract(data.city);
         
-        // Extract coordinates if available from database (MongoDB GeoJSON format: [lng, lat] or direct lat/lng)
         const coords = data.location?.coordinates;
         const vendorLat = coords ? coords[1] : (data.lat || 31.5204);
         const vendorLng = coords ? coords[0] : (data.lng || 74.3587);
@@ -189,7 +191,6 @@ export default function VendorProfile() {
     }
   };
 
-  // Handler to update location coordinates via API
   const handleSaveLocation = async () => {
     try {
       await API.put("/vendors/update-location", {
@@ -317,19 +318,60 @@ export default function VendorProfile() {
         </div>
       )}
 
-      {/* --- CALENDER & LEAFLET MAP SECTION --- */}
+      {/* 1. PORTFOLIO & DESCRIPTION SECTION */}
+      <div style={{ maxWidth: "1000px", margin: "30px auto 0 auto", padding: "0 20px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "15px" }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: "20px", color: "#111" }}>Our Portfolio</h2>
+            <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: "#666" }}>A showcase of cinematic excellence and timeless events</p>
+          </div>
+        </div>
+
+        {profile.images.length > 0 ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px" }}>
+            {profile.images.map((imgSrc, index) => (
+              <div key={index} style={{ borderRadius: "10px", overflow: "hidden", height: "180px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", background: "#fff" }}>
+                <img src={imgSrc} alt="Portfolio" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ background: "#fff", padding: "30px", textAlign: "center", borderRadius: "8px", border: "1px dashed #ccc", color: "#777", fontSize: "14px" }}>
+            No portfolio images uploaded yet.
+          </div>
+        )}
+
+        {profile.description && (
+          <div style={{ background: "#fff", marginTop: "20px", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+            <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", color: "#111" }}>About Services</h3>
+            <p style={{ margin: 0, color: "#555", lineHeight: "1.6", fontSize: "13px" }}>{profile.description}</p>
+          </div>
+        )}
+      </div>
+
+      {/* 2. REAL CALENDAR & BIGGER LEAFLET MAP SECTION */}
       <div style={{ maxWidth: "1000px", margin: "30px auto 0 auto", padding: "0 20px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", alignItems: "start" }}>
           
-          {/* 1. LEFT SIDE: Calendar / Booking Widget */}
+          {/* Left Side: Real Interactive Calendar (Past dates disabled) */}
           <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-            <h3 style={{ margin: "0 0 15px 0", fontSize: "16px", color: "#111" }}>Select Booking Date</h3>
-            <div style={{ border: "1px dashed #ccc", padding: "40px", textAlign: "center", color: "#777", borderRadius: "6px" }}>
-              📅 [Calendar Widget Here]
+            <h3 style={{ margin: "0 0 15px 0", fontSize: "16px", color: "#111" }}>Check Availability & Dates</h3>
+            
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <Calendar 
+                onChange={setSelectedDate} 
+                value={selectedDate} 
+                minDate={new Date()} // Past dates ko disable kar deta hai taake user ko pata chale past unavailable hain
+                style={{ width: "100%", border: "none", borderRadius: "6px" }}
+              />
             </div>
+            
+            <p style={{ margin: "15px 0 0 0", fontSize: "12px", color: "#666", textAlign: "center" }}>
+              📅 Selected Date: <b>{selectedDate.toDateString()}</b>
+            </p>
           </div>
 
-          {/* 2. RIGHT SIDE: Leaflet Map for Vendor Location */}
+          {/* Right Side: Larger Leaflet Map (Height increased to 300px) */}
           <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
               <h3 style={{ margin: 0, fontSize: "16px", color: "#111" }}>Vendor Location</h3>
@@ -340,7 +382,8 @@ export default function VendorProfile() {
               )}
             </div>
             
-            <div style={{ height: "220px", borderRadius: "6px", overflow: "hidden", border: "1px solid #eaeaea", zIndex: 1 }}>
+            {/* Map height increased from 220px to 300px for a bigger look */}
+            <div style={{ height: "300px", borderRadius: "6px", overflow: "hidden", border: "1px solid #eaeaea", zIndex: 1 }}>
               <MapContainer 
                 center={[profile.lat, profile.lng]} 
                 zoom={13} 
@@ -375,38 +418,9 @@ export default function VendorProfile() {
         </div>
       </div>
 
-      {/* Portfolio Section */}
+      {/* 3. REVIEWS & RATINGS SECTION */}
       <div style={{ maxWidth: "1000px", margin: "30px auto 0 auto", padding: "0 20px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "15px" }}>
-          <div>
-            <h2 style={{ margin: 0, fontSize: "20px", color: "#111" }}>Our Portfolio</h2>
-            <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: "#666" }}>A showcase of cinematic excellence and timeless events</p>
-          </div>
-        </div>
-
-        {profile.images.length > 0 ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px" }}>
-            {profile.images.map((imgSrc, index) => (
-              <div key={index} style={{ borderRadius: "10px", overflow: "hidden", height: "180px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", background: "#fff" }}>
-                <img src={imgSrc} alt="Portfolio" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div style={{ background: "#fff", padding: "30px", textAlign: "center", borderRadius: "8px", border: "1px dashed #ccc", color: "#777", fontSize: "14px" }}>
-            No portfolio images uploaded yet.
-          </div>
-        )}
-
-        {profile.description && (
-          <div style={{ background: "#fff", marginTop: "30px", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-            <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", color: "#111" }}>About Services</h3>
-            <p style={{ margin: 0, color: "#555", lineHeight: "1.6", fontSize: "13px" }}>{profile.description}</p>
-          </div>
-        )}
-
-        {/* Reviews & Ratings Section */}
-        <div style={{ background: "#fff", marginTop: "30px", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+        <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
           <h3 style={{ margin: "0 0 15px 0", fontSize: "16px", color: "#111" }}>Customer Reviews & Ratings</h3>
           
           {reviews.length > 0 ? (
@@ -438,8 +452,8 @@ export default function VendorProfile() {
             <p style={{ margin: 0, color: "#777", fontSize: "13px" }}>No reviews yet for this vendor.</p>
           )}
         </div>
-
       </div>
+
     </div>
   );
 }
