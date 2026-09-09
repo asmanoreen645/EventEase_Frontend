@@ -58,7 +58,7 @@ export default function VendorProfile() {
     profileImage: "",
     images: [],
     videos: [],
-    rating: 4.8,
+    rating: 0,
     lat: 31.5204,
     lng: 74.3587
   });
@@ -74,11 +74,26 @@ export default function VendorProfile() {
   const fetchVendorReviews = useCallback(async (vId) => {
     if (!vId) return;
     try {
-      const res = await API.get(`/reviews/vendor/${vId}`);
-      const reviewList = res.data?.data || res.data?.reviews || [];
-      setReviews(reviewList);
+      //  Common routes try 
+      const res = await API.get(`/reviews/vendor/${vId}`).catch(() => API.get(`/reviews/${vId}`)).catch(() => API.get(`/vendors/${vId}/reviews`));
+      
+      const reviewList = res.data?.data || res.data?.reviews || res.data || [];
+      const validReviews = Array.isArray(reviewList) ? reviewList : [];
+      setReviews(validReviews);
+
+      // automatic average rating calculated
+      if (validReviews.length > 0) {
+        const totalRating = validReviews.reduce((acc, rev) => acc + (rev.rating || rev.stars || 0), 0);
+        const avgRating = (totalRating / validReviews.length).toFixed(1);
+        
+        setProfile((prev) => ({
+          ...prev,
+          rating: Number(avgRating)
+        }));
+      }
     } catch (err) {
-      console.error("Fetch reviews error:", err);
+      console.error("All review routes failed:", err);
+      setReviews([]);
     }
   }, []);
 
@@ -124,7 +139,7 @@ export default function VendorProfile() {
           profileImage: data.profileImage || data.avatar || "https://via.placeholder.com/150",
           images: Array.isArray(data.portfolioImages) ? data.portfolioImages : (Array.isArray(data.images) ? data.images : []),
           videos: Array.isArray(data.portfolioVideos) ? data.portfolioVideos : (Array.isArray(data.videos) ? data.videos : []),
-          rating: data.rating || 4.8,
+          rating: data.rating || 0,
           lat: vendorLat,
           lng: vendorLng
         });
@@ -228,16 +243,18 @@ export default function VendorProfile() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <h1 style={{ margin: 0, fontSize: "26px", color: "#111" }}>{profile.businessName || "Vendor Name"}</h1>
-                <span style={{ background: "#f1f3f5", padding: "4px 10px", borderRadius: "12px", fontSize: "12px", fontWeight: "600", color: "#495057" }}>
-                   ★ {profile.rating} Rating ({reviews.length} Reviews)
-                </span>
+                {profile.rating > 0 && (
+                  <span style={{ background: "#f1f3f5", padding: "4px 10px", borderRadius: "12px", fontSize: "12px", fontWeight: "600", color: "#495057" }}>
+                    ★ {profile.rating} Rating ({reviews.length} Reviews)
+                  </span>
+                )}
               </div>
               <p style={{ color: "#b4945a", margin: "6px 0 0 0", fontSize: "14px", fontWeight: "600" }}>{safeExtract(profile.category)}</p>
               
               <div style={{ display: "flex", gap: "15px", marginTop: "10px", fontSize: "13px", color: "#666", flexWrap: "wrap" }}>
-                <span> {profile.phone}</span>
-                <span> {profile.email}</span>
-                <span> {profile.address}, {profile.city}</span>
+                <span>{profile.phone}</span>
+                <span>{profile.email}</span>
+                <span>{profile.address}, {profile.city}</span>
               </div>
             </div>
           </div>
@@ -345,11 +362,10 @@ export default function VendorProfile() {
         )}
       </div>
 
-      {/* 2. BALANCED CALENDAR & MAP SECTION (Same Height & Aligned) */}
+      {/* 2. BALANCED CALENDAR & MAP SECTION */}
       <div style={{ maxWidth: "1000px", margin: "30px auto 0 auto", padding: "0 20px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", alignItems: "stretch" }}>
           
-          {/* Left Side: Stretched Calendar Box */}
           <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
             <div>
               <h3 style={{ margin: "0 0 15px 0", fontSize: "16px", color: "#111" }}>Check Availability & Dates</h3>
@@ -368,7 +384,6 @@ export default function VendorProfile() {
             </p>
           </div>
 
-          {/* Right Side: Matched Height & Wider Map Box */}
           <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
@@ -380,7 +395,6 @@ export default function VendorProfile() {
                 )}
               </div>
               
-              {/* Map height matched to fill the box nicely */}
               <div style={{ height: "265px", borderRadius: "6px", overflow: "hidden", border: "1px solid #eaeaea", zIndex: 1 }}>
                 <MapContainer 
                   center={[profile.lat, profile.lng]} 
