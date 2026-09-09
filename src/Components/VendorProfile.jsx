@@ -5,7 +5,7 @@ import API from "../api/axiosConfig";
 import { useBooking } from "./BookingContext";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css'; 
+import 'react-calendar/dist/Calendar.css';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import "./VendorProfile.css";
@@ -18,7 +18,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.4/images/marker-shadow.png',
 });
 
-// Helper component for picking location on map
 function LocationPicker({ setProfile }) {
   useMapEvents({
     click(e) {
@@ -45,7 +44,6 @@ export default function VendorProfile() {
   const [, setIsVerified] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
 
-  // Calendar & Reviews State
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [reviews, setReviews] = useState([]);
 
@@ -61,7 +59,7 @@ export default function VendorProfile() {
     images: [],
     videos: [],
     rating: 4.8,
-    lat: 31.5204, // Default coordinates
+    lat: 31.5204,
     lng: 74.3587
   });
 
@@ -73,7 +71,6 @@ export default function VendorProfile() {
     return String(val);
   };
 
-  // Fetch Reviews Function
   const fetchVendorReviews = useCallback(async (vId) => {
     if (!vId) return;
     try {
@@ -245,7 +242,6 @@ export default function VendorProfile() {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <button 
               onClick={() => navigate(`/chat/${vendorId || id}`)}
@@ -349,70 +345,75 @@ export default function VendorProfile() {
         )}
       </div>
 
-      {/* 2. REAL CALENDAR & BIGGER LEAFLET MAP SECTION */}
+      {/* 2. BALANCED CALENDAR & MAP SECTION (Same Height & Aligned) */}
       <div style={{ maxWidth: "1000px", margin: "30px auto 0 auto", padding: "0 20px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", alignItems: "start" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", alignItems: "stretch" }}>
           
-          {/* Left Side: Real Interactive Calendar (Past dates disabled) */}
-          <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-            <h3 style={{ margin: "0 0 15px 0", fontSize: "16px", color: "#111" }}>Check Availability & Dates</h3>
-            
-            <div style={{ display: "flex", justifyContent: "center" }}>
-              <Calendar 
-                onChange={setSelectedDate} 
-                value={selectedDate} 
-                minDate={new Date()} // Past dates ko disable kar deta hai taake user ko pata chale past unavailable hain
-                style={{ width: "100%", border: "none", borderRadius: "6px" }}
-              />
+          {/* Left Side: Stretched Calendar Box */}
+          <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <div>
+              <h3 style={{ margin: "0 0 15px 0", fontSize: "16px", color: "#111" }}>Check Availability & Dates</h3>
+              <div style={{ display: "flex", justifyContent: "center", paddingBottom: "10px" }}>
+                <Calendar 
+                  onChange={setSelectedDate} 
+                  value={selectedDate} 
+                  minDate={new Date()} 
+                  style={{ width: "100%", border: "none", borderRadius: "6px" }}
+                />
+              </div>
             </div>
             
-            <p style={{ margin: "15px 0 0 0", fontSize: "12px", color: "#666", textAlign: "center" }}>
+            <p style={{ margin: "10px 0 0 0", fontSize: "12px", color: "#666", textAlign: "center", borderTop: "1px solid #f1f3f5", paddingTop: "12px" }}>
               📅 Selected Date: <b>{selectedDate.toDateString()}</b>
             </p>
           </div>
 
-          {/* Right Side: Larger Leaflet Map (Height increased to 300px) */}
-          <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
-              <h3 style={{ margin: 0, fontSize: "16px", color: "#111" }}>Vendor Location</h3>
+          {/* Right Side: Matched Height & Wider Map Box */}
+          <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+                <h3 style={{ margin: 0, fontSize: "16px", color: "#111" }}>Vendor Location</h3>
+                {isEditing && (
+                  <span style={{ fontSize: "11px", color: "#b4945a", fontWeight: "600" }}>
+                    💡 Click map to pick location
+                  </span>
+                )}
+              </div>
+              
+              {/* Map height matched to fill the box nicely */}
+              <div style={{ height: "265px", borderRadius: "6px", overflow: "hidden", border: "1px solid #eaeaea", zIndex: 1 }}>
+                <MapContainer 
+                  center={[profile.lat, profile.lng]} 
+                  zoom={13} 
+                  style={{ width: "100%", height: "100%" }}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; OpenStreetMap contributors'
+                  />
+                  <Marker position={[profile.lat, profile.lng]}>
+                    <Popup>{profile.businessName || "Vendor Location"}</Popup>
+                  </Marker>
+
+                  {isEditing && <LocationPicker setProfile={setProfile} />}
+                </MapContainer>
+              </div>
+            </div>
+
+            <div>
+              <p style={{ margin: "10px 0 0 0", fontSize: "12px", color: "#666" }}>
+                📍 {profile.address}, {profile.city}
+              </p>
+
               {isEditing && (
-                <span style={{ fontSize: "11px", color: "#b4945a", fontWeight: "600" }}>
-                  💡 Click map to pick location
-                </span>
+                <button 
+                  onClick={handleSaveLocation}
+                  style={{ marginTop: "10px", width: "100%", background: "#b4945a", color: "#000", border: "none", padding: "8px", borderRadius: "4px", fontWeight: "600", cursor: "pointer", fontSize: "12px" }}
+                >
+                  Save Map Location
+                </button>
               )}
             </div>
-            
-            {/* Map height increased from 220px to 300px for a bigger look */}
-            <div style={{ height: "300px", borderRadius: "6px", overflow: "hidden", border: "1px solid #eaeaea", zIndex: 1 }}>
-              <MapContainer 
-                center={[profile.lat, profile.lng]} 
-                zoom={13} 
-                style={{ width: "100%", height: "100%" }}
-              >
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; OpenStreetMap contributors'
-                />
-                <Marker position={[profile.lat, profile.lng]}>
-                  <Popup>{profile.businessName || "Vendor Location"}</Popup>
-                </Marker>
-
-                {isEditing && <LocationPicker setProfile={setProfile} />}
-              </MapContainer>
-            </div>
-
-            <p style={{ margin: "10px 0 0 0", fontSize: "12px", color: "#666" }}>
-              📍 {profile.address}, {profile.city}
-            </p>
-
-            {isEditing && (
-              <button 
-                onClick={handleSaveLocation}
-                style={{ marginTop: "12px", width: "100%", background: "#b4945a", color: "#000", border: "none", padding: "8px", borderRadius: "4px", fontWeight: "600", cursor: "pointer", fontSize: "12px" }}
-              >
-                Save Map Location
-              </button>
-            )}
           </div>
 
         </div>
