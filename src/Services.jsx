@@ -106,7 +106,12 @@ export default function Vendors() {
       value={search}
       onChange={(e) => setSearch(e.target.value)}
     />
-    <button className="search-btn">Search</button>
+    <button
+  className="search-btn"
+  onClick={() => navigate(`/vendors?search=${search}`)}
+>
+  Search
+</button>
   </div>
 </section>
 
