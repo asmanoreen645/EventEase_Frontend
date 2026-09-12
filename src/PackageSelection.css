@@ -13,16 +13,17 @@
   border-radius: 12px;
   padding: 16px;
   cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
 }
 
 .package-card:hover {
-  border-color: #93c5fd;
+  border-color: #e0c98b;
+  transform: translateY(-1px);
 }
 
 .package-card--selected {
-  border: 2px solid #1d4ed8;
-  box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.1);
+  border: 2px solid #c9a961;
+  box-shadow: 0 2px 12px rgba(201, 169, 97, 0.2);
 }
 
 .package-card__badge {
@@ -30,7 +31,7 @@
   top: -10px;
   left: 12px;
   font-size: 11px;
-  background: #1d4ed8;
+  background: linear-gradient(135deg, #c9a961, #a67c3d);
   color: #ffffff;
   padding: 2px 8px;
   border-radius: 6px;
@@ -52,7 +53,7 @@
 .package-card__price {
   font-size: 18px;
   font-weight: 700;
-  color: #1d4ed8;
+  color: #a67c3d;
   margin: 0;
 }
 
@@ -121,16 +122,18 @@
 
 .extras-item input {
   margin-right: 6px;
+  accent-color: #c9a961;
 }
 
 .extras-price {
-  color: #1d4ed8;
+  color: #a67c3d;
   font-weight: 600;
 }
 
 /* Total box */
 .total-box {
-  background: #e5edff;
+  background: #faf3e5;
+  border: 1px solid #e8d5a8;
   border-radius: 12px;
   padding: 14px 18px;
   display: flex;
@@ -141,14 +144,14 @@
 
 .total-box__label {
   font-size: 13px;
-  color: #1d4ed8;
+  color: #6b5220;
   margin: 0;
   font-weight: 500;
 }
 
 .total-box__sub {
   font-size: 12px;
-  color: #1d4ed8;
+  color: #8a6d1f;
   opacity: 0.8;
   margin: 2px 0 0;
 }
@@ -156,7 +159,7 @@
 .total-box__amount {
   font-size: 22px;
   font-weight: 700;
-  color: #1d4ed8;
+  color: #a67c3d;
   margin: 0;
 }
 

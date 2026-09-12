@@ -28,7 +28,8 @@
 
 /* Package summary box */
 .summary-box {
-  background: #e5edff;
+  background: #faf3e5;
+  border: 1px solid #e8d5a8;
   border-radius: 12px;
   padding: 16px 20px;
   display: flex;
@@ -41,7 +42,7 @@
 
 .summary-box__name {
   font-weight: 600;
-  color: #1d4ed8;
+  color: #6b5220;
   margin: 0 0 4px;
   font-size: 15px;
 }
@@ -65,7 +66,7 @@
 .summary-box__advance {
   font-size: 17px;
   font-weight: 700;
-  color: #1d4ed8;
+  color: #a67c3d;
   margin: 2px 0 0;
 }
 
@@ -78,11 +79,12 @@
   border-radius: 8px;
   padding: 10px 12px;
   flex-wrap: wrap;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .card-info-box:focus-within {
-  border-color: #1d4ed8;
-  box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.15);
+  border-color: #c9a961;
+  box-shadow: 0 0 0 2px rgba(201, 169, 97, 0.18);
 }
 
 .card-badge {
@@ -117,7 +119,8 @@
 
 /* Breakdown box */
 .breakdown-box {
-  background: #f4f4f0;
+  background: #f9f7f2;
+  border: 1px solid #ece3cf;
   border-radius: 12px;
   padding: 16px 20px;
   margin: 12px 0 20px;
@@ -146,7 +149,7 @@
 /* Pay button */
 .btn-pay {
   width: 100%;
-  background: #16a34a;
+  background: linear-gradient(135deg, #c9a961, #a67c3d);
   color: #ffffff;
   border: none;
   border-radius: 10px;
@@ -154,10 +157,19 @@
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 4px 14px rgba(201, 169, 97, 0.35);
+  transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
 }
 
 .btn-pay:hover {
-  background: #15803d;
+  background: linear-gradient(135deg, #b8985a, #8f6a33);
+  box-shadow: 0 6px 18px rgba(201, 169, 97, 0.45);
+}
+
+.btn-pay:disabled {
+  background: #d9d0b8;
+  box-shadow: none;
+  cursor: not-allowed;
 }
 
 .secure-note {

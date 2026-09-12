@@ -20,7 +20,7 @@
   z-index: 10;
 }
 .cp-logo {
-  color: #1a56a0;
+  color: #c9a961;
   font-size: 18px;
   font-weight: 600;
 }
@@ -35,12 +35,12 @@
   padding-bottom: 2px;
 }
 .cp-nav span:hover {
-  color: #1a56a0;
+  color: #c9a961;
 }
 .cp-nav-active {
-  color: #1a56a0 !important;
+  color: #c9a961 !important;
   font-weight: 500;
-  border-bottom: 2px solid #1a56a0;
+  border-bottom: 2px solid #c9a961;
 }
 .cp-topbar-right {
   display: flex;
@@ -48,8 +48,8 @@
 }
 .cp-btn-outline {
   padding: 7px 16px;
-  border: 1px solid #1a56a0;
-  color: #1a56a0;
+  border: 1px solid #c9a961;
+  color: #c9a961;
   background: #fff;
   border-radius: 6px;
   font-size: 13px;
@@ -57,7 +57,7 @@
 }
 .cp-btn-fill {
   padding: 7px 16px;
-  background: #1a56a0;
+  background: #c9a961;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -132,8 +132,8 @@
   background: #f5f7fa;
 }
 .cp-convo-item.active {
-  background: #e6f1fb;
-  border-left: 3px solid #1a56a0;
+  background: #faf3e5;
+  border-left: 3px solid #c9a961;
 }
 
 /* ── AVATAR ── */
@@ -150,8 +150,8 @@
 .cp-avatar span {
   font-size: 20px;
 }
-.cp-avatar-photo { background: #e6f1fb; color: #185fa5; }
-.cp-avatar-photo span { color: #185fa5; }
+.cp-avatar-photo { background: #faf3e5; color: #8a6d1f; }
+.cp-avatar-photo span { color: #8a6d1f; }
 .cp-avatar-dec { background: #e1f5ee; }
 .cp-avatar-dec span { color: #0f6e56; }
 .cp-avatar-cat { background: #faeeda; }
@@ -200,7 +200,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #1a56a0;
+  background: #c9a961;
   color: #fff;
   font-size: 10px;
   display: flex;
@@ -254,19 +254,19 @@
   cursor: pointer;
 }
 .cp-chat-header-actions span:hover {
-  color: #1a56a0;
+  color: #c9a961;
 }
 
 /* ── VENDOR STRIP ── */
 .cp-vendor-strip {
-  background: #e6f1fb;
-  border-bottom: 0.5px solid #b5d4f4;
+  background: #faf3e5;
+  border-bottom: 0.5px solid #e8d5a8;
   padding: 8px 18px;
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #0c447c;
+  color: #6b5220;
 }
 .cp-vendor-strip span.material-symbols-outlined {
   font-size: 15px;
@@ -275,11 +275,16 @@
   margin-left: auto;
   font-size: 12px;
   padding: 5px 14px;
-  background: #1a56a0;
+  background: #c9a961;
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 20px;
   cursor: pointer;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+.cp-strip-book:hover {
+  background: #a67c3d;
 }
 
 /* ── MESSAGES ── */
@@ -334,7 +339,7 @@
   font-size: 16px;
 }
 .cp-msg-av.me {
-  background: #1a56a0;
+  background: #c9a961;
 }
 .cp-msg-av.me span {
   color: #fff;
@@ -360,7 +365,7 @@
   border: 0.5px solid #e0e0e0;
 }
 .cp-bubble.mine {
-  background: #1a56a0;
+  background: #c9a961;
   color: #fff;
   border-bottom-right-radius: 3px;
 }
@@ -395,13 +400,13 @@
   outline: none;
 }
 .cp-input-area input:focus {
-  border-color: #1a56a0;
+  border-color: #c9a961;
 }
 .cp-send-btn {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #1a56a0;
+  background: #c9a961;
   border: none;
   display: flex;
   align-items: center;
@@ -414,5 +419,5 @@
   color: #fff;
 }
 .cp-send-btn:hover {
-  background: #154d8f;
+  background: #a67c3d;
 }
