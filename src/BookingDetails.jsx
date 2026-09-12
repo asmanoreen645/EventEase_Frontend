@@ -91,7 +91,7 @@ function BookingDetails() {
               <input
                 type="text"
                 name="bookingName"
-                placeholder="e.g. Ayesha & Bilal Walima"
+                placeholder="e.g. Ayesha & Naeem Walima"
                 value={form.bookingName}
                 onChange={handleChange}
               />
