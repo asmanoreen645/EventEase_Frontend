@@ -153,6 +153,7 @@ export default function VendorProfile() {
   }, [id, fetchVendorReviews]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchVendorProfile();
   }, [fetchVendorProfile]);
 
@@ -196,6 +197,7 @@ export default function VendorProfile() {
       });
       toast.success("Profile picture updated!");
       fetchVendorProfile();
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
       toast.error("Failed to upload image.");
     } finally {
