@@ -6,52 +6,60 @@ export default function VendorApproval() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchPendingVendors = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      // 1. Primary Admin Pending Route (axiosConfig baseURL me /api pehle se hota hai)
-      const res = await API.get('/admin/vendors/pending');
-      const data = res.data?.data || res.data?.vendors || res.data;
-      
-      if (Array.isArray(data)) {
-        setPendingVendors(data);
-      } else {
-        throw new Error("Invalid response structure");
-      }
-    } catch (err) {
-      console.warn("Primary endpoint failed, attempting fallback:", err);
-      
-      // 2. Fallback: Fetch all vendors
-      try {
-        const fallbackRes = await API.get('/vendors');
-        const rawList = fallbackRes.data?.data || fallbackRes.data?.vendors || fallbackRes.data;
-        
-        if (Array.isArray(rawList)) {
-          const unapproved = rawList.filter(
-            (v) => v.isApproved === false || v.status === 'pending' || !v.isApproved
-          );
-          setPendingVendors(unapproved);
-        } else {
-          setError("Failed to load pending vendors from server.");
-        }
-      } catch (fallbackErr) {
-        console.error("Fallback failed:", fallbackErr);
-        setError("Failed to load pending vendors from server.");
-      }
-    } finally {
-      setLoading(false);
+  // Helper function: Kisi bhi value (Object ya String) ko safely text me convert karne ke liye
+  const renderSafeString = (val, fallback = "N/A") => {
+    if (!val) return fallback;
+    if (typeof val === 'string' || typeof val === 'number') return val;
+    if (typeof val === 'object') {
+      return val.name || val.title || val.businessName || val.label || JSON.stringify(val);
     }
+    return fallback;
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    const fetchPendingVendors = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // API call (Supports both base URL setups)
+        const res = await API.get('/admin/vendors/pending').catch(() => API.get('/api/admin/vendors/pending'));
+        const data = res.data?.data || res.data?.vendors || res.data;
+        
+        if (Array.isArray(data)) {
+          setPendingVendors(data);
+        } else {
+          throw new Error("Invalid array");
+        }
+      } catch (err) {
+        console.warn("Primary pending endpoint failed, trying general vendors list:", err);
+        try {
+          const fallbackRes = await API.get('/vendors').catch(() => API.get('/api/vendors'));
+          const rawList = fallbackRes.data?.data || fallbackRes.data?.vendors || fallbackRes.data;
+          
+          if (Array.isArray(rawList)) {
+            const unapproved = rawList.filter(
+              (v) => v.isApproved === false || v.status === 'pending' || !v.isApproved
+            );
+            setPendingVendors(unapproved);
+          } else {
+            setError("Failed to load pending vendors.");
+          }
+        } catch (fallbackErr) {
+          console.error("Fallback failed:", fallbackErr);
+          setError("Failed to load pending vendors.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchPendingVendors();
   }, []);
 
   const handleApprove = async (id) => {
     try {
-      await API.put(`/admin/vendors/${id}/approve`, { isApproved: true, status: 'approved' });
+      await API.put(`/admin/vendors/${id}/approve`, { isApproved: true, status: 'approved' })
+               .catch(() => API.put(`/api/admin/vendors/${id}/approve`, { isApproved: true, status: 'approved' }));
       setPendingVendors((prev) => prev.filter((v) => (v._id || v.id) !== id));
       alert("Vendor approved successfully!");
     } catch (err) {
@@ -62,7 +70,8 @@ export default function VendorApproval() {
 
   const handleReject = async (id) => {
     try {
-      await API.put(`/admin/vendors/${id}/reject`, { isApproved: false, status: 'rejected' });
+      await API.put(`/admin/vendors/${id}/reject`, { isApproved: false, status: 'rejected' })
+               .catch(() => API.put(`/api/admin/vendors/${id}/reject`, { isApproved: false, status: 'rejected' }));
       setPendingVendors((prev) => prev.filter((v) => (v._id || v.id) !== id));
       alert("Vendor request rejected.");
     } catch (err) {
@@ -106,10 +115,10 @@ export default function VendorApproval() {
               >
                 <div>
                   <h4 style={{ margin: "0 0 5px 0", color: "#2D3748" }}>
-                    {vendor.name || vendor.businessName || vendor.username || "New Vendor Request"}
+                    {renderSafeString(vendor.name || vendor.businessName || vendor.username, "New Vendor Request")}
                   </h4>
                   <p style={{ margin: 0, fontSize: "14px", color: "#718096" }}>
-                    Email: {vendor.email || "N/A"} | Category: {vendor.category || "N/A"} | City: {vendor.city || "N/A"}
+                    Email: {renderSafeString(vendor.email)} | Category: {renderSafeString(vendor.category)} | City: {renderSafeString(vendor.city)}
                   </p>
                 </div>
                 <div style={{ display: "flex", gap: "10px" }}>
