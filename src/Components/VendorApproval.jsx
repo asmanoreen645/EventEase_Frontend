@@ -1,4 +1,4 @@
- import { useState, useEffect } from 'react'; 
+import { useState, useEffect } from 'react'; 
 import API from '../api/axiosConfig';
 
 export default function VendorApproval() {
@@ -10,8 +10,8 @@ export default function VendorApproval() {
     setLoading(true);
     setError(null);
     try {
-      // 1. Try Primary Admin Pending Route
-      const res = await API.get('/api/admin/vendors/pending');
+      // 1. Primary Admin Pending Route (axiosConfig baseURL me /api pehle se hota hai)
+      const res = await API.get('/admin/vendors/pending');
       const data = res.data?.data || res.data?.vendors || res.data;
       
       if (Array.isArray(data)) {
@@ -20,11 +20,11 @@ export default function VendorApproval() {
         throw new Error("Invalid response structure");
       }
     } catch (err) {
-      console.warn("Primary endpoint failed, attempting fallback to general vendors list:", err);
+      console.warn("Primary endpoint failed, attempting fallback:", err);
       
-      // 2. Fallback: Fetch all vendors and filter unapproved ones client-side
+      // 2. Fallback: Fetch all vendors
       try {
-        const fallbackRes = await API.get('/api/vendors');
+        const fallbackRes = await API.get('/vendors');
         const rawList = fallbackRes.data?.data || fallbackRes.data?.vendors || fallbackRes.data;
         
         if (Array.isArray(rawList)) {
@@ -51,7 +51,7 @@ export default function VendorApproval() {
 
   const handleApprove = async (id) => {
     try {
-      await API.put(`/api/admin/vendors/${id}/approve`, { isApproved: true, status: 'approved' });
+      await API.put(`/admin/vendors/${id}/approve`, { isApproved: true, status: 'approved' });
       setPendingVendors((prev) => prev.filter((v) => (v._id || v.id) !== id));
       alert("Vendor approved successfully!");
     } catch (err) {
@@ -62,7 +62,7 @@ export default function VendorApproval() {
 
   const handleReject = async (id) => {
     try {
-      await API.put(`/api/admin/vendors/${id}/reject`, { isApproved: false, status: 'rejected' });
+      await API.put(`/admin/vendors/${id}/reject`, { isApproved: false, status: 'rejected' });
       setPendingVendors((prev) => prev.filter((v) => (v._id || v.id) !== id));
       alert("Vendor request rejected.");
     } catch (err) {
