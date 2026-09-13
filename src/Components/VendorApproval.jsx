@@ -6,12 +6,11 @@ export default function VendorApproval() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Helper function to render text safely
   const renderSafeString = (val, fallback = "N/A") => {
     if (!val) return fallback;
     if (typeof val === 'string' || typeof val === 'number') return val;
     if (typeof val === 'object') {
-      return val.name || val.title || val.businessName || val.email || val.label || JSON.stringify(val);
+      return val.city || val.name || val.title || val.businessName || val.email || val.address || fallback;
     }
     return fallback;
   };
@@ -100,13 +99,13 @@ export default function VendorApproval() {
           {pendingVendors.map((vendor) => {
             const id = vendor._id || vendor.id;
             
-            // Checking nested fields from MongoDB/Cloudinary
             const email = vendor.email || vendor.user?.email || vendor.userId?.email;
-            const phone = vendor.phone || vendor.contactNumber || vendor.user?.phone;
-            const city = vendor.city || vendor.location;
-            const cnic = vendor.cnic || vendor.cnicNumber;
+            const phone = vendor.phone || vendor.contactNumber || vendor.user?.phone || vendor.userId?.phone;
+            const rawCity = vendor.city || vendor.location;
+            const city = typeof rawCity === 'object' ? rawCity?.city || rawCity?.address : rawCity;
+            
             const cnicDoc = vendor.cnicUrl || vendor.cnicImage || vendor.cnicDoc;
-            const licenseDoc = vendor.licenseUrl || vendor.licenseImage || vendor.licenseDoc || vendor.document;
+            const licenseDoc = vendor.licenseUrl || vendor.licenseImage || vendor.licenseDoc || vendor.businessLicense || (Array.isArray(vendor.documents) && vendor.documents[1]);
 
             return (
               <div 
@@ -122,16 +121,11 @@ export default function VendorApproval() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "15px" }}>
                   <div>
                     <h3 style={{ margin: "0 0 5px 0", color: "#2D3748" }}>
-                      {renderSafeString(vendor.name || vendor.businessName || vendor.username, "New Vendor Request")}
+                      {renderSafeString(vendor.businessName || vendor.name || vendor.username, "New Vendor Request")}
                     </h3>
                     <p style={{ margin: 0, fontSize: "14px", color: "#718096" }}>
                       <strong>Email:</strong> {renderSafeString(email)} | <strong>Phone:</strong> {renderSafeString(phone)} | <strong>Category:</strong> {renderSafeString(vendor.category)} | <strong>City:</strong> {renderSafeString(city)}
                     </p>
-                    {cnic && (
-                      <p style={{ margin: "5px 0 0 0", fontSize: "14px", color: "#718096" }}>
-                        <strong>CNIC Number:</strong> {renderSafeString(cnic)}
-                      </p>
-                    )}
                   </div>
 
                   <div style={{ display: "flex", gap: "10px" }}>
@@ -150,7 +144,6 @@ export default function VendorApproval() {
                   </div>
                 </div>
 
-                {/* Cloudinary Documents Verification Section */}
                 <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px dashed #E2E8F0", display: "flex", gap: "15px", alignItems: "center" }}>
                   <span style={{ fontSize: "14px", fontWeight: "600", color: "#4A5568" }}>Submitted Documents:</span>
                   
