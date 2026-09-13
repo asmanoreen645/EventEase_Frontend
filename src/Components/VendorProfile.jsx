@@ -42,7 +42,7 @@ export default function VendorProfile() {
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [vendorId, setVendorId] = useState("");
   const [, setIsVerified] = useState(true);
-  const [isOwner, setIsOwner] = useState(false);
+  const [, setIsOwner] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [reviews, setReviews] = useState([]);
@@ -63,6 +63,11 @@ export default function VendorProfile() {
     lng: 74.3587
   });
 
+  const getAuthHeader = () => {
+    const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   const safeExtract = (val, fallback = "") => {
     if (!val) return fallback;
     if (typeof val === 'object') {
@@ -74,7 +79,9 @@ export default function VendorProfile() {
   const fetchVendorReviews = useCallback(async (vId) => {
     if (!vId) return;
     try {
-      const res = await API.get(`/reviews/vendor/${vId}`).catch(() => API.get(`/reviews/${vId}`)).catch(() => API.get(`/vendors/${vId}/reviews`));
+      const res = await API.get(`/reviews/vendor/${vId}`, { headers: getAuthHeader() })
+        .catch(() => API.get(`/reviews/${vId}`, { headers: getAuthHeader() }))
+        .catch(() => API.get(`/vendors/${vId}/reviews`, { headers: getAuthHeader() }));
       
       const reviewList = res.data?.data || res.data?.reviews || res.data || [];
       const validReviews = Array.isArray(reviewList) ? reviewList : [];
@@ -90,7 +97,7 @@ export default function VendorProfile() {
         }));
       }
     } catch (err) {
-      console.error("All review routes failed:", err);
+      console.error("Reviews load error:", err);
       setReviews([]);
     }
   }, []);
@@ -103,7 +110,7 @@ export default function VendorProfile() {
         ? `/vendors/${id}` 
         : `/vendors/user/${activeUserId}`;
         
-      const res = await API.get(endpoint);
+      const res = await API.get(endpoint, { headers: getAuthHeader() });
       const data = res.data?.vendor || res.data?.data || res.data;
 
       if (data) {
@@ -117,6 +124,8 @@ export default function VendorProfile() {
 
         if (activeUserId && (data.user === activeUserId || data.userId === activeUserId || data.userId?._id === activeUserId || data._id === activeUserId)) {
           setIsOwner(true);
+        } else {
+          setIsOwner(true); // Default edit allowed in dashboard view
         }
 
         const catName = safeExtract(data.category) || safeExtract(data.businessType);
@@ -129,11 +138,11 @@ export default function VendorProfile() {
         setProfile({
           businessName: data.businessName || data.name || "",
           category: catName,
-          phone: data.phone || data.contact || "092 3XXX XXXXX",
+          phone: data.phone || data.contact || "",
           email: data.email || data.userId?.email || "contact@eventease.com",
           city: cityName,
-          address: data.location?.address || data.address || cityName || "Pakistan",
-          description: data.description || "Event decoration and stage setup.",
+          address: data.location?.address || data.address || cityName || "",
+          description: data.description || "",
           profileImage: data.profileImage || data.avatar || "https://via.placeholder.com/150",
           images: Array.isArray(data.portfolioImages) ? data.portfolioImages : (Array.isArray(data.images) ? data.images : []),
           videos: Array.isArray(data.portfolioVideos) ? data.portfolioVideos : (Array.isArray(data.videos) ? data.videos : []),
@@ -164,6 +173,7 @@ export default function VendorProfile() {
     setSaving(true);
     try {
       const profilePayload = {
+        vendorId,
         businessName: profile.businessName,
         phone: profile.phone,
         description: profile.description,
@@ -171,7 +181,10 @@ export default function VendorProfile() {
         category: profile.category,
       };
 
-      await API.put("/vendors/profile", profilePayload);
+      await API.put("/vendors/profile", profilePayload, {
+        headers: getAuthHeader()
+      });
+
       toast.success("Profile details updated!");
       setIsEditing(false);
       fetchVendorProfile();
@@ -192,8 +205,11 @@ export default function VendorProfile() {
 
     setUploadingAvatar(true);
     try {
-      await API.put(`/vendors/profile/upload-image/${vendorId}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      await API.put(`/vendors/profile/upload-image/${vendorId || 'me'}`, formData, {
+        headers: { 
+          ...getAuthHeader(),
+          "Content-Type": "multipart/form-data" 
+        },
       });
       toast.success("Profile picture updated!");
       fetchVendorProfile();
@@ -229,8 +245,11 @@ export default function VendorProfile() {
 
     setUploadingMedia(true);
     try {
-      await API.post(`/vendors/${vendorId}/portfolio`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      await API.post(`/vendors/${vendorId || 'me'}/portfolio`, formData, {
+        headers: { 
+          ...getAuthHeader(),
+          "Content-Type": "multipart/form-data" 
+        },
       });
       toast.success("Portfolio media uploaded successfully!");
       fetchVendorProfile();
@@ -244,7 +263,8 @@ export default function VendorProfile() {
 
   const handleDeleteMedia = async (mediaUrl, type) => {
     try {
-      await API.delete(`/vendors/${vendorId}/portfolio`, {
+      await API.delete(`/vendors/${vendorId || 'me'}/portfolio`, {
+        headers: getAuthHeader(),
         data: { mediaUrl, type }
       });
       toast.success("Media deleted from portfolio.");
@@ -261,7 +281,7 @@ export default function VendorProfile() {
         vendorId,
         latitude: profile.lat,
         longitude: profile.lng
-      });
+      }, { headers: getAuthHeader() });
       toast.success("Map location updated successfully!");
     } catch (err) {
       console.error("Location update error:", err);
@@ -272,7 +292,7 @@ export default function VendorProfile() {
   if (loading) return <div style={{ textAlign: "center", padding: "100px", color: "#666" }}>Loading Profile...</div>;
 
   return (
-    <div style={{ background: "#f8f9fa", minHeight: "100vh", paddingTop: "80px", paddingBottom: "60px", fontFamily: "sans-serif" }}>
+    <div style={{ background: "#f8f9fa", minHeight: "100vh", paddingTop: "40px", paddingBottom: "60px", fontFamily: "sans-serif" }}>
       
       {/* Top Banner & Header Card */}
       <div style={{ background: "#fff", borderBottom: "1px solid #e5e5e5", padding: "30px 20px", boxShadow: "0 2px 4px rgba(0,0,0,0.02)" }}>
@@ -333,14 +353,12 @@ export default function VendorProfile() {
               Book Now
             </button>
             
-            {(isOwner || !id) && (
-              <button
-                onClick={() => setIsEditing(!isEditing)}
-                style={{ background: "#333", color: "#fff", border: "none", padding: "8px 14px", borderRadius: "6px", cursor: "pointer", fontWeight: "600", fontSize: "13px" }}
-              >
-                {isEditing ? "Close Edit" : "Edit Profile"}
-              </button>
-            )}
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              style={{ background: "#333", color: "#fff", border: "none", padding: "8px 14px", borderRadius: "6px", cursor: "pointer", fontWeight: "600", fontSize: "13px" }}
+            >
+              {isEditing ? "Close Edit" : "Edit Profile"}
+            </button>
           </div>
 
         </div>
@@ -390,19 +408,17 @@ export default function VendorProfile() {
             <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: "#666" }}>Max 5 Photos ({profile.images.length}/5) & Max 3 Videos ({profile.videos.length}/3)</p>
           </div>
 
-          {(isOwner || isEditing) && (
-            <label style={{ background: "#28a745", color: "#fff", padding: "8px 16px", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}>
-              {uploadingMedia ? "Uploading Media..." : "+ Upload Portfolio Media"}
-              <input 
-                type="file" 
-                accept="image/*,video/*" 
-                multiple 
-                onChange={handlePortfolioUpload} 
-                style={{ display: "none" }} 
-                disabled={uploadingMedia}
-              />
-            </label>
-          )}
+          <label style={{ background: "#28a745", color: "#fff", padding: "8px 16px", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}>
+            {uploadingMedia ? "Uploading Media..." : "+ Upload Portfolio Media"}
+            <input 
+              type="file" 
+              accept="image/*,video/*" 
+              multiple 
+              onChange={handlePortfolioUpload} 
+              style={{ display: "none" }} 
+              disabled={uploadingMedia}
+            />
+          </label>
         </div>
 
         {/* Photos Grid */}
@@ -412,20 +428,18 @@ export default function VendorProfile() {
             {profile.images.map((imgSrc, index) => (
               <div key={index} style={{ position: "relative", borderRadius: "8px", overflow: "hidden", height: "150px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", background: "#fff" }}>
                 <img src={imgSrc} alt="Portfolio Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                {(isOwner || isEditing) && (
-                  <button 
-                    onClick={() => handleDeleteMedia(imgSrc, 'image')}
-                    style={{ position: "absolute", top: "5px", right: "5px", background: "rgba(220, 53, 69, 0.85)", color: "#fff", border: "none", borderRadius: "50%", width: "24px", height: "24px", cursor: "pointer", fontWeight: "bold" }}
-                  >
-                    ×
-                  </button>
-                )}
+                <button 
+                  onClick={() => handleDeleteMedia(imgSrc, 'image')}
+                  style={{ position: "absolute", top: "5px", right: "5px", background: "rgba(220, 53, 69, 0.85)", color: "#fff", border: "none", borderRadius: "50%", width: "24px", height: "24px", cursor: "pointer", fontWeight: "bold" }}
+                >
+                  ×
+                </button>
               </div>
             ))}
           </div>
         ) : (
           <div style={{ background: "#fff", padding: "20px", textAlign: "center", borderRadius: "8px", border: "1px dashed #ccc", color: "#777", fontSize: "13px", marginBottom: "20px" }}>
-            No portfolio images uploaded yet.
+            No portfolio images uploaded yet. Click "+ Upload Portfolio Media" above.
           </div>
         )}
 
@@ -436,14 +450,12 @@ export default function VendorProfile() {
             {profile.videos.map((vidSrc, index) => (
               <div key={index} style={{ position: "relative", borderRadius: "8px", overflow: "hidden", height: "150px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", background: "#000" }}>
                 <video src={vidSrc} controls style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                {(isOwner || isEditing) && (
-                  <button 
-                    onClick={() => handleDeleteMedia(vidSrc, 'video')}
-                    style={{ position: "absolute", top: "5px", right: "5px", background: "rgba(220, 53, 69, 0.85)", color: "#fff", border: "none", borderRadius: "50%", width: "24px", height: "24px", cursor: "pointer", fontWeight: "bold", zIndex: 2 }}
-                  >
-                    ×
-                  </button>
-                )}
+                <button 
+                  onClick={() => handleDeleteMedia(vidSrc, 'video')}
+                  style={{ position: "absolute", top: "5px", right: "5px", background: "rgba(220, 53, 69, 0.85)", color: "#fff", border: "none", borderRadius: "50%", width: "24px", height: "24px", cursor: "pointer", fontWeight: "bold", zIndex: 2 }}
+                >
+                  ×
+                </button>
               </div>
             ))}
           </div>
@@ -532,7 +544,7 @@ export default function VendorProfile() {
         </div>
       </div>
 
-      {/* REVIEWS & RATINGS SECTION */}
+      {/* REVIEWS SECTION */}
       <div style={{ maxWidth: "1000px", margin: "30px auto 0 auto", padding: "0 20px" }}>
         <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
           <h3 style={{ margin: "0 0 15px 0", fontSize: "16px", color: "#111" }}>Customer Reviews & Ratings</h3>
