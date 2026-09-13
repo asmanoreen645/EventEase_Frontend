@@ -10,7 +10,6 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import "./VendorProfile.css";
 
-// Leaflet marker icon fix
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.4/images/marker-icon-2x.png',
@@ -39,7 +38,8 @@ export default function VendorProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [, setUploadingAvatar] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
   const [vendorId, setVendorId] = useState("");
   const [, setIsVerified] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
@@ -74,14 +74,12 @@ export default function VendorProfile() {
   const fetchVendorReviews = useCallback(async (vId) => {
     if (!vId) return;
     try {
-      //  Common routes try 
       const res = await API.get(`/reviews/vendor/${vId}`).catch(() => API.get(`/reviews/${vId}`)).catch(() => API.get(`/vendors/${vId}/reviews`));
       
       const reviewList = res.data?.data || res.data?.reviews || res.data || [];
       const validReviews = Array.isArray(reviewList) ? reviewList : [];
       setReviews(validReviews);
 
-      // automatic average rating calculated
       if (validReviews.length > 0) {
         const totalRating = validReviews.reduce((acc, rev) => acc + (rev.rating || rev.stars || 0), 0);
         const avgRating = (totalRating / validReviews.length).toFixed(1);
@@ -117,7 +115,7 @@ export default function VendorProfile() {
 
         if (data.isVerified !== undefined) setIsVerified(data.isVerified);
 
-        if (activeUserId && (data.user === activeUserId || data.userId === activeUserId || data._id === activeUserId)) {
+        if (activeUserId && (data.user === activeUserId || data.userId === activeUserId || data.userId?._id === activeUserId || data._id === activeUserId)) {
           setIsOwner(true);
         }
 
@@ -125,14 +123,14 @@ export default function VendorProfile() {
         const cityName = safeExtract(data.location?.city) || safeExtract(data.city);
         
         const coords = data.location?.coordinates;
-        const vendorLat = coords ? coords[1] : (data.lat || 31.5204);
-        const vendorLng = coords ? coords[0] : (data.lng || 74.3587);
+        const vendorLat = coords ? coords[1] : (data.location?.latitude || data.lat || 31.5204);
+        const vendorLng = coords ? coords[0] : (data.location?.longitude || data.lng || 74.3587);
 
         setProfile({
           businessName: data.businessName || data.name || "",
           category: catName,
           phone: data.phone || data.contact || "092 3XXX XXXXX",
-          email: data.email || "contact@eventease.com",
+          email: data.email || data.userId?.email || "contact@eventease.com",
           city: cityName,
           address: data.location?.address || data.address || cityName || "Pakistan",
           description: data.description || "Event decoration and stage setup.",
@@ -169,16 +167,17 @@ export default function VendorProfile() {
         businessName: profile.businessName,
         phone: profile.phone,
         description: profile.description,
+        city: profile.city,
         category: profile.category,
       };
 
       await API.put("/vendors/profile", profilePayload);
-      toast.success("Profile updated successfully!");
+      toast.success("Profile details updated!");
       setIsEditing(false);
       fetchVendorProfile();
     } catch (err) {
       console.error("Profile update error:", err);
-      toast.error("Failed to update profile.");
+      toast.error(err.response?.data?.message || "Failed to update profile.");
     } finally {
       setSaving(false);
     }
@@ -187,27 +186,79 @@ export default function VendorProfile() {
   const handleProfileImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
     const formData = new FormData();
-    formData.append("image", file);
+    formData.append("profilePicture", file);
 
     setUploadingAvatar(true);
     try {
-      await API.put("/vendors/profile/upload-image", formData, {
+      await API.put(`/vendors/profile/upload-image/${vendorId}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Profile picture updated!");
       fetchVendorProfile();
-    // eslint-disable-next-line no-unused-vars
     } catch (err) {
-      toast.error("Failed to upload image.");
+      console.error("Avatar upload error:", err);
+      toast.error(err.response?.data?.message || "Failed to upload profile picture.");
     } finally {
       setUploadingAvatar(false);
+    }
+  };
+
+  const handlePortfolioUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    const newImages = files.filter(f => f.type.startsWith('image/'));
+    const newVideos = files.filter(f => f.type.startsWith('video/'));
+
+    if (profile.images.length + newImages.length > 5) {
+      toast.error(`Limit exceeded: Maximum 5 photos allowed. (Currently have ${profile.images.length})`);
+      return;
+    }
+
+    if (profile.videos.length + newVideos.length > 3) {
+      toast.error(`Limit exceeded: Maximum 3 videos allowed. (Currently have ${profile.videos.length})`);
+      return;
+    }
+
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append("media", file);
+    });
+
+    setUploadingMedia(true);
+    try {
+      await API.post(`/vendors/${vendorId}/portfolio`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success("Portfolio media uploaded successfully!");
+      fetchVendorProfile();
+    } catch (err) {
+      console.error("Portfolio upload error:", err);
+      toast.error(err.response?.data?.message || "Failed to upload portfolio media.");
+    } finally {
+      setUploadingMedia(false);
+    }
+  };
+
+  const handleDeleteMedia = async (mediaUrl, type) => {
+    try {
+      await API.delete(`/vendors/${vendorId}/portfolio`, {
+        data: { mediaUrl, type }
+      });
+      toast.success("Media deleted from portfolio.");
+      fetchVendorProfile();
+    } catch (err) {
+      console.error("Delete media error:", err);
+      toast.error("Failed to delete media.");
     }
   };
 
   const handleSaveLocation = async () => {
     try {
       await API.put("/vendors/update-location", {
+        vendorId,
         latitude: profile.lat,
         longitude: profile.lng
       });
@@ -234,12 +285,10 @@ export default function VendorProfile() {
                 alt="Vendor Avatar" 
                 style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover", border: "3px solid #b4945a" }} 
               />
-              {isEditing && (
-                <label style={{ position: "absolute", bottom: 0, right: 0, background: "#b4945a", color: "#000", borderRadius: "50%", width: "26px", height: "26px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "12px" }}>
-                  ✎
-                  <input type="file" accept="image/*" onChange={handleProfileImageUpload} style={{ display: "none" }} />
-                </label>
-              )}
+              <label style={{ position: "absolute", bottom: 0, right: 0, background: "#b4945a", color: "#fff", borderRadius: "50%", width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "14px", boxShadow: "0 2px 5px rgba(0,0,0,0.2)" }} title="Change Profile Image">
+                📷
+                <input type="file" accept="image/*" onChange={handleProfileImageUpload} style={{ display: "none" }} disabled={uploadingAvatar} />
+              </label>
             </div>
 
             <div>
@@ -333,26 +382,74 @@ export default function VendorProfile() {
         </div>
       )}
 
-      {/* 1. PORTFOLIO & DESCRIPTION SECTION */}
+      {/* PORTFOLIO SECTION (MAX 5 PHOTOS & 3 VIDEOS) */}
       <div style={{ maxWidth: "1000px", margin: "30px auto 0 auto", padding: "0 20px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "15px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
           <div>
             <h2 style={{ margin: 0, fontSize: "20px", color: "#111" }}>Our Portfolio</h2>
-            <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: "#666" }}>A showcase of cinematic excellence and timeless events</p>
+            <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: "#666" }}>Max 5 Photos ({profile.images.length}/5) & Max 3 Videos ({profile.videos.length}/3)</p>
           </div>
+
+          {(isOwner || isEditing) && (
+            <label style={{ background: "#28a745", color: "#fff", padding: "8px 16px", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}>
+              {uploadingMedia ? "Uploading Media..." : "+ Upload Portfolio Media"}
+              <input 
+                type="file" 
+                accept="image/*,video/*" 
+                multiple 
+                onChange={handlePortfolioUpload} 
+                style={{ display: "none" }} 
+                disabled={uploadingMedia}
+              />
+            </label>
+          )}
         </div>
 
+        {/* Photos Grid */}
+        <h3 style={{ fontSize: "16px", color: "#333", marginBottom: "10px" }}>Photos ({profile.images.length}/5)</h3>
         {profile.images.length > 0 ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "20px" }}>
             {profile.images.map((imgSrc, index) => (
-              <div key={index} style={{ borderRadius: "10px", overflow: "hidden", height: "180px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", background: "#fff" }}>
-                <img src={imgSrc} alt="Portfolio" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div key={index} style={{ position: "relative", borderRadius: "8px", overflow: "hidden", height: "150px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", background: "#fff" }}>
+                <img src={imgSrc} alt="Portfolio Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                {(isOwner || isEditing) && (
+                  <button 
+                    onClick={() => handleDeleteMedia(imgSrc, 'image')}
+                    style={{ position: "absolute", top: "5px", right: "5px", background: "rgba(220, 53, 69, 0.85)", color: "#fff", border: "none", borderRadius: "50%", width: "24px", height: "24px", cursor: "pointer", fontWeight: "bold" }}
+                  >
+                    ×
+                  </button>
+                )}
               </div>
             ))}
           </div>
         ) : (
-          <div style={{ background: "#fff", padding: "30px", textAlign: "center", borderRadius: "8px", border: "1px dashed #ccc", color: "#777", fontSize: "14px" }}>
+          <div style={{ background: "#fff", padding: "20px", textAlign: "center", borderRadius: "8px", border: "1px dashed #ccc", color: "#777", fontSize: "13px", marginBottom: "20px" }}>
             No portfolio images uploaded yet.
+          </div>
+        )}
+
+        {/* Videos Grid */}
+        <h3 style={{ fontSize: "16px", color: "#333", marginBottom: "10px" }}>Videos ({profile.videos.length}/3)</h3>
+        {profile.videos.length > 0 ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px" }}>
+            {profile.videos.map((vidSrc, index) => (
+              <div key={index} style={{ position: "relative", borderRadius: "8px", overflow: "hidden", height: "150px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", background: "#000" }}>
+                <video src={vidSrc} controls style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                {(isOwner || isEditing) && (
+                  <button 
+                    onClick={() => handleDeleteMedia(vidSrc, 'video')}
+                    style={{ position: "absolute", top: "5px", right: "5px", background: "rgba(220, 53, 69, 0.85)", color: "#fff", border: "none", borderRadius: "50%", width: "24px", height: "24px", cursor: "pointer", fontWeight: "bold", zIndex: 2 }}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ background: "#fff", padding: "20px", textAlign: "center", borderRadius: "8px", border: "1px dashed #ccc", color: "#777", fontSize: "13px" }}>
+            No portfolio videos uploaded yet.
           </div>
         )}
 
@@ -364,7 +461,7 @@ export default function VendorProfile() {
         )}
       </div>
 
-      {/* 2. BALANCED CALENDAR & MAP SECTION */}
+      {/* CALENDAR & MAP SECTION */}
       <div style={{ maxWidth: "1000px", margin: "30px auto 0 auto", padding: "0 20px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", alignItems: "stretch" }}>
           
@@ -435,7 +532,7 @@ export default function VendorProfile() {
         </div>
       </div>
 
-      {/* 3. REVIEWS & RATINGS SECTION */}
+      {/* REVIEWS & RATINGS SECTION */}
       <div style={{ maxWidth: "1000px", margin: "30px auto 0 auto", padding: "0 20px" }}>
         <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
           <h3 style={{ margin: "0 0 15px 0", fontSize: "16px", color: "#111" }}>Customer Reviews & Ratings</h3>
