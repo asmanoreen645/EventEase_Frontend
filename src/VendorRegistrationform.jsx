@@ -189,6 +189,7 @@ const VendorRegister = () => {
                 border: '1px solid #e2d9cd',
                 borderRadius: '8px',
                 fontSize: '14px',
+                color: '#2b2319',
                 backgroundColor: '#faf8f5',
                 boxSizing: 'border-box'
               }}
