@@ -41,6 +41,7 @@ export default function VendorProfile() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [vendorId, setVendorId] = useState("");
+  const [categoriesMap, setCategoriesMap] = useState({});
   const [, setIsVerified] = useState(true);
   const [, setIsOwner] = useState(false);
 
@@ -62,7 +63,22 @@ export default function VendorProfile() {
     lat: 31.5204,
     lng: 74.3587
   });
-
+useEffect(() => {
+  const fetchCategories = async () => {
+    try {
+      const res = await API.get('/vendors/categories');
+      const categories = res.data?.categories || res.data || [];
+      const map = {};
+      categories.forEach((cat) => {
+        map[cat._id] = cat.name || cat.title || cat.categoryName;
+      });
+      setCategoriesMap(map);
+    } catch (err) {
+      console.error("Error loading categories map:", err);
+    }
+  };
+  fetchCategories();
+}, []);
   const getAuthHeader = () => {
     const token = localStorage.getItem("token") || localStorage.getItem("authToken");
     return token ? { Authorization: `Bearer ${token}` } : {};
@@ -128,7 +144,7 @@ export default function VendorProfile() {
           setIsOwner(true); // Default edit allowed in dashboard view
         }
 
-        const catName = safeExtract(data.category) || safeExtract(data.businessType);
+        const catName = (typeof data.category === 'string' && categoriesMap[data.category]) || safeExtract(data.category) || safeExtract(data.businessType);
         const cityName = safeExtract(data.location?.city) || safeExtract(data.city);
         
         const coords = data.location?.coordinates;
@@ -157,7 +173,7 @@ export default function VendorProfile() {
     } finally {
       setLoading(false);
     }
-  }, [id, fetchVendorReviews]);
+  }, [id, fetchVendorReviews, categoriesMap]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
