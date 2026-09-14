@@ -14,8 +14,8 @@ const VendorRegister = () => {
 
   const [formData, setFormData] = useState({
     businessName: user?.name || '',
-    category: '', // Database se real ObjectId 
-    phone: '',
+    category: '', 
+    phone: user?.phone || '',
     country: 'Pakistan',
     state: 'Punjab',
     city: 'Mandi Bahauddin',
@@ -38,21 +38,15 @@ const VendorRegister = () => {
   const MAX_FILE_SIZE_MB = 5;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 
-  
-  //  REAL PRODUCTION DATA FETCHING FROM DATABASE
-  
   useEffect(() => {
     const fetchCategoriesFromDB = async () => {
       try {
         setFetchingCategories(true);
-        // your backend category endpoint
         const res = await API.get('/vendors/categories');
-        
         const categories = res.data?.categories || res.data || [];
         
         if (Array.isArray(categories) && categories.length > 0) {
           setCategoriesList(categories);
-          // Auto select first real category ObjectId from DB
           setFormData((prev) => ({ ...prev, category: categories[0]._id }));
         }
       } catch (err) {
@@ -101,8 +95,13 @@ const VendorRegister = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.businessName || !formData.category || !formData.city) {
-      toast.error("Please fill in all required fields!");
+    if (!formData.businessName || !formData.category || !formData.city || !formData.phone) {
+      toast.error("Please fill in all required fields including Phone number!");
+      return;
+    }
+
+    if (!documents.businessLicense) {
+      toast.error("Business License Document is required!");
       return;
     }
 
@@ -117,8 +116,8 @@ const VendorRegister = () => {
       const data = new FormData();
       data.append("userId", activeUserId);
       data.append("businessName", formData.businessName);
-      data.append("category", formData.category); // Real Database ObjectId
-      data.append("businessType", formData.category); // Fallback field
+      data.append("category", formData.category);
+      data.append("businessType", formData.category);
       data.append("phone", formData.phone);
       data.append("country", formData.country);
       data.append("state", formData.state);
@@ -209,13 +208,14 @@ const VendorRegister = () => {
           </div>
 
           <div>
-            <label>PHONE NUMBER</label>
+            <label>PHONE NUMBER *</label>
             <input 
               type="text" 
               name="phone"
               placeholder="+92 300 1234567"
               value={formData.phone}
               onChange={handleInputChange}
+              required
             />
           </div>
 
@@ -263,10 +263,11 @@ const VendorRegister = () => {
           </div>
 
           <div>
-            <label>BUSINESS LICENSE / DOCUMENT (MAX 5MB - JPG, PNG, PDF)</label>
+            <label>BUSINESS LICENSE / DOCUMENT * (MAX 5MB - JPG, PNG, PDF)</label>
             <input 
               type="file" 
               accept=".jpg,.jpeg,.png,.pdf"
+              required
               onChange={(e) => handleFileChange(e, 'businessLicense')}
             />
             {docErrors.businessLicense && <p className="error-msg">{docErrors.businessLicense}</p>}

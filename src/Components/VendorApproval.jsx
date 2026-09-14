@@ -1,4 +1,4 @@
- import { useState, useEffect } from 'react'; 
+import { useState, useEffect } from 'react'; 
 import API from '../api/axiosConfig';
 
 export default function VendorApproval() {
@@ -6,52 +6,58 @@ export default function VendorApproval() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchPendingVendors = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      // 1. Try Primary Admin Pending Route
-      const res = await API.get('/api/admin/vendors/pending');
-      const data = res.data?.data || res.data?.vendors || res.data;
-      
-      if (Array.isArray(data)) {
-        setPendingVendors(data);
-      } else {
-        throw new Error("Invalid response structure");
-      }
-    } catch (err) {
-      console.warn("Primary endpoint failed, attempting fallback to general vendors list:", err);
-      
-      // 2. Fallback: Fetch all vendors and filter unapproved ones client-side
-      try {
-        const fallbackRes = await API.get('/api/vendors');
-        const rawList = fallbackRes.data?.data || fallbackRes.data?.vendors || fallbackRes.data;
-        
-        if (Array.isArray(rawList)) {
-          const unapproved = rawList.filter(
-            (v) => v.isApproved === false || v.status === 'pending' || !v.isApproved
-          );
-          setPendingVendors(unapproved);
-        } else {
-          setError("Failed to load pending vendors from server.");
-        }
-      } catch (fallbackErr) {
-        console.error("Fallback failed:", fallbackErr);
-        setError("Failed to load pending vendors from server.");
-      }
-    } finally {
-      setLoading(false);
+  const renderSafeString = (val, fallback = "N/A") => {
+    if (!val) return fallback;
+    if (typeof val === 'string' || typeof val === 'number') return val;
+    if (typeof val === 'object') {
+      return val.city || val.name || val.title || val.businessName || val.email || val.address || fallback;
     }
+    return fallback;
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    const fetchPendingVendors = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await API.get('/admin/vendors/pending').catch(() => API.get('/api/admin/vendors/pending'));
+        const data = res.data?.data || res.data?.vendors || res.data;
+        
+        if (Array.isArray(data)) {
+          setPendingVendors(data);
+        } else {
+          throw new Error("Invalid array");
+        }
+      } catch (err) {
+        console.warn("Primary pending endpoint failed, trying general vendors list:", err);
+        try {
+          const fallbackRes = await API.get('/vendors').catch(() => API.get('/api/vendors'));
+          const rawList = fallbackRes.data?.data || fallbackRes.data?.vendors || fallbackRes.data;
+          
+          if (Array.isArray(rawList)) {
+            const unapproved = rawList.filter(
+              (v) => v.isApproved === false || v.status === 'pending' || !v.isApproved
+            );
+            setPendingVendors(unapproved);
+          } else {
+            setError("Failed to load pending vendors.");
+          }
+        } catch (fallbackErr) {
+          console.error("Fallback failed:", fallbackErr);
+          setError("Failed to load pending vendors.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchPendingVendors();
   }, []);
 
   const handleApprove = async (id) => {
     try {
-      await API.put(`/api/admin/vendors/${id}/approve`, { isApproved: true, status: 'approved' });
+      await API.put(`/admin/vendors/${id}/approve`, { isApproved: true, status: 'approved' })
+               .catch(() => API.put(`/api/admin/vendors/${id}/approve`, { isApproved: true, status: 'approved' }));
       setPendingVendors((prev) => prev.filter((v) => (v._id || v.id) !== id));
       alert("Vendor approved successfully!");
     } catch (err) {
@@ -62,7 +68,8 @@ export default function VendorApproval() {
 
   const handleReject = async (id) => {
     try {
-      await API.put(`/api/admin/vendors/${id}/reject`, { isApproved: false, status: 'rejected' });
+      await API.put(`/admin/vendors/${id}/reject`, { isApproved: false, status: 'rejected' })
+               .catch(() => API.put(`/api/admin/vendors/${id}/reject`, { isApproved: false, status: 'rejected' }));
       setPendingVendors((prev) => prev.filter((v) => (v._id || v.id) !== id));
       alert("Vendor request rejected.");
     } catch (err) {
@@ -88,43 +95,83 @@ export default function VendorApproval() {
           No pending vendor approval requests right now.
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           {pendingVendors.map((vendor) => {
             const id = vendor._id || vendor.id;
+            
+            const email = vendor.email || vendor.user?.email || vendor.userId?.email;
+            const phone = vendor.phone || vendor.contactNumber || vendor.user?.phone || vendor.userId?.phone;
+            const rawCity = vendor.city || vendor.location;
+            const city = typeof rawCity === 'object' ? rawCity?.city || rawCity?.address : rawCity;
+            
+            const cnicDoc = vendor.cnicUrl || vendor.cnicImage || vendor.cnicDoc;
+            const licenseDoc = vendor.licenseUrl || vendor.licenseImage || vendor.licenseDoc || vendor.businessLicense || (Array.isArray(vendor.documents) && vendor.documents[1]);
+
             return (
               <div 
                 key={id} 
                 style={{ 
-                  padding: "15px 20px", 
+                  padding: "20px", 
                   background: "#FFFFFF", 
                   border: "1px solid #E2E8F0", 
                   borderRadius: "8px", 
-                  display: "flex", 
-                  justifyContent: "space-between", 
-                  alignItems: "center" 
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
                 }}
               >
-                <div>
-                  <h4 style={{ margin: "0 0 5px 0", color: "#2D3748" }}>
-                    {vendor.name || vendor.businessName || vendor.username || "New Vendor Request"}
-                  </h4>
-                  <p style={{ margin: 0, fontSize: "14px", color: "#718096" }}>
-                    Email: {vendor.email || "N/A"} | Category: {vendor.category || "N/A"} | City: {vendor.city || "N/A"}
-                  </p>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "15px" }}>
+                  <div>
+                    <h3 style={{ margin: "0 0 5px 0", color: "#2D3748" }}>
+                      {renderSafeString(vendor.businessName || vendor.name || vendor.username, "New Vendor Request")}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: "14px", color: "#718096" }}>
+                      <strong>Email:</strong> {renderSafeString(email)} | <strong>Phone:</strong> {renderSafeString(phone)} | <strong>Category:</strong> {renderSafeString(vendor.category)} | <strong>City:</strong> {renderSafeString(city)}
+                    </p>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    <button 
+                      onClick={() => handleApprove(id)} 
+                      style={{ padding: "8px 16px", background: "#38A169", color: "#FFF", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "600" }}
+                    >
+                      Approve
+                    </button>
+                    <button 
+                      onClick={() => handleReject(id)} 
+                      style={{ padding: "8px 16px", background: "#E53E3E", color: "#FFF", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "600" }}
+                    >
+                      Reject
+                    </button>
+                  </div>
                 </div>
-                <div style={{ display: "flex", gap: "10px" }}>
-                  <button 
-                    onClick={() => handleApprove(id)} 
-                    style={{ padding: "8px 16px", background: "#38A169", color: "#FFF", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "600" }}
-                  >
-                    Approve
-                  </button>
-                  <button 
-                    onClick={() => handleReject(id)} 
-                    style={{ padding: "8px 16px", background: "#E53E3E", color: "#FFF", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "600" }}
-                  >
-                    Reject
-                  </button>
+
+                <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px dashed #E2E8F0", display: "flex", gap: "15px", alignItems: "center" }}>
+                  <span style={{ fontSize: "14px", fontWeight: "600", color: "#4A5568" }}>Submitted Documents:</span>
+                  
+                  {cnicDoc ? (
+                    <a 
+                      href={cnicDoc} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      style={{ padding: "5px 12px", background: "#EBF8FF", color: "#3182CE", border: "1px solid #90CDF4", borderRadius: "4px", textDecoration: "none", fontSize: "13px", fontWeight: "500" }}
+                    >
+                      View CNIC Document ↗
+                    </a>
+                  ) : (
+                    <span style={{ fontSize: "13px", color: "#A0AEC0" }}>No CNIC Uploaded</span>
+                  )}
+
+                  {licenseDoc ? (
+                    <a 
+                      href={licenseDoc} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      style={{ padding: "5px 12px", background: "#EBF8FF", color: "#3182CE", border: "1px solid #90CDF4", borderRadius: "4px", textDecoration: "none", fontSize: "13px", fontWeight: "500" }}
+                    >
+                      View License Document ↗
+                    </a>
+                  ) : (
+                    <span style={{ fontSize: "13px", color: "#A0AEC0" }}>No License Uploaded</span>
+                  )}
                 </div>
               </div>
             );
