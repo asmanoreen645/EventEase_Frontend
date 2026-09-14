@@ -45,8 +45,9 @@ export default function Venuepage() {
   const [animatedRating, setAnimatedRating] = useState(0);
   const [animatedEvents, setAnimatedEvents] = useState(0);
   const [realVendors, setRealVendors] = useState([]);
+  const [categoriesMap, setCategoriesMap] = useState({});
 
-  const [selectedCountry, setSelectedCountry] = useState(searchParams.get("country") || "Pakistan");
+  const [selectedCountry, setSelectedCountry] = useState(searchParams.get("country") || "");
   const [selectedProvince, setSelectedProvince] = useState(searchParams.get("province") || "");
   const [selectedCity, setSelectedCity] = useState(searchParams.get("city") || "");
   const selectedService = searchParams.get("category") || "All";
@@ -79,6 +80,22 @@ export default function Venuepage() {
   }, [searchParams]);
 
   // Pure Backend API Dynamic Fetch
+    useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await API.get('/vendors/categories');
+        const categories = res.data?.categories || res.data || [];
+        const map = {};
+        categories.forEach((cat) => {
+          map[cat._id] = cat.name || cat.title || cat.categoryName;
+        });
+        setCategoriesMap(map);
+      } catch (err) {
+        console.error("Error loading categories map:", err);
+      }
+    };
+    fetchCategories();
+  }, []);
   useEffect(() => {
     const fetchRealVendors = async () => {
       try {
@@ -101,7 +118,9 @@ export default function Venuepage() {
           _id: v._id,
           name: v.businessName || v.name || "Vendor",
           image: v.coverImage || v.images?.[0] || "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&q=80",
-          type: typeof v.category === "object" ? v.category?.name : (v.category || "Decorators"),
+          type: typeof v.category === "object" && v.category?.name
+  ? v.category.name
+  : (categoriesMap[v.category] || v.categoryName || "Decorators"),
           rating: v.rating || 4.8,
           reviews: v.totalReviews || 10,
           location: v.location?.city || v.city || "Mandi Bahauddin",
