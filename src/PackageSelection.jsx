@@ -160,7 +160,7 @@ function PackageSelection() {
     return (
       <div className="booking-page">
         <div className="booking-card">
-          <p>Pehle booking details complete karo.</p>
+          <p>First,Complete the booking details.</p>
           <button className="btn-next" onClick={() => navigate("/details")}>
             Back to Booking Details
           </button>
