@@ -142,9 +142,9 @@ const PACKAGE_DATA = {
 
 // Vendor.category map with above keys
 function getCategoryKey(category) {
-  if (category === "photographer") return "photographer";
-  if (category === "decorator") return "decorator";
-  // venue, catering, venuehall - use same sub per head
+  const name = (typeof category === 'object' && category?.name ? category.name : category || '').toLowerCase();
+  if (name.includes("photograph")) return "photographer";
+  if (name.includes("decor")) return "decorator";
   return "venue";
 }
 

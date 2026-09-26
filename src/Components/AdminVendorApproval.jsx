@@ -78,7 +78,7 @@ export default function AdminVendorApproval() {
               <div>
                 <h3 style={{ margin: "0 0 6px 0", color: "#111" }}>{vendor.businessName || "Vendor Name"}</h3>
                 <p style={{ margin: "2px 0", fontSize: "13px", color: "#555" }}>
-                  <strong>Category:</strong> {vendor.category || "Unassigned"}
+                  <strong>Category:</strong> {vendor.category?.name || vendor.category || "Unassigned"}
                 </p>
                 <p style={{ margin: "2px 0", fontSize: "13px", color: "#555" }}>
                   <strong>Email:</strong> {vendor.userId?.email || vendor.email || "N/A"} | <strong>Phone:</strong> {vendor.phone || "N/A"}

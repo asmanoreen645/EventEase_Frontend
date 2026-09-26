@@ -80,7 +80,7 @@ function BookingDetails() {
 
         <h2 className="booking-title">Booking details</h2>
         <p className="booking-subtitle">
-          Booking for <strong>{vendor.name}</strong> ({vendor.category})
+          Booking for <strong>{vendor.name}</strong> ({vendor.category?.name || vendor.category})
         </p>
 
         <form onSubmit={handleNext}>
