@@ -50,7 +50,7 @@ export default function CustomerDashboard() {
     setSuccessMessage("");
     setErrorMessage("");
     try {
-      const res = await API.put("/api/auth/profile/update", user);
+      const res = await API.put("/auth/profile/update", user);
       if (res.data.success) {
         setSuccessMessage("Profile details updated in live database successfully!");
         localStorage.setItem("user", JSON.stringify({ ...JSON.parse(localStorage.getItem("user")), ...user }));

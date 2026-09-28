@@ -77,7 +77,7 @@ const ProfileSettings = () => {
       };
 
       // Endpoint updated: /auth/profile
-      const res = await API.put('/auth/profile', payload);
+      const res = await API.put('/auth/profile/update', payload);
 
       if (res.data.success || res.data.user) {
         setMessage({ type: 'success', text: 'Profile updated successfully!' });
