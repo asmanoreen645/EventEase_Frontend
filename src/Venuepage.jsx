@@ -120,7 +120,7 @@ export default function Venuepage() {
           image: v.coverImage || v.images?.[0] || "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&q=80",
           type: typeof v.category === "object" && v.category?.name
   ? v.category.name
-  : (categoriesMap[v.category] || v.categoryName || "Decorators"),
+  : (categoriesMap[v.category] || v.categoryName || "other"),
           rating: v.rating || 4.8,
           reviews: v.totalReviews || 10,
           location: v.location?.city || v.city || "Mandi Bahauddin",
@@ -140,7 +140,7 @@ export default function Venuepage() {
     };
 
     fetchRealVendors();
-  }, [searchParams, selectedCountry, selectedProvince, selectedCity]);
+  }, [searchParams, selectedCountry, selectedProvince, selectedCity, categoriesMap]);
 
   useEffect(() => {
     const targetVendors = realVendors.length;
