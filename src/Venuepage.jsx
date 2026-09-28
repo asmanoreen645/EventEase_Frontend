@@ -188,16 +188,23 @@ export default function Venuepage() {
       )
         return false;
 
+      // Improved Category Filtering Logic
       if (selectedService === "Venues & Marquees") {
         const isVenueType = venueTypes
           .slice(1)
           .some((t) => t.toLowerCase() === v.type?.toLowerCase());
         if (!isVenueType) return false;
-      } else if (
-        selectedService !== "All" &&
-        v.type?.toLowerCase() !== selectedService.toLowerCase()
-      ) {
-        return false;
+      } else if (selectedService !== "All") {
+        const vendorTypeLower = (v.type || "").toLowerCase();
+        const selectedServiceLower = selectedService.toLowerCase();
+        
+        // Flexible check: match exact variations 
+        const isMatch = 
+          vendorTypeLower === selectedServiceLower ||
+          vendorTypeLower.includes(selectedServiceLower) ||
+          selectedServiceLower.includes(vendorTypeLower);
+
+        if (!isMatch) return false;
       }
 
       if (selectedCountry) {
