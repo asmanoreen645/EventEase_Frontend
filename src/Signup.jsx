@@ -15,11 +15,6 @@ const Signup = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // OTP Verification States
-  const [showOtpModal, setShowOtpModal] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [otpLoading, setOtpLoading] = useState(false);
-
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -70,7 +65,6 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      // Endpoint updated: /auth/signup (NOT /api/auth/signup)
       const response = await API.post('/auth/signup', {
         name,
         email,
@@ -79,8 +73,16 @@ const Signup = () => {
       });
 
       if (response.data.success) {
-        toast.success("OTP sent to your email!");
-        setShowOtpModal(true);
+        const { token, user } = response.data;
+        login(user, token);
+        toast.success("Account created successfully!");
+
+        const userRole = user?.role?.toLowerCase();
+        if (userRole === 'vendor') {
+          navigate('/vendor-register');
+        } else {
+          navigate('/');
+        }
       }
       
     } catch (err) {
@@ -93,50 +95,8 @@ const Signup = () => {
     }
   };
 
-  const handleVerifyOTP = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    if (!otp.trim()) {
-      const msg = 'Please enter the OTP code.';
-      setError(msg);
-      toast.error(msg);
-      return;
-    }
-
-    setOtpLoading(true);
-
-    try {
-      // Endpoint updated: /auth/verify-otp
-      const response = await API.post('/auth/verify-otp', {
-        email,
-        otp
-      });
-
-      const { token, user } = response.data;
-      login(user, token);
-      toast.success("Account verified successfully!");
-
-      const userRole = user?.role?.toLowerCase();
-      if (userRole === 'vendor') {
-        navigate('/vendor-register');
-      } else {
-        navigate('/');
-      }
-
-    } catch (err) {
-      console.error("OTP VERIFY ERROR:", err);
-      const errMsg = err.response?.data?.message || 'OTP Verification Failed.';
-      setError(errMsg);
-      toast.error(errMsg);
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      // Endpoint updated: /auth/google
       const response = await API.post('/auth/google', {
         token: credentialResponse.credential,
         role: role 
@@ -168,129 +128,106 @@ const Signup = () => {
 
         {error && <p className="error-message" style={{ color: 'red', marginBottom: '15px', fontWeight: 'bold' }}>{error}</p>}
 
-        {!showOtpModal ? (
-          <>
-            <form className="signup-form" onSubmit={handleSubmit}>
-              <div className="input-group">
-                <label>NAME</label>
-                <input
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </div>
+        <form className="signup-form" onSubmit={handleSubmit}>
+          <div className="input-group">
+            <label>NAME</label>
+            <input
+              type="text"
+              placeholder="Enter your full name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
 
-              <div className="input-group">
-                <label>EMAIL ADDRESS</label>
-                <input
-                  type="email"
-                  placeholder="example@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+          <div className="input-group">
+            <label>EMAIL ADDRESS</label>
+            <input
+              type="email"
+              placeholder="example@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-              <div className="input-group">
-                <label>PASSWORD</label>
-                <div className="password-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    style={{ width: '100%', paddingRight: '45px' }}
-                  />
-                  <span
-                    className="eye-icon"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{ 
-                      position: 'absolute', 
-                      right: '12px', 
-                      cursor: 'pointer',
-                      fontSize: '18px',
-                      userSelect: 'none'
-                    }}
-                    title={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? "👁️‍🗨️" : "👁️"}
-                  </span>
-                </div>
-
-                {password && (
-                  <div style={{ marginTop: '8px' }}>
-                    <div style={{ height: '5px', width: '100%', backgroundColor: '#333', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div 
-                        style={{ 
-                          height: '100%', 
-                          width: strength.width, 
-                          backgroundColor: strength.color, 
-                          transition: 'width 0.3s ease, background-color 0.3s ease' 
-                        }} 
-                      />
-                    </div>
-                    <span style={{ fontSize: '12px', color: strength.color, fontWeight: 'bold', marginTop: '4px', display: 'block' }}>
-                      Strength: {strength.label}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div className="input-group">
-                <label>I AM A...</label>
-                <select
-                  className="role-dropdown"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                >
-                  <option value="customer">Customer</option>
-                  <option value="vendor">Vendor</option>
-                </select>
-              </div>
-
-              <button type="submit" className="signup-btn" disabled={loading}>
-                {loading ? 'Sending OTP...' : 'Create Account'}
-              </button>
-            </form>
-
-            <div className="divider" style={{ margin: '20px 0', textAlign: 'center' }}>
-              <span>OR CONTINUE WITH</span>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => {
-                  setError('Google Signup Failed');
-                  toast.error('Google Signup Failed');
-                }}
-                useOneTap
-              />
-            </div>
-          </>
-        ) : (
-          <form className="signup-form" onSubmit={handleVerifyOTP}>
-            <div className="input-group">
-              <label>ENTER 6-DIGIT OTP SENT TO YOUR EMAIL</label>
+          <div className="input-group">
+            <label>PASSWORD</label>
+            <div className="password-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <input
-                type="text"
-                placeholder="e.g. 123456"
-                maxLength="6"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
-                style={{ letterSpacing: '8px', fontSize: '20px', textAlign: 'center' }}
+                style={{ width: '100%', paddingRight: '45px' }}
               />
+              <span
+                className="eye-icon"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ 
+                  position: 'absolute', 
+                  right: '12px', 
+                  cursor: 'pointer',
+                  fontSize: '18px',
+                  userSelect: 'none'
+                }}
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? "👁️‍🗨️" : "👁️"}
+              </span>
             </div>
 
-            <button type="submit" className="signup-btn" disabled={otpLoading}>
-              {otpLoading ? 'Verifying...' : 'Verify Email & Complete Signup'}
-            </button>
-          </form>
-        )}
+            {password && (
+              <div style={{ marginTop: '8px' }}>
+                <div style={{ height: '5px', width: '100%', backgroundColor: '#333', borderRadius: '3px', overflow: 'hidden' }}>
+                  <div 
+                    style={{ 
+                      height: '100%', 
+                      width: strength.width, 
+                      backgroundColor: strength.color, 
+                      transition: 'width 0.3s ease, background-color 0.3s ease' 
+                    }} 
+                  />
+                </div>
+                <span style={{ fontSize: '12px', color: strength.color, fontWeight: 'bold', marginTop: '4px', display: 'block' }}>
+                  Strength: {strength.label}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="input-group">
+            <label>I AM A...</label>
+            <select
+              className="role-dropdown"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <option value="customer">Customer</option>
+              <option value="vendor">Vendor</option>
+            </select>
+          </div>
+
+          <button type="submit" className="signup-btn" disabled={loading}>
+            {loading ? 'Creating Account...' : 'Create Account'}
+          </button>
+        </form>
+
+        <div className="divider" style={{ margin: '20px 0', textAlign: 'center' }}>
+          <span>OR CONTINUE WITH</span>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => {
+              setError('Google Signup Failed');
+              toast.error('Google Signup Failed');
+            }}
+            useOneTap
+          />
+        </div>
 
         <p className="footer-text" style={{ marginTop: '20px' }}>
           Already have an account? <Link to="/login">Log In</Link>
