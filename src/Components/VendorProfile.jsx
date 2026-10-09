@@ -95,7 +95,7 @@ useEffect(() => {
   const fetchVendorReviews = useCallback(async (vId) => {
     if (!vId) return;
     try {
-      const res = await API.get(`/api/ratings/vendor/${vId}`, { headers: getAuthHeader() });
+      const res = await API.get(`/ratings/vendor/${vId}`, { headers: getAuthHeader() });
       
       const reviewList = res.data?.data || res.data?.reviews || res.data || [];
       const validReviews = Array.isArray(reviewList) ? reviewList : [];
