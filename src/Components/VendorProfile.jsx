@@ -95,9 +95,7 @@ useEffect(() => {
   const fetchVendorReviews = useCallback(async (vId) => {
     if (!vId) return;
     try {
-      const res = await API.get(`/reviews/vendor/${vId}`, { headers: getAuthHeader() })
-        .catch(() => API.get(`/reviews/${vId}`, { headers: getAuthHeader() }))
-        .catch(() => API.get(`/vendors/${vId}/reviews`, { headers: getAuthHeader() }));
+      const res = await API.get(`/api/ratings/vendor/${vId}`, { headers: getAuthHeader() });
       
       const reviewList = res.data?.data || res.data?.reviews || res.data || [];
       const validReviews = Array.isArray(reviewList) ? reviewList : [];
@@ -141,7 +139,7 @@ useEffect(() => {
         if (activeUserId && (data.user === activeUserId || data.userId === activeUserId || data.userId?._id === activeUserId || data._id === activeUserId)) {
           setIsOwner(true);
         } else {
-          setIsOwner(true); // Default edit allowed in dashboard view
+          setIsOwner(true); 
         }
 
         const catName = (typeof data.category === 'string' && categoriesMap[data.category]) || safeExtract(data.category) || safeExtract(data.businessType);
